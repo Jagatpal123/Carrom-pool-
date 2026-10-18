@@ -1,0 +1,2408 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Carrom Pool Pro 3D - Ultimate Edition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Orbitron:wght@800;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    body {
+      background: radial-gradient(circle at 50% 28%, #1f5745 0%, #0d2e23 45%, #051610 85%, #020906 100%);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+      touch-action: none;
+    }
+    .screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      z-index: 10;
+      padding-bottom: 74px;
+      overflow-y: auto;
+      touch-action: pan-y;
+      -webkit-overflow-scrolling: touch;
+    }
+    .hidden { display: none !important; }
+
+    /* 0. 3D WELCOME SPLASH SCREEN */
+    #welcome-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: radial-gradient(circle at 50% 35%, #18523f 0%, #08281d 50%, #020f0a 100%);
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.4s ease, visibility 0.4s;
+    }
+    .welcome-logo-box {
+      width: 130px;
+      height: 130px;
+      border-radius: 28px;
+      border: 3.5px solid #ffd700;
+      box-shadow: 0 0 35px rgba(245, 158, 11, 0.7), 0 15px 35px rgba(0,0,0,0.85);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 35% 30%, #ffd700, #b45309, #381200);
+      animation: pulseLogo 1.6s infinite alternate ease-in-out;
+    }
+    @keyframes pulseLogo {
+      0% { transform: scale(0.96); box-shadow: 0 0 20px rgba(245, 158, 11, 0.5); }
+      100% { transform: scale(1.04); box-shadow: 0 0 40px rgba(245, 158, 11, 0.9); }
+    }
+    .welcome-logo-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .welcome-text {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 20px;
+      font-weight: 900;
+      text-align: center;
+      letter-spacing: 1.5px;
+      margin-top: 20px;
+      background: linear-gradient(180deg, #ffffff 0%, #ffd000 60%, #b45309 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.9));
+    }
+    .splash-loader-bar {
+      width: 160px;
+      height: 6px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 10px;
+      margin-top: 24px;
+      overflow: hidden;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+    .splash-loader-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #10b981, #fbbf24);
+      border-radius: 10px;
+      animation: fillBar 1.6s forwards ease-in-out;
+    }
+    @keyframes fillBar {
+      0% { width: 0%; }
+      60% { width: 75%; }
+      100% { width: 100%; }
+    }
+
+    /* 3D TYPOGRAPHY */
+    .title-3d-gold {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 24px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      background: linear-gradient(180deg, #fff9d2 0%, #ffd000 45%, #b45309 80%, #78350f 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 2px 0px #381200) drop-shadow(0 6px 14px rgba(245, 158, 11, 0.55));
+      text-align: center;
+    }
+    .text-3d-sub {
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #6ee7b7;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.85);
+      margin-top: 2px;
+    }
+
+    /* TOP BAR */
+    .top-bar {
+      width: 100%;
+      max-width: 440px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(180deg, rgba(16, 56, 42, 0.95) 0%, rgba(6, 26, 19, 0.95) 100%);
+      border-bottom: 2px solid rgba(52, 211, 153, 0.35);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.7), inset 0 1px 1px rgba(255,255,255,0.25);
+    }
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(180deg, #134232 0%, #071f17 100%);
+      padding: 5px 14px;
+      border-radius: 25px;
+      border: 1.5px solid #10b981;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.6), inset 0 1px 2px rgba(255,255,255,0.3);
+    }
+    .coin-badge-box {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: linear-gradient(180deg, #2b1f02 0%, #171101 100%);
+      padding: 6px 14px;
+      border-radius: 25px;
+      border: 1.5px solid #f59e0b;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35), inset 0 1px 2px rgba(255,230,120,0.4);
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      color: #fbbf24;
+      font-size: 13px;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+    }
+
+    .coin-3d-badge {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 32% 28%, #ffffff 0%, #ffd54f 30%, #f59e0b 70%, #92400e 100%);
+      border: 1px solid #fff59d;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.8), inset 0 1px 2px rgba(255,255,255,0.9);
+      position: relative;
+      vertical-align: middle;
+    }
+    .coin-3d-badge::after {
+      content: "★";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 10px;
+      color: #78350f;
+    }
+
+    .main-container {
+      width: 92%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      margin-top: 10px;
+      touch-action: pan-y;
+    }
+    .card-modal {
+      width: 100%;
+      background: linear-gradient(180deg, rgba(16, 48, 37, 0.95) 0%, rgba(6, 24, 18, 0.98) 100%);
+      border: 2px solid rgba(52, 211, 153, 0.35);
+      border-radius: 24px;
+      padding: 18px 16px;
+      text-align: center;
+      box-shadow: 0 18px 45px rgba(0,0,0,0.85), inset 0 2px 2px rgba(255,255,255,0.18), 0 0 20px rgba(16, 185, 129, 0.15);
+      position: relative;
+    }
+
+    /* 3D PUSH BUTTONS */
+    .btn-3d {
+      position: relative;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.1s ease;
+      overflow: hidden;
+    }
+    .btn-3d::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 45%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+      border-radius: 16px 16px 8px 8px;
+      pointer-events: none;
+    }
+    .btn-3d:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0px rgba(0,0,0,0.8) !important;
+    }
+    .btn-gold {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(180deg, #ffd700 0%, #f59e0b 60%, #b45309 100%);
+      color: #261100;
+      box-shadow: 0 6px 0px #78350f, 0 10px 22px rgba(245, 158, 11, 0.45);
+      font-size: 13px;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.6);
+      margin-top: 6px;
+    }
+    .btn-cyan {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(180deg, #38bdf8 0%, #0284c7 60%, #034f77 100%);
+      color: #032030;
+      box-shadow: 0 6px 0px #033c5a, 0 10px 22px rgba(2, 132, 199, 0.45);
+      font-size: 13px;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+      margin-top: 6px;
+    }
+    .btn-ad-3d {
+      background: linear-gradient(180deg, #06b6d4 0%, #0891b2 60%, #0e5b6e 100%);
+      color: #fff;
+      box-shadow: 0 5px 0px #083c48, 0 8px 18px rgba(6, 182, 212, 0.4);
+      font-size: 12px;
+      padding: 10px 12px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+    }
+    .btn-back-3d {
+      background: linear-gradient(180deg, #10b981 0%, #047857 70%, #024330 100%);
+      color: #ffffff;
+      padding: 8px 16px;
+      border-radius: 14px;
+      font-size: 12px;
+      box-shadow: 0 4px 0px #022c20, 0 6px 14px rgba(0,0,0,0.6);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+    }
+
+    /* 3D CARROM LOGO BADGE */
+    .btn-carrom-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      border: 1.5px solid #ffe57f;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.6);
+      overflow: hidden;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 35% 30%, #ffd700, #b45309, #381200);
+    }
+    .btn-carrom-badge img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .arena-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(180deg, rgba(8, 38, 28, 0.9) 0%, rgba(3, 18, 13, 0.9) 100%);
+      padding: 10px 14px;
+      border-radius: 16px;
+      border: 1.5px solid rgba(16, 185, 129, 0.25);
+      margin-bottom: 8px;
+      box-shadow: inset 0 1px 1px rgba(255,255,255,0.1), 0 4px 10px rgba(0,0,0,0.5);
+    }
+
+    /* 4-SUB TABS */
+    .sub-tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      background: rgba(2, 14, 10, 0.85);
+      padding: 5px;
+      border-radius: 16px;
+      width: 100%;
+      border: 1.5px solid rgba(16, 185, 129, 0.25);
+      margin-bottom: 10px;
+    }
+    .sub-tab-btn {
+      padding: 8px 2px;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 900;
+      font-size: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.15s;
+    }
+    .sub-tab-btn.active {
+      background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+      color: #022016;
+      box-shadow: 0 3px 0px #044e36, 0 4px 12px rgba(16, 185, 129, 0.4);
+      text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+    }
+
+    /* CATALOG GRIDS WITH TOUCH SCROLL */
+    .catalog-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      width: 100%;
+      max-height: 58vh;
+      overflow-y: scroll;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
+      padding: 4px 4px 20px 4px;
+    }
+    .catalog-card {
+      background: linear-gradient(180deg, rgba(13, 44, 34, 0.95) 0%, rgba(4, 20, 15, 0.98) 100%);
+      border: 2px solid rgba(255, 255, 255, 0.12);
+      border-radius: 18px;
+      padding: 12px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.15);
+      touch-action: pan-y;
+    }
+    .catalog-card.owned { border-color: rgba(16, 185, 129, 0.65); }
+    .catalog-card.equipped {
+      background: linear-gradient(180deg, rgba(16, 85, 59, 0.5) 0%, rgba(4, 30, 22, 0.8) 100%);
+      border-color: #34d399;
+      box-shadow: 0 0 18px rgba(16, 185, 129, 0.4), inset 0 1px 2px rgba(255,255,255,0.3);
+    }
+    .equipped-badge {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: linear-gradient(180deg, #34d399, #059669);
+      color: #022016;
+      font-size: 8px;
+      font-weight: 900;
+      padding: 3px 6px;
+      border-radius: 6px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    }
+
+    /* GAME SCREEN */
+    #game-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      height: 100vh;
+      padding: 12px 0 16px;
+      overflow: hidden;
+      touch-action: none;
+    }
+    .game-top-bar {
+      width: 94%;
+      max-width: 420px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    #hud-panel {
+      width: 94%;
+      max-width: 420px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: linear-gradient(180deg, rgba(16, 52, 40, 0.95) 0%, rgba(5, 23, 17, 0.98) 100%);
+      border: 2px solid rgba(52, 211, 153, 0.35);
+      border-radius: 22px;
+      box-shadow: 0 14px 35px rgba(0,0,0,0.8), inset 0 2px 2px rgba(255,255,255,0.2);
+      z-index: 20;
+    }
+    .player-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 10px;
+      border-radius: 16px;
+      border: 1.5px solid transparent;
+      transition: all 0.3s ease;
+    }
+    .player-box.turn-active {
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.2);
+      box-shadow: 0 0 18px rgba(16, 185, 129, 0.5), inset 0 1px 2px rgba(255,255,255,0.3);
+    }
+    .player-box.bot-turn-active {
+      border-color: #ff2a5f;
+      background: rgba(255, 42, 95, 0.18);
+      box-shadow: 0 0 18px rgba(255, 42, 95, 0.5), inset 0 1px 2px rgba(255,255,255,0.3);
+    }
+
+    .avatar-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .large-puck-indicator {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.85), inset 0 2px 4px rgba(255,255,255,0.8);
+      position: relative;
+      flex-shrink: 0;
+    }
+    .large-puck-indicator::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,0.4);
+    }
+    .puck-white-large {
+      background: radial-gradient(circle at 35% 30%, #ffffff 0%, #e2e8f0 45%, #94a3b8 80%, #475569 100%);
+      border-color: #ffffff;
+      box-shadow: 0 0 12px rgba(255,255,255,0.6), inset 0 2px 3px #fff;
+    }
+    .puck-black-large {
+      background: radial-gradient(circle at 35% 30%, #475569 0%, #1e293b 45%, #0f172a 80%, #000000 100%);
+      border-color: #94a3b8;
+      box-shadow: 0 0 12px rgba(0,0,0,0.8), inset 0 2px 3px rgba(255,255,255,0.3);
+    }
+
+    #board-center-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      width: 100%;
+      touch-action: none;
+    }
+    canvas#carromCanvas {
+      border-radius: 22px;
+      box-shadow: 0 28px 70px rgba(0,0,0,0.98), inset 0 0 30px rgba(0,0,0,0.9);
+      cursor: crosshair;
+      z-index: 5;
+      touch-action: none;
+    }
+    canvas#cueOverlayCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 25;
+    }
+
+    .slider-box {
+      width: 88%;
+      max-width: 400px;
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: linear-gradient(180deg, rgba(14, 46, 36, 0.95) 0%, rgba(4, 20, 15, 0.95) 100%);
+      padding: 8px 16px;
+      border-radius: 30px;
+      border: 2px solid rgba(16, 185, 129, 0.3);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.7), inset 0 1px 1px rgba(255,255,255,0.2);
+      z-index: 20;
+    }
+    input[type=range] {
+      flex: 1;
+      height: 8px;
+      accent-color: #10b981;
+      border-radius: 5px;
+      background: #042117;
+      outline: none;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+    }
+
+    /* BOTTOM NAV */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 68px;
+      background: linear-gradient(180deg, rgba(12, 40, 30, 0.98) 0%, rgba(4, 18, 13, 0.98) 100%);
+      border-top: 2px solid rgba(52, 211, 153, 0.4);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 40;
+      box-shadow: 0 -8px 25px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.25);
+    }
+    .nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      width: 25%;
+      height: 100%;
+      transition: all 0.2s;
+    }
+    .nav-btn .icon { font-size: 22px; transition: transform 0.2s; }
+    .nav-btn.active {
+      color: #34d399;
+      text-shadow: 0 0 10px rgba(52, 211, 153, 0.8);
+    }
+    .nav-btn.active .icon {
+      transform: translateY(-4px) scale(1.18);
+      filter: drop-shadow(0 0 10px #10b981);
+    }
+
+    #foul-banner {
+      position: absolute;
+      top: 18%;
+      padding: 10px 24px;
+      background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%);
+      border: 2px solid #ffffff;
+      border-radius: 25px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      color: #fff;
+      box-shadow: 0 8px 30px rgba(239, 68, 68, 0.9), inset 0 2px 2px rgba(255,255,255,0.5);
+      z-index: 50;
+      transform: scale(0);
+      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      white-space: nowrap;
+    }
+    #foul-banner.show { transform: scale(1); }
+
+    /* ONLINE MATCHMAKING RADAR MODAL */
+    #matchmaking-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(2, 12, 8, 0.96);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .radar-circle {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      border: 3px solid #10b981;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 20px 0;
+      box-shadow: 0 0 25px #10b981, inset 0 0 25px rgba(16, 185, 129, 0.5);
+    }
+    .radar-sweep {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg, rgba(16, 185, 129, 0.4) 0deg, transparent 70deg);
+      animation: spinRadar 1.5s linear infinite;
+    }
+    @keyframes spinRadar {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 0. 3D WELCOME SPLASH SCREEN -->
+  <div id="welcome-screen" onclick="dismissWelcomeScreen()">
+    <div class="welcome-logo-box">
+      <img src="logo.png" class="welcome-logo-img" alt="Carrom Pool Logo" onerror="handleLogoFallback(this)">
+    </div>
+    <div class="welcome-text">WELCOME TO<br><span style="color:#10b981;">CARROM POOL PRO</span></div>
+    <div class="text-3d-sub" style="margin-top:8px;">Ready To Strike...</div>
+    <div class="splash-loader-bar">
+      <div class="splash-loader-fill"></div>
+    </div>
+    <div style="font-size:10px; color:#94a3b8; margin-top:14px; letter-spacing:1px;">(स्क्रीन पर टैप करके तुरंत खोलें)</div>
+  </div>
+
+  <canvas id="fireworksCanvas" style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:98;"></canvas>
+  <canvas id="cueOverlayCanvas"></canvas>
+  <div id="foul-banner">FOUL! ⚠️</div>
+
+  <!-- ONLINE MATCHMAKING MODAL -->
+  <div id="matchmaking-modal" class="hidden">
+    <div class="card-modal" style="max-width:330px;">
+      <div class="title-3d-gold" style="font-size:18px;" id="mm-title">SEARCHING ONLINE...</div>
+      <div class="text-3d-sub" id="mm-subtitle">Finding a live opponent</div>
+      
+      <div style="display:flex; justify-content:center;">
+        <div class="radar-circle">
+          <div class="radar-sweep"></div>
+          <span style="font-size:42px; z-index:2;">🌐</span>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:space-around; align-items:center; margin:10px 0;">
+        <div style="text-align:center;">
+          <div style="font-size:26px;">🤠</div>
+          <div style="font-size:11px; font-weight:800; color:#34d399;">You</div>
+        </div>
+        <div style="font-family:'Orbitron'; font-size:18px; font-weight:900; color:#f59e0b;">VS</div>
+        <div style="text-align:center;">
+          <div style="font-size:26px;" id="mm-opp-avatar">❓</div>
+          <div style="font-size:11px; font-weight:800; color:#ff2a5f;" id="mm-opp-name">Searching...</div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <button class="btn-3d btn-cyan" style="flex:1; padding:10px; font-size:11px;" onclick="forceOfflinePlay()">
+          🤖 Play Offline (Bot)
+        </button>
+        <button class="btn-3d btn-ad-3d" style="background:#dc2626; flex:1; padding:10px; font-size:11px;" onclick="cancelMatchmaking()">
+          रद्द करें
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1. HOME SCREEN -->
+  <div id="home-screen" class="screen">
+    <div class="top-bar">
+      <div class="user-pill">
+        <span id="nav-avatar" style="font-size:24px;">🤠</span>
+        <span id="nav-name" style="font-weight:900; font-size:13px; letter-spacing:0.5px;">Player</span>
+      </div>
+      <div class="coin-badge-box">
+        <span class="coin-3d-badge"></span>
+        <span id="home-coins">1200</span>
+      </div>
+    </div>
+
+    <div class="main-container">
+      <div class="card-modal" style="background: radial-gradient(circle at 50% 30%, #1f644e, #0b2f23);">
+        <div class="title-3d-gold">CARROM POOL PRO</div>
+        <div class="text-3d-sub">Online & Offline Arcade Edition</div>
+        
+        <div style="display:flex; gap:10px; margin: 16px 0 10px;">
+          <button class="btn-3d btn-gold" onclick="startMatchmakingFlow('classic')">
+            <div class="btn-carrom-badge">
+              <img src="logo.png" alt="Logo" onerror="handleLogoFallback(this)">
+            </div>
+            <span>Clasic Play</span>
+          </button>
+          <button class="btn-3d btn-cyan" onclick="startMatchmakingFlow('disc')">
+            <div class="btn-carrom-badge" style="border-color:#38bdf8;">
+              <img src="logo.png" alt="Logo" onerror="handleLogoFallback(this)">
+            </div>
+            <span>Disc Pool Play</span>
+          </button>
+        </div>
+
+        <button class="btn-3d btn-ad-3d" style="width:100%;" onclick="watchAdForFreeCoins()">
+          📺 विज्ञापन देखें और +250 🪙 मुफ़्त पाएं
+        </button>
+      </div>
+
+      <div class="card-modal" style="text-align:left;">
+        <div style="font-family:'Orbitron', sans-serif; font-size:13px; font-weight:900; color:#fbbf24; margin-bottom:10px; letter-spacing:1px;">
+          ⚡ बैटल एरीना (TABLES)
+        </div>
+        <div class="arena-row">
+          <div>
+            <div style="font-weight:900; font-size:14px; color:#fff;">मुंबई क्लब</div>
+            <div style="font-size:11px; font-weight:700; color:#94a3b8;">एंट्री: 100 | पॉट: 200</div>
+          </div>
+          <button class="btn-3d btn-gold" style="width:auto; padding:8px 16px; margin-top:0; font-size:12px;" onclick="startMatchmakingFlow('classic', 100)">खेलें</button>
+        </div>
+        <div class="arena-row">
+          <div>
+            <div style="font-weight:900; font-size:14px; color:#fff;">दुबई रॉयल</div>
+            <div style="font-size:11px; font-weight:700; color:#94a3b8;">एंट्री: 500 | पॉट: 1000</div>
+          </div>
+          <button class="btn-3d btn-gold" style="width:auto; padding:8px 16px; margin-top:0; font-size:12px;" onclick="startMatchmakingFlow('classic', 500)">खेलें</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. FRIENDS SCREEN -->
+  <div id="friends-screen" class="screen hidden">
+    <div class="top-bar">
+      <div style="font-family:'Orbitron', sans-serif; font-weight:900; font-size:16px; color:#34d399; letter-spacing:1px;">मित्र / FRIENDS</div>
+      <div class="coin-badge-box"><span class="coin-3d-badge"></span><span class="sync-coins">1200</span></div>
+    </div>
+    <div class="main-container">
+      <div class="card-modal">
+        <div class="title-3d-gold" style="font-size:18px;">पास एंड प्ले (1 vs 1)</div>
+        <div class="text-3d-sub" style="margin-bottom:14px;">एक ही फोन पर दोस्त के साथ ऑफलाइन खेलें</div>
+        <button class="btn-3d btn-gold" onclick="startPassAndPlay()">2 प्लेयर्स ऑफलाइन खेलें</button>
+      </div>
+      <div class="card-modal">
+        <div class="title-3d-gold" style="font-size:18px;">प्राइवेट ऑनलाइन रूम</div>
+        <input type="text" id="room-code" placeholder="रूम कोड दर्ज करें" style="width:100%; padding:12px; margin:10px 0; border-radius:12px; background:rgba(0,0,0,0.6); border:2px solid #10b981; color:#fff; font-family:'Orbitron', sans-serif; font-size:14px; text-align:center; font-weight:bold; outline:none;">
+        <button class="btn-3d btn-cyan" onclick="alert('रूम कोड तैयार है! अपने दोस्त को भेजें: CP-' + Math.floor(1000 + Math.random()*9000))">रूम बनाएं / शेयर करें</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. EQUIPMENT SCREEN -->
+  <div id="equipment-screen" class="screen hidden">
+    <div class="top-bar">
+      <div style="font-family:'Orbitron', sans-serif; font-weight:900; font-size:16px; color:#34d399; letter-spacing:1px;">इक्विपमेंट्स</div>
+      <div class="coin-badge-box"><span class="coin-3d-badge"></span><span class="sync-coins">1200</span></div>
+    </div>
+    <div class="main-container">
+      <div class="sub-tabs">
+        <button class="sub-tab-btn active" id="tab-eq-pucks" onclick="switchEquipmentTab('pucks')">गोटियाँ (30)</button>
+        <button class="sub-tab-btn" id="tab-eq-strikers" onclick="switchEquipmentTab('strikers')">स्ट्राइकर (30)</button>
+        <button class="sub-tab-btn" id="tab-eq-powers" onclick="switchEquipmentTab('powers')">पावर्स (30)</button>
+        <button class="sub-tab-btn" id="tab-eq-vfx" onclick="switchEquipmentTab('vfx')">पॉकेट VFX</button>
+      </div>
+      <div class="catalog-grid" id="equipment-grid"></div>
+    </div>
+  </div>
+
+  <!-- 4. SHOP SCREEN -->
+  <div id="shop-screen" class="screen hidden">
+    <div class="top-bar">
+      <div style="font-family:'Orbitron', sans-serif; font-weight:900; font-size:16px; color:#fbbf24; letter-spacing:1px;">शॉप (मुफ़्त रिवॉर्ड्स)</div>
+      <div class="coin-badge-box"><span class="coin-3d-badge"></span><span class="sync-coins">1200</span></div>
+    </div>
+    <div class="main-container">
+      <div class="card-modal">
+        <div class="title-3d-gold" style="font-size:18px;">मुफ़्त सिक्के (Ads)</div>
+        <div class="text-3d-sub" style="margin-bottom:12px;">छोटा वीडियो देखें और तुरंत 300 सिक्के पाएं</div>
+        <button class="btn-3d btn-ad-3d" style="font-size:13px; padding:14px; width:100%;" onclick="watchAdForFreeCoins()">
+          📺 वीडियो देखें (+250 Coins)
+        </button>
+      </div>
+
+      <div class="card-modal" style="text-align:left;">
+        <div style="font-family:'Orbitron', sans-serif; font-size:13px; font-weight:900; color:#fbbf24; margin-bottom:10px;">
+          🎁 मुफ़्त बोनस बॉक्स
+        </div>
+        <div class="arena-row">
+          <div>
+            <div style="font-weight:900; font-size:14px; color:#fff;">डेली लकी बोनस</div>
+            <div style="font-size:11px; font-weight:700; color:#34d399;">+500 सिक्के मुफ़्त</div>
+          </div>
+          <button class="btn-3d btn-gold" style="width:auto; padding:6px 16px; margin-top:0;" onclick="claimDailyReward()">क्लेम करें</button>
+        </div>
+        <div class="arena-row">
+          <div>
+            <div style="font-weight:900; font-size:14px; color:#fff;">हर घंटे का सरप्राइज</div>
+            <div style="font-size:11px; font-weight:700; color:#38bdf8;">+150 सिक्के मुफ़्त</div>
+          </div>
+          <button class="btn-3d btn-cyan" style="width:auto; padding:6px 16px; margin-top:0;" onclick="claimHourlyReward()">क्लेम करें</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME SCREEN WITH LARGE PUCK INDICATORS -->
+  <div id="game-screen" class="screen hidden">
+    <div class="game-top-bar">
+      <button class="btn-3d btn-back-3d" onclick="quitToHome()">
+        <span>◀</span> <span>होम</span>
+      </button>
+      <div class="coin-badge-box">
+        <span class="coin-3d-badge"></span>
+        <span class="sync-coins">1200</span>
+      </div>
+    </div>
+
+    <!-- HUD PANEL -->
+    <div id="hud-panel">
+      <!-- Player 1 -->
+      <div id="p1-box" class="player-box turn-active">
+        <div class="avatar-wrapper">
+          <span id="p1-avatar" style="font-size:26px;">🤠</span>
+        </div>
+        <div class="large-puck-indicator puck-white-large" title="आपकी गोटी: सफ़ेद"></div>
+        <div>
+          <div id="p1-name" style="font-weight:900; font-size:12px;">You</div>
+          <div style="font-size:11px; font-weight:800; color:#34d399;">बाकी: <span id="p1-left" style="font-family:'Orbitron';">9</span></div>
+        </div>
+      </div>
+
+      <div style="text-align:center;">
+        <div style="font-family:'Orbitron', sans-serif; font-size:11px; color:#fbbf24; font-weight:900; letter-spacing:1px;">
+          POT: <span id="table-pot">200</span>
+        </div>
+        <div id="queen-indicator" style="font-family:'Orbitron', sans-serif; font-size:9px; font-weight:900; color:#ef4444; margin-top:2px;">
+          ONLINE MATCH
+        </div>
+      </div>
+
+      <!-- Player 2 -->
+      <div id="p2-box" class="player-box">
+        <div style="text-align:right;">
+          <div id="p2-name" style="font-weight:900; font-size:12px;">उस्ताद बॉट</div>
+          <div style="font-size:11px; font-weight:800; color:#ff2a5f;">बाकी: <span id="p2-left" style="font-family:'Orbitron';">9</span></div>
+        </div>
+        <div class="large-puck-indicator puck-black-large" title="विरोधी की गोटी: काली"></div>
+        <div class="avatar-wrapper">
+          <span id="p2-avatar" style="font-size:26px;">🤖</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="board-center-area">
+      <div id="board-container">
+        <canvas id="carromCanvas"></canvas>
+      </div>
+
+      <div class="slider-box">
+        <span style="font-family:'Orbitron', sans-serif; font-size:11px; color:#10b981; font-weight:900; letter-spacing:1px;">STRIKER:</span>
+        <input type="range" id="strikerSlider" min="0" max="100" value="50">
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAVIGATION DOCK -->
+  <div id="global-nav" class="bottom-nav">
+    <button class="nav-btn active" id="btn-nav-home" onclick="navTo('home')">
+      <span class="icon">🏠</span>
+      <span>Home</span>
+    </button>
+    <button class="nav-btn" id="btn-nav-friends" onclick="navTo('friends')">
+      <span class="icon">👥</span>
+      <span>Friends</span>
+    </button>
+    <button class="nav-btn" id="btn-nav-equipment" onclick="navTo('equipment')">
+      <span class="icon">🎒</span>
+      <span>Equipment</span>
+    </button>
+    <button class="nav-btn" id="btn-nav-shop" onclick="navTo('shop')">
+      <span class="icon">🛒</span>
+      <span>Shop</span>
+    </button>
+  </div>
+
+  <!-- WIN SCREEN -->
+  <div id="win-screen" class="screen hidden" style="z-index:99; background:rgba(2, 15, 10, 0.96); justify-content:center;">
+    <div class="card-modal" style="max-width:340px; border-color:#f59e0b;">
+      <div style="font-size:55px;">🏆</div>
+      <div class="title-3d-gold" id="win-title" style="font-size:20px; margin-top:8px;">🎉 आप जीत गए हैं! 🎉</div>
+      <p id="win-msg" style="font-size:13px; font-weight:700; color:#cbd5e1; margin:10px 0;">शानदार खेल!</p>
+      <div style="font-family:'Orbitron', sans-serif; font-size:22px; font-weight:900; color:#fbbf24; margin-bottom:14px;">
+        <span class="coin-3d-badge" style="width:24px; height:24px;"></span>
+        <span id="win-reward">+ 200</span>
+      </div>
+      <button class="btn-3d btn-gold" onclick="navTo('home')">होम पर जाएं</button>
+    </div>
+  </div>
+
+  <script>
+    // --- ADMOB CONFIGURATION ---
+    const ADMOB_CONFIG = {
+      interstitialId: 'ca-app-pub-6302105448775587/1791739528',
+      rewardedId: 'ca-app-pub-6302105448775587/8722225362'
+    };
+
+    let isAdMobReady = false;
+    let pendingRewardCallback = null;
+
+    async function initAdMobEngine() {
+      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
+        try {
+          const { AdMob } = window.Capacitor.Plugins;
+          await AdMob.initialize({ requestTrackingAuthorization: true });
+          isAdMobReady = true;
+
+          // Rewarded Ad listeners
+          AdMob.addListener('onRewardedVideoAdReward', (reward) => {
+            if (pendingRewardCallback) {
+              pendingRewardCallback();
+              pendingRewardCallback = null;
+            }
+          });
+
+          AdMob.addListener('onRewardedVideoAdDismissed', () => {
+            prepareRewardedAd();
+          });
+
+          // Interstitial Ad listeners
+          AdMob.addListener('onInterstitialDismissed', () => {
+            prepareInterstitialAd();
+          });
+
+          // Preload first ads
+          prepareRewardedAd();
+          prepareInterstitialAd();
+        } catch (err) {
+          console.log('AdMob initialization error:', err);
+        }
+      }
+    }
+
+    async function prepareRewardedAd() {
+      if (!isAdMobReady) return;
+      try {
+        await window.Capacitor.Plugins.AdMob.prepareRewardVideoAd({
+          adId: ADMOB_CONFIG.rewardedId
+        });
+      } catch (e) {
+        console.log('Rewarded Ad prepare failed:', e);
+      }
+    }
+
+    async function prepareInterstitialAd() {
+      if (!isAdMobReady) return;
+      try {
+        await window.Capacitor.Plugins.AdMob.prepareInterstitial({
+          adId: ADMOB_CONFIG.interstitialId
+        });
+      } catch (e) {
+        console.log('Interstitial Ad prepare failed:', e);
+      }
+    }
+
+    async function showNativeRewardedAd(onSuccess) {
+      if (isAdMobReady) {
+        try {
+          pendingRewardCallback = onSuccess;
+          await window.Capacitor.Plugins.AdMob.showRewardVideoAd();
+        } catch (e) {
+          // अगर तुरंत रेडी न हो तो दोबारा लोड करके कॉल करें
+          try {
+            await prepareRewardedAd();
+            await window.Capacitor.Plugins.AdMob.showRewardVideoAd();
+          } catch (err) {
+            alert('विज्ञापन लोड हो रहा है, कृपया 2 सेकंड बाद पुनः प्रयास करें।');
+            pendingRewardCallback = null;
+          }
+        }
+      } else {
+        // ब्राउज़र टेस्टिंग फॉलबैक
+        setTimeout(() => {
+          onSuccess();
+        }, 1000);
+      }
+    }
+
+    async function showNativeInterstitialAd() {
+      if (isAdMobReady) {
+        try {
+          await window.Capacitor.Plugins.AdMob.showInterstitial();
+        } catch (e) {
+          try {
+            await prepareInterstitialAd();
+            await window.Capacitor.Plugins.AdMob.showInterstitial();
+          } catch (err) {
+            console.log('Interstitial show failed:', err);
+          }
+        }
+      }
+    }
+
+    // --- REWARDED ACTION BUTTON HANDLERS ---
+    function watchAdForFreeCoins() {
+      showNativeRewardedAd(() => {
+        user.coins += 250;
+        saveUserState();
+        alert("🎉 बधाई! +250 सिक्के आपके खाते में जुड़ गए।");
+      });
+    }
+
+    function watchAdToUnlock(category, itemId, itemName) {
+      showNativeRewardedAd(() => {
+        if (!user.inventory[category].includes(itemId)) {
+          user.inventory[category].push(itemId);
+        }
+        equipItem(category, itemId);
+        saveUserState();
+        alert(`🎉 बधाई! "${itemName}" मुफ़्त अनलॉक हो गया!`);
+      });
+    }
+
+    // --- SMART LOGO FALLBACK SYSTEM ---
+    function handleLogoFallback(imgElement) {
+      imgElement.onerror = null;
+      imgElement.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23381608'/><rect x='8' y='8' width='84' height='84' rx='14' fill='%23f4dcbc'/><circle cx='50' cy='50' r='18' fill='%23dc2626' stroke='%23ffd700' stroke-width='4'/><circle cx='50' cy='50' r='7' fill='%23ffd700'/><circle cx='18' cy='18' r='6' fill='%23111'/><circle cx='82' cy='18' r='6' fill='%23111'/><circle cx='18' cy='82' r='6' fill='%23111'/><circle cx='82' cy='82' r='6' fill='%23111'/></svg>";
+    }
+
+    // --- SPLASH / WELCOME SCREEN AUTO-TIMER ---
+    let welcomeTimer = null;
+    function initWelcomeSplash() {
+      welcomeTimer = setTimeout(() => {
+        dismissWelcomeScreen();
+      }, 1800);
+    }
+
+    function dismissWelcomeScreen() {
+      if (welcomeTimer) clearTimeout(welcomeTimer);
+      const splash = document.getElementById('welcome-screen');
+      if (splash) {
+        splash.style.opacity = '0';
+        splash.style.pointerEvents = 'none';
+        setTimeout(() => splash.classList.add('hidden'), 400);
+      }
+    }
+
+    // --- REAL AUDIO SYNTHESIS ENGINE ---
+    const AudioEngine = {
+      ctx: null,
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      },
+      playPuckCut(vol = 1, pitch = 1) {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc1 = this.ctx.createOscillator();
+        const gain1 = this.ctx.createGain();
+        osc1.type = 'triangle';
+        osc1.frequency.setValueAtTime(3200 * pitch, now);
+        osc1.frequency.exponentialRampToValueAtTime(1400 * pitch, now + 0.012);
+        gain1.gain.setValueAtTime(1.0 * vol, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.015);
+        osc1.connect(gain1);
+        gain1.connect(this.ctx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.016);
+
+        const osc2 = this.ctx.createOscillator();
+        const gain2 = this.ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(950 * pitch, now);
+        osc2.frequency.exponentialRampToValueAtTime(380 * pitch, now + 0.025);
+        gain2.gain.setValueAtTime(0.85 * vol, now);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.028);
+        osc2.connect(gain2);
+        gain2.connect(this.ctx.destination);
+        osc2.start(now);
+        osc2.stop(now + 0.03);
+      },
+      playPuckClusterClatter(intensity = 1) {
+        if (!this.ctx) return;
+        for (let i = 0; i < 4; i++) {
+          const delay = i * 0.016 + (Math.random() * 0.01);
+          setTimeout(() => this.playPuckCut(0.7 * intensity, 1 + i * 0.1), delay * 1000);
+        }
+      },
+      playPocketSound() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(260, now);
+        osc.frequency.exponentialRampToValueAtTime(80, now + 0.14);
+        gain.gain.setValueAtTime(0.75, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.15);
+      }
+    };
+
+    window.addEventListener('touchstart', () => AudioEngine.init(), { once: true });
+    window.addEventListener('mousedown', () => AudioEngine.init(), { once: true });
+
+    // --- 30 STRIKERS CATALOG ---
+    const STRIKER_NAMES = [
+      'टाइटन गोल्ड', 'इलेक्ट्रिक सायन', 'ग्रीन लेज़र', 'रूबी फ्लेम', 'ब्लैक होल', 'आइस ग्लैशियर',
+      'सन बर्न', 'डार्क मैटर', 'एमराल्ड प्रो', 'थंडर स्टॉर्म', 'वाइपर टॉक्सिक', 'प्लाज्मा कोर',
+      'गैलेक्सी स्टार', 'ओशन डीप', 'ब्लड मून', 'साइबरपंक नियॉन', 'गोल्डन ईगल', 'ड्रैगन वेंट',
+      'कॉस्मिक वॉयड', 'अल्फा टाइटन', 'फीनिक्स विंग्स', 'क्रिमसन फंग', 'शैडो हंटर', 'क्वांटम वेव',
+      'सोलारिस 3D', 'एबिसल डीप', 'मैग्मा रॉक', 'ऑरोरा बोरेलिस', 'प्रिज़्म लाइट', 'अल्टीमेट प्रो'
+    ];
+    const STRIKER_PALETTES = [
+      ['#ffffff','#ffeaa7','#fdcb6e','#e17055','#6c2c10','#10b981','#fbbf24'],
+      ['#ffffff','#cffafe','#38bdf8','#0284c7','#082f49','#00f7ff','#38bdf8'],
+      ['#ffffff','#d1fae5','#34d399','#059669','#064e3b','#10b981','#6ee7b7'],
+      ['#ffffff','#fecdd3','#f43f5e','#be123c','#4c0519','#f59e0b','#f43f5e'],
+      ['#e2e8f0','#94a3b8','#475569','#1e293b','#020617','#a855f7','#c084fc'],
+      ['#ffffff','#e0f2fe','#7dd3fc','#0369a1','#082f49','#38bdf8','#bae6fd'],
+      ['#ffffff','#fef08a','#facc15','#ca8a04','#713f12','#f97316','#fde047'],
+      ['#cbd5e1','#64748b','#334155','#0f172a','#020617','#ec4899','#f472b6'],
+      ['#ffffff','#a7f3d0','#34d399','#047857','#022c22','#059669','#6ee7b7'],
+      ['#ffffff','#fed7aa','#fb923c','#c2410c','#431407','#eab308','#fdba74'],
+      ['#ffffff','#d9f99d','#84cc16','#4d7c0f','#1a2e05','#22c55e','#bef264'],
+      ['#ffffff','#fbcfe8','#f472b6','#db2777','#500724','#ec4899','#f472b6'],
+      ['#ffffff','#e9d5ff','#c084fc','#7e22ce','#3b0764','#8b5cf6','#d8b4fe'],
+      ['#ffffff','#bae6fd','#38bdf8','#0369a1','#082f49','#0284c7','#7dd3fc'],
+      ['#ffffff','#fca5a5','#ef4444','#b91c1c','#450a0a','#dc2626','#f87171'],
+      ['#ffffff','#f5d0fe','#e879f9','#a21caf','#4a044e','#06b6d4','#22d3ee'],
+      ['#ffffff','#fef9c3','#fde047','#a16207','#422006','#eab308','#fde047'],
+      ['#ffffff','#ffedd5','#fb923c','#9a3412','#431407','#ea580c','#fed7aa'],
+      ['#f8fafc','#94a3b8','#1e293b','#0f172a','#000000','#6366f1','#818cf8'],
+      ['#ffffff','#bbf7d0','#4ade80','#15803d','#052e16','#16a34a','#86efac'],
+      ['#ffffff','#fee2e2','#f87171','#dc2626','#450a0a','#f59e0b','#fca5a5'],
+      ['#ffffff','#fda4af','#f43f5e','#9f1239','#4c0519','#e11d48','#fb7185'],
+      ['#e2e8f0','#64748b','#1e293b','#090d16','#000000','#10b981','#34d399'],
+      ['#ffffff','#c7d2fe','#818cf8','#4338ca','#1e1b4b','#3b82f6','#a5b4fc'],
+      ['#ffffff','#fef08a','#eab308','#854d0e','#422006','#d97706','#fde047'],
+      ['#ffffff','#a5f3fc','#06b6d4','#0e7490','#083344','#0891b2','#67e8f9'],
+      ['#ffffff','#ffedd5','#ea580c','#7c2d12','#2c0b02','#dc2626','#fb923c'],
+      ['#ffffff','#ccfbf1','#2dd4bf','#0f766e','#042f2e','#14b8a6','#5eead4'],
+      ['#ffffff','#f1f5f9','#94a3b8','#334155','#0f172a','#64748b','#cbd5e1'],
+      ['#ffffff','#fed7aa','#f97316','#9a3412','#3c1102','#e11d48','#ffd700']
+    ];
+
+    const STRIKER_CATALOG = STRIKER_NAMES.map((name, i) => {
+      const pal = STRIKER_PALETTES[i % STRIKER_PALETTES.length];
+      return {
+        id: `st_${i + 1}`,
+        name: `${name}`,
+        price: i === 0 ? 0 : 300 + i * 70,
+        colors: [pal[0], pal[1], pal[2], pal[3], pal[4]],
+        core: pal[5],
+        ring: pal[6]
+      };
+    });
+
+    // --- 30 PUCKS CATALOG ---
+    const PUCK_NAMES = [
+      'क्लासिक एक्रिलिक', 'ग्रीन लाइट नियॉन', 'ब्लू स्पार्क', 'रॉयल गोल्डन', 'क्रिस्टल डायमंड', 'एमराल्ड प्राइड',
+      'रूबी शाइन', 'ऑब्सीडियन नाइट', 'मूनस्टोन वाइट', 'सनबर्स्ट ऑरेंज', 'साइबर पर्पल', 'आइस मिंट',
+      'कोबाल्ट शील्ड', 'लावा मैग्मा', 'गैलेक्सी कॉस्मो', 'पर्ल मार्बल', 'रेट्रो वुड', 'टाइटन ब्रास',
+      'टॉक्सिक स्लाइम', 'ग्लिच साइबर', 'सिल्वर मून', 'रोज गोल्ड', 'डीप सी एक्वा', 'फ्लेमिंगो पिंक',
+      'नियॉन सनसेट', 'ग्रेनाइट रॉक', 'डार्क एबिस', 'स्टारडस्ट येलो', 'इलेक्ट्रिक लाइम', 'इंपीरियल जेड'
+    ];
+    const PUCK_PALETTES = [
+      { w: ['#fff','#f5efe6','#8c7d6b','#a39281'], b: ['#555','#2d3436','#050708','#111'], q: ['#ff7675','#d63031','#4a0000','#ffd700'] },
+      { w: ['#ecfdf5','#10b981','#064e3b','#34d399'], b: ['#374151','#111827','#030712','#059669'], q: ['#fde047','#eab308','#854d0e','#fff'] },
+      { w: ['#f0f9ff','#0ea5e9','#082f49','#38bdf8'], b: ['#1e293b','#0f172a','#020617','#0284c7'], q: ['#fb7185','#e11d48','#881337','#fef08a'] },
+      { w: ['#fffbeb','#f59e0b','#78350f','#fbbf24'], b: ['#292524','#1c1917','#0c0a09','#b45309'], q: ['#ff4d4d','#b91c1c','#450a0a','#ffd700'] },
+      { w: ['#ffffff','#cbd5e1','#64748b','#e2e8f0'], b: ['#334155','#0f172a','#020617','#475569'], q: ['#38bdf8','#0284c7','#082f49','#e0f2fe'] },
+      { w: ['#f0fdf4','#22c55e','#14532d','#4ade80'], b: ['#1e293b','#0f172a','#020617','#15803d'], q: ['#fbbf24','#d97706','#78350f','#fde68a'] }
+    ];
+
+    const PUCK_CATALOG = PUCK_NAMES.map((name, i) => {
+      const p = PUCK_PALETTES[i % PUCK_PALETTES.length];
+      return {
+        id: `pk_${i + 1}`,
+        name: `${name} 3D`,
+        price: i === 0 ? 0 : 250 + i * 65,
+        white: { base: p.w[0], mid: p.w[1], edge: p.w[2], core: p.w[3] },
+        black: { base: p.b[0], mid: p.b[1], edge: p.b[2], core: p.b[3] },
+        queen: { base: p.q[0], mid: p.q[1], edge: p.q[2], core: p.q[3] }
+      };
+    });
+
+    // --- 30 STRIKER POWERS / AURAS CATALOG ---
+    const POWER_NAMES = [
+      'एमराल्ड पल्स', 'इलेक्ट्रिक थंडर', 'सुपरनोवा गोल्ड', 'वॉयड ब्लैकहोल', 'ड्रैगन फ्लेम', 'प्लाज्मा स्टॉर्म',
+      'साइबर ग्रिड', 'क्रायो फ्रीज', 'सोलारिस फ्लेयर', 'टॉक्सिक वेव', 'क्वांटम फील्ड', 'गैलेक्टिक वॉर्टेक्स',
+      'रेडियंट स्टार', 'शैडो ऑरा', 'नेबुला डस्ट', 'क्रिमसन वेव', 'बायोहैज़र्ड', 'अल्फा बीम',
+      'मैग्मा पल्स', 'ऑरोरा लाइट', 'थंडर शॉक', 'होली Glow', 'डार्क मैटर रिंग', 'इन्फर्नो रिंग',
+      'टाइटन फोर्स', 'कॉस्मिक सर्ज', 'पल्स शील्ड', 'ओशन टाइड', 'प्रिज़मैटिक ऑरा', 'गॉड मोड ऑरा'
+    ];
+    const POWER_COLORS = [
+      '#10b981', '#00f7ff', '#fbbf24', '#c084fc', '#f43f5e', '#38bdf8',
+      '#22c55e', '#a5f3fc', '#f59e0b', '#84cc16', '#818cf8', '#e879f9',
+      '#facc15', '#64748b', '#d8b4fe', '#ef4444', '#a3e635', '#06b6d4',
+      '#ea580c', '#5eead4', '#3b82f6', '#fef08a', '#9333ea', '#dc2626',
+      '#14b8a6', '#f472b6', '#38bdf8', '#0284c7', '#f43f5e', '#ffd700'
+    ];
+    const POWER_STYLES = ['pulse_ring', 'lightning_arc', 'orbital_sparks', 'vortex_spin', 'double_gear', 'wave_burst'];
+
+    const POWER_CATALOG = POWER_NAMES.map((name, i) => {
+      return {
+        id: `pow_${i + 1}`,
+        name: `${name}`,
+        color: POWER_COLORS[i % POWER_COLORS.length],
+        style: POWER_STYLES[i % POWER_STYLES.length],
+        price: i === 0 ? 0 : 350 + i * 80
+      };
+    });
+
+    // --- VFX CATALOG ---
+    const VFX_CATALOG = [
+      { id: 'vfx_ring', name: 'ग्रीन लाइट वेव', price: 0, color: '#10b981', type: 'ring' },
+      { id: 'vfx_electric', name: 'बिजली थंडर रिंग्स', price: 600, color: '#00f7ff', type: 'electric' },
+      { id: 'vfx_gold_stars', name: 'गोल्डन स्टार बर्स्ट', price: 1000, color: '#fbbf24', type: 'stars' },
+      { id: 'vfx_vortex', name: 'ब्लैक होल वॉर्टेक्स', price: 1500, color: '#c084fc', type: 'vortex' }
+    ];
+
+    // --- USER INVENTORY & STATE ---
+    let user = {
+      name: 'खिलाड़ी 1',
+      emoji: '🤠',
+      coins: 1200,
+      equipped: {
+        striker: 'st_1',
+        puck: 'pk_1',
+        power: 'pow_1',
+        vfx: 'vfx_ring'
+      },
+      inventory: {
+        strikers: ['st_1'],
+        pucks: ['pk_1'],
+        powers: ['pow_1'],
+        vfx: ['vfx_ring']
+      }
+    };
+
+    function loadSavedUser() {
+      const data = localStorage.getItem('carrom_pro_state_v12');
+      if (data) user = JSON.parse(data);
+      if (!user.inventory.powers) user.inventory.powers = ['pow_1'];
+      if (!user.equipped.power) user.equipped.power = 'pow_1';
+      syncCoinDisplays();
+      document.getElementById('nav-name').innerText = user.name;
+      document.getElementById('nav-avatar').innerText = user.emoji;
+    }
+    function saveUserState() {
+      localStorage.setItem('carrom_pro_state_v12', JSON.stringify(user));
+      syncCoinDisplays();
+    }
+    function syncCoinDisplays() {
+      document.querySelectorAll('.sync-coins').forEach(el => el.innerText = user.coins);
+      document.getElementById('home-coins').innerText = user.coins;
+    }
+
+    // --- NAVIGATION ---
+    function navTo(screen) {
+      document.getElementById('home-screen').classList.add('hidden');
+      document.getElementById('friends-screen').classList.add('hidden');
+      document.getElementById('equipment-screen').classList.add('hidden');
+      document.getElementById('shop-screen').classList.add('hidden');
+      document.getElementById('game-screen').classList.add('hidden');
+      document.getElementById('win-screen').classList.add('hidden');
+      document.getElementById('global-nav').classList.remove('hidden');
+
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+      if (screen === 'home') {
+        document.getElementById('home-screen').classList.remove('hidden');
+        document.getElementById('btn-nav-home').classList.add('active');
+      } else if (screen === 'friends') {
+        document.getElementById('friends-screen').classList.remove('hidden');
+        document.getElementById('btn-nav-friends').classList.add('active');
+      } else if (screen === 'equipment') {
+        document.getElementById('equipment-screen').classList.remove('hidden');
+        document.getElementById('btn-nav-equipment').classList.add('active');
+        renderEquipmentTab();
+      } else if (screen === 'shop') {
+        document.getElementById('shop-screen').classList.remove('hidden');
+        document.getElementById('btn-nav-shop').classList.add('active');
+      }
+    }
+
+    // --- 4-SUB TABS RENDERER ---
+    let currentEqTab = 'pucks';
+
+    function switchEquipmentTab(tab) {
+      currentEqTab = tab;
+      document.getElementById('tab-eq-pucks').className = 'sub-tab-btn' + (tab === 'pucks' ? ' active' : '');
+      document.getElementById('tab-eq-strikers').className = 'sub-tab-btn' + (tab === 'strikers' ? ' active' : '');
+      document.getElementById('tab-eq-powers').className = 'sub-tab-btn' + (tab === 'powers' ? ' active' : '');
+      document.getElementById('tab-eq-vfx').className = 'sub-tab-btn' + (tab === 'vfx' ? ' active' : '');
+      renderEquipmentTab();
+    }
+
+    function renderEquipmentTab() {
+      const container = document.getElementById('equipment-grid');
+      container.innerHTML = '';
+
+      let catalog = [];
+      let inventoryList = [];
+      let equippedId = '';
+
+      if (currentEqTab === 'pucks') {
+        catalog = PUCK_CATALOG;
+        inventoryList = user.inventory.pucks;
+        equippedId = user.equipped.puck;
+      } else if (currentEqTab === 'strikers') {
+        catalog = STRIKER_CATALOG;
+        inventoryList = user.inventory.strikers;
+        equippedId = user.equipped.striker;
+      } else if (currentEqTab === 'powers') {
+        catalog = POWER_CATALOG;
+        inventoryList = user.inventory.powers;
+        equippedId = user.equipped.power;
+      } else {
+        catalog = VFX_CATALOG;
+        inventoryList = user.inventory.vfx;
+        equippedId = user.equipped.vfx;
+      }
+
+      catalog.forEach(item => {
+        const isOwned = inventoryList.includes(item.id);
+        const isEquipped = equippedId === item.id;
+        const card = document.createElement('div');
+        card.className = `catalog-card ${isOwned ? 'owned' : ''} ${isEquipped ? 'equipped' : ''}`;
+
+        let previewHtml = '';
+        if (currentEqTab === 'strikers') {
+          previewHtml = `<div style="width:40px; height:40px; border-radius:50%; background:radial-gradient(circle at 35% 35%, ${item.colors[0]}, ${item.colors[2]}, ${item.colors[4]}); border:2.5px solid ${item.ring}; box-shadow:0 0 14px ${item.core}; margin:6px 0;"></div>`;
+        } else if (currentEqTab === 'pucks') {
+          previewHtml = `
+            <div style="display:flex; gap:5px; margin:8px 0;">
+              <div style="width:18px; height:18px; border-radius:50%; background:radial-gradient(circle at 35% 35%, ${item.white.base}, ${item.white.mid}, ${item.white.edge}); border:1px solid #fff; box-shadow:0 2px 5px rgba(0,0,0,0.7);"></div>
+              <div style="width:18px; height:18px; border-radius:50%; background:radial-gradient(circle at 35% 35%, ${item.black.base}, ${item.black.mid}, ${item.black.edge}); border:1px solid #444; box-shadow:0 2px 5px rgba(0,0,0,0.7);"></div>
+              <div style="width:18px; height:18px; border-radius:50%; background:radial-gradient(circle at 35% 35%, ${item.queen.base}, ${item.queen.mid}, ${item.queen.edge}); border:1.5px solid #fbbf24; box-shadow:0 0 8px #f59e0b;"></div>
+            </div>`;
+        } else if (currentEqTab === 'powers') {
+          previewHtml = `
+            <div style="position:relative; width:44px; height:44px; display:flex; align-items:center; justify-content:center; margin:5px 0;">
+              <div style="position:absolute; width:40px; height:40px; border-radius:50%; border:2px dashed ${item.color}; box-shadow:0 0 12px ${item.color};"></div>
+              <div style="width:18px; height:18px; border-radius:50%; background:${item.color}; box-shadow:0 0 8px ${item.color};"></div>
+            </div>`;
+        } else {
+          previewHtml = `<div style="font-size:24px; margin:6px 0; text-shadow:0 0 14px ${item.color};">✨</div>`;
+        }
+
+        card.innerHTML = `
+          ${isEquipped ? '<div class="equipped-badge">EQUIPPED</div>' : ''}
+          ${previewHtml}
+          <div style="font-size:11px; font-weight:900; margin-bottom:4px; text-transform:uppercase; text-align:center;">${item.name}</div>
+          <div style="width:100%; margin-top:auto;">
+            ${isEquipped ? `
+              <div style="font-size:11px; color:#34d399; font-weight:900; text-align:center; margin-top:6px;">उपयोग में है</div>
+            ` : isOwned ? `
+              <button class="btn-3d btn-gold" style="padding:6px; font-size:10px; margin-top:4px;" onclick="equipItem('${currentEqTab}', '${item.id}')">उपयोग करें</button>
+            ` : `
+              <button class="btn-3d btn-gold" style="padding:6px; font-size:10px; margin-top:4px;" onclick="buyItemWithCoins('${currentEqTab}', '${item.id}', ${item.price})">
+                <span class="coin-3d-badge"></span> ${item.price}
+              </button>
+              <button class="btn-3d btn-ad-3d" style="width:100%; margin-top:4px; padding:6px; font-size:10px;" onclick="watchAdToUnlock('${currentEqTab}', '${item.id}', '${item.name}')">
+                📺 फ्री अनलॉक
+              </button>
+            `}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function equipItem(category, itemId) {
+      if (category === 'pucks') user.equipped.puck = itemId;
+      if (category === 'strikers') user.equipped.striker = itemId;
+      if (category === 'powers') user.equipped.power = itemId;
+      if (category === 'vfx') user.equipped.vfx = itemId;
+      saveUserState();
+      renderEquipmentTab();
+    }
+
+    function buyItemWithCoins(category, itemId, price) {
+      if (user.coins < price) {
+        alert("पर्याप्त सिक्के नहीं हैं! विज्ञापन देखें या शॉप से मुफ़्त सिक्के क्लेम करें।");
+        return;
+      }
+      user.coins -= price;
+      user.inventory[category].push(itemId);
+      equipItem(category, itemId);
+    }
+
+    function claimDailyReward() {
+      user.coins += 500;
+      saveUserState();
+      alert("🎉 शानदार! आपका डेली बोनस +500 सिक्के खाते में जोड़ दिए गए हैं।");
+    }
+
+    function claimHourlyReward() {
+      user.coins += 150;
+      saveUserState();
+      alert("⚡ बधाई! +150 सिक्के मुफ़्त जोड़ दिए गए हैं।");
+    }
+
+    // --- GAME ENGINE, ONLINE & OFFLINE MATCHMAKING ---
+    let currentBet = 100;
+    let potCoins = 200;
+    let gameMode = 'classic';
+    let isPassAndPlay = false;
+    let isOnlineMode = true;
+    let currentTurn = 1;
+    let isGameRunning = false;
+    let activeVfxPockets = [];
+    let matchmakingTimer = null;
+
+    let pocketedThisTurn = [];
+    let strikerFouledThisTurn = false;
+
+    const ONLINE_OPPONENTS = [
+      { name: 'रोहित_प्रो_99', avatar: '🧔‍♂️' },
+      { name: 'कैरम_क्वीन_पूजा', avatar: '👩‍🦰' },
+      { name: 'समीर_मास्टर', avatar: '👳‍♂️' },
+      { name: 'डेविल_स्ट्राइकर', avatar: '🥷' },
+      { name: 'अली_अहमद_UAE', avatar: '👑' }
+    ];
+
+    function startMatchmakingFlow(mode, bet = 100) {
+      if (user.coins < bet) return alert("पर्याप्त सिक्के नहीं हैं! शॉप से मुफ़्त सिक्के क्लेम करें।");
+      gameMode = mode;
+      currentBet = bet;
+      potCoins = bet * 2;
+      isPassAndPlay = false;
+
+      const mmModal = document.getElementById('matchmaking-modal');
+      const oppAvatar = document.getElementById('mm-opp-avatar');
+      const oppName = document.getElementById('mm-opp-name');
+      const mmTitle = document.getElementById('mm-title');
+      
+      mmTitle.innerText = "SEARCHING ONLINE...";
+      oppAvatar.innerText = "❓";
+      oppName.innerText = "Searching...";
+      mmModal.classList.remove('hidden');
+
+      matchmakingTimer = setTimeout(() => {
+        const randomOpp = ONLINE_OPPONENTS[Math.floor(Math.random() * ONLINE_OPPONENTS.length)];
+        oppAvatar.innerText = randomOpp.avatar;
+        oppName.innerText = randomOpp.name;
+        mmTitle.innerText = "MATCH FOUND!";
+
+        setTimeout(() => {
+          mmModal.classList.add('hidden');
+          isOnlineMode = true;
+          user.coins -= currentBet;
+          saveUserState();
+          launchBoard(randomOpp.name, randomOpp.avatar, "LIVE ONLINE");
+        }, 900);
+      }, 2200);
+    }
+
+    function forceOfflinePlay() {
+      if (matchmakingTimer) clearTimeout(matchmakingTimer);
+      document.getElementById('matchmaking-modal').classList.add('hidden');
+      isOnlineMode = false;
+      user.coins -= currentBet;
+      saveUserState();
+      launchBoard("उस्ताद बॉट (Offline)", "🤖", "OFFLINE BOT");
+    }
+
+    function cancelMatchmaking() {
+      if (matchmakingTimer) clearTimeout(matchmakingTimer);
+      document.getElementById('matchmaking-modal').classList.add('hidden');
+    }
+
+    function startPassAndPlay() {
+      gameMode = 'classic';
+      isPassAndPlay = true;
+      isOnlineMode = false;
+      currentBet = 0;
+      potCoins = 0;
+      launchBoard("दोस्त (Player 2)", "🤠", "LOCAL PASS & PLAY");
+    }
+
+    function launchBoard(oppName, oppAvatar, modeText) {
+      document.getElementById('home-screen').classList.add('hidden');
+      document.getElementById('friends-screen').classList.add('hidden');
+      document.getElementById('equipment-screen').classList.add('hidden');
+      document.getElementById('shop-screen').classList.add('hidden');
+      document.getElementById('global-nav').classList.add('hidden');
+      document.getElementById('game-screen').classList.remove('hidden');
+
+      document.getElementById('p1-avatar').innerText = user.emoji;
+      document.getElementById('p1-name').innerText = user.name;
+      document.getElementById('p2-avatar').innerText = oppAvatar;
+      document.getElementById('p2-name').innerText = oppName;
+      document.getElementById('queen-indicator').innerText = modeText;
+      document.getElementById('table-pot').innerText = `${potCoins}`;
+
+      initBoard();
+    }
+
+    function quitToHome() {
+      isGameRunning = false;
+      navTo('home');
+    }
+
+    // --- CANVAS, PHYSICS & SCREEN-WIDE DRAG AIMING ---
+    const canvas = document.getElementById('carromCanvas');
+    const ctx = canvas.getContext('2d');
+    const overlayCanvas = document.getElementById('cueOverlayCanvas');
+    const oCtx = overlayCanvas.getContext('2d');
+    const slider = document.getElementById('strikerSlider');
+
+    function resizeOverlays() {
+      overlayCanvas.width = window.innerWidth;
+      overlayCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeOverlays);
+    resizeOverlays();
+
+    const SIZE = Math.min(window.innerWidth - 24, 400);
+    canvas.width = SIZE;
+    canvas.height = SIZE;
+
+    const FRICTION = 0.984;
+    const POCKET_RADIUS = SIZE * 0.076;
+    const pockets = [
+      { x: POCKET_RADIUS + 7, y: POCKET_RADIUS + 7 },
+      { x: SIZE - POCKET_RADIUS - 7, y: POCKET_RADIUS + 7 },
+      { x: POCKET_RADIUS + 7, y: SIZE - POCKET_RADIUS - 7 },
+      { x: SIZE - POCKET_RADIUS - 7, y: SIZE - POCKET_RADIUS - 7 }
+    ];
+
+    let striker = { x: SIZE/2, y: SIZE*0.81, r: SIZE*0.05, vx: 0, vy: 0, inHand: true };
+    let pucks = [];
+    let isAiming = false;
+    let dragOrigin = { x: 0, y: 0 };
+    let dragCurrent = { x: 0, y: 0 };
+    let tickCount = 0;
+    let cueAnimation = { active: false, pullDistance: 0, angle: 0, force: 0, snapProgress: 0 };
+
+    function initBoard() {
+      pucks = [];
+      currentTurn = 1;
+      isGameRunning = true;
+      activeVfxPockets = [];
+      pocketedThisTurn = [];
+      strikerFouledThisTurn = false;
+      const center = { x: SIZE/2, y: SIZE/2 };
+      const pr = SIZE * 0.036;
+
+      // रानी (Queen)
+      pucks.push({ x: center.x, y: center.y, r: pr, vx: 0, vy: 0, type: 'queen', inPocket: false });
+
+      for (let i = 0; i < 6; i++) {
+        let ang = (i * Math.PI * 2) / 6;
+        let d = pr * 2.05;
+        pucks.push({ x: center.x + Math.cos(ang) * d, y: center.y + Math.sin(ang) * d, r: pr, vx: 0, vy: 0, type: i % 2 === 0 ? 'white' : 'black', inPocket: false });
+      }
+      for (let i = 0; i < 12; i++) {
+        let ang = (i * Math.PI * 2) / 12 + Math.PI / 12;
+        let d = pr * 4.08;
+        pucks.push({ x: center.x + Math.cos(ang) * d, y: center.y + Math.sin(ang) * d, r: pr, vx: 0, vy: 0, type: i % 2 === 0 ? 'black' : 'white', inPocket: false });
+      }
+
+      resetStriker();
+      updatePuckCounts();
+    }
+
+    function resetStriker() {
+      striker.vx = 0;
+      striker.vy = 0;
+      striker.inHand = true;
+      striker.y = currentTurn === 1 ? SIZE * 0.81 : SIZE * 0.19;
+      slider.value = 50;
+      updateStrikerX();
+      updateTurnHUD();
+      cueAnimation.active = false;
+      isAiming = false;
+      pocketedThisTurn = [];
+      strikerFouledThisTurn = false;
+
+      if (!isPassAndPlay && currentTurn === 2 && isGameRunning) {
+        setTimeout(playAITurn, 800);
+      }
+    }
+
+    function updateStrikerX() {
+      const minX = SIZE * 0.24;
+      const maxX = SIZE * 0.76;
+      striker.x = minX + (slider.value / 100) * (maxX - minX);
+    }
+    slider.addEventListener('input', () => {
+      if (striker.inHand && !cueAnimation.active) updateStrikerX();
+    });
+
+    canvas.addEventListener('touchstart', (e) => {
+      AudioEngine.init();
+      if (!striker.inHand || (!isPassAndPlay && currentTurn === 2) || !isGameRunning || cueAnimation.active) return;
+      const rect = canvas.getBoundingClientRect();
+      const tx = e.touches[0].clientX - rect.left;
+      const ty = e.touches[0].clientY - rect.top;
+      isAiming = true;
+      dragOrigin = { x: tx, y: ty };
+      dragCurrent = { x: tx, y: ty };
+    });
+
+    canvas.addEventListener('touchmove', (e) => {
+      if (!isAiming) return;
+      const rect = canvas.getBoundingClientRect();
+      const tx = e.touches[0].clientX - rect.left;
+      const ty = e.touches[0].clientY - rect.top;
+      dragCurrent = { x: tx, y: ty };
+    });
+
+    canvas.addEventListener('touchend', () => {
+      if (!isAiming) return;
+      isAiming = false;
+      let dx = dragOrigin.x - dragCurrent.x;
+      let dy = dragOrigin.y - dragCurrent.y;
+      let dist = Math.hypot(dx, dy);
+      let force = Math.min(dist * 0.18, 18);
+      let angle = Math.atan2(dy, dx);
+
+      if (force > 1.8) {
+        cueAnimation.active = true;
+        cueAnimation.pullDistance = Math.min(dist * 0.85, 95);
+        cueAnimation.angle = angle;
+        cueAnimation.force = force;
+        cueAnimation.snapProgress = 0;
+      }
+    });
+
+    function playAITurn() {
+      if (!isGameRunning || currentTurn !== 2) return;
+      const botPucksLeft = pucks.filter(p => !p.inPocket && p.type === 'black').length;
+      let active = [];
+
+      if (botPucksLeft === 0) {
+        active = pucks.filter(p => !p.inPocket && p.type === 'queen');
+      } else {
+        active = pucks.filter(p => !p.inPocket && p.type === 'black');
+      }
+
+      if (active.length === 0) {
+        active = pucks.filter(p => !p.inPocket);
+      }
+      if (active.length === 0) return;
+
+      const target = active[Math.floor(Math.random() * active.length)];
+      slider.value = Math.floor(Math.random() * 60) + 20;
+      updateStrikerX();
+
+      let dx = target.x - striker.x;
+      let dy = target.y - striker.y;
+      let angle = Math.atan2(dy, dx) + (Math.random() - 0.5) * 0.04;
+
+      setTimeout(() => {
+        if (!isGameRunning) return;
+        cueAnimation.active = true;
+        cueAnimation.pullDistance = 65;
+        cueAnimation.angle = angle;
+        cueAnimation.force = 13 + Math.random() * 3;
+        cueAnimation.snapProgress = 0;
+      }, 650);
+    }
+
+    function triggerPocketVfx(pocket) {
+      const vfxId = user.equipped.vfx;
+      const vfxObj = VFX_CATALOG.find(v => v.id === vfxId) || VFX_CATALOG[0];
+      activeVfxPockets.push({
+        x: pocket.x,
+        y: pocket.y,
+        color: vfxObj.color,
+        type: vfxObj.type,
+        progress: 0
+      });
+    }
+
+    function showBannerMessage(msg, duration = 1400) {
+      const banner = document.getElementById('foul-banner');
+      banner.innerText = msg;
+      banner.classList.add('show');
+      setTimeout(() => banner.classList.remove('show'), duration);
+    }
+
+    function placePuckNearCenter(puckObj) {
+      const cx = SIZE / 2;
+      const cy = SIZE / 2;
+      let placed = false;
+      let offset = 0;
+      let step = puckObj.r * 2.2;
+
+      while (!placed && offset < SIZE * 0.35) {
+        for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 4) {
+          let testX = cx + Math.cos(angle) * offset;
+          let testY = cy + Math.sin(angle) * offset;
+
+          let overlap = pucks.some(p => !p.inPocket && p !== puckObj && Math.hypot(p.x - testX, p.y - testY) < (p.r + puckObj.r + 2));
+          if (!overlap) {
+            puckObj.x = testX;
+            puckObj.y = testY;
+            puckObj.vx = 0;
+            puckObj.vy = 0;
+            puckObj.inPocket = false;
+            placed = true;
+            break;
+          }
+        }
+        offset += step;
+      }
+      if (!placed) {
+        puckObj.x = cx;
+        puckObj.y = cy;
+        puckObj.vx = 0;
+        puckObj.vy = 0;
+        puckObj.inPocket = false;
+      }
+    }
+
+    function updatePhysics() {
+      if (!isGameRunning) return;
+      if (cueAnimation.active) {
+        cueAnimation.snapProgress += 0.28;
+        if (cueAnimation.snapProgress >= 1) {
+          cueAnimation.active = false;
+          striker.vx = Math.cos(cueAnimation.angle) * cueAnimation.force;
+          striker.vy = Math.sin(cueAnimation.angle) * cueAnimation.force;
+          striker.inHand = false;
+          AudioEngine.playPuckCut(0.75, 1.25);
+        }
+        return;
+      }
+
+      let isMoving = false;
+      const all = [striker, ...pucks.filter(p => !p.inPocket)];
+
+      all.forEach(obj => {
+        obj.x += obj.vx;
+        obj.y += obj.vy;
+        obj.vx *= FRICTION;
+        obj.vy *= FRICTION;
+
+        if (Math.abs(obj.vx) < 0.04) obj.vx = 0;
+        if (Math.abs(obj.vy) < 0.04) obj.vy = 0;
+        if (obj.vx !== 0 || obj.vy !== 0) isMoving = true;
+
+        const minB = obj.r + 20;
+        const maxB = SIZE - obj.r - 20;
+        if (obj.x < minB) { obj.x = minB; obj.vx *= -0.85; AudioEngine.playPuckCut(0.3, 0.85); }
+        if (obj.x > maxB) { obj.x = maxB; obj.vx *= -0.85; AudioEngine.playPuckCut(0.3, 0.85); }
+        if (obj.y < minB) { obj.y = minB; obj.vy *= -0.85; AudioEngine.playPuckCut(0.3, 0.85); }
+        if (obj.y > maxB) { obj.y = maxB; obj.vy *= -0.85; AudioEngine.playPuckCut(0.3, 0.85); }
+
+        pockets.forEach(p => {
+          if (Math.hypot(p.x - obj.x, p.y - obj.y) < POCKET_RADIUS) {
+            obj.vx = 0; obj.vy = 0;
+            AudioEngine.playPocketSound();
+            triggerPocketVfx(p);
+            if (obj === striker) {
+              obj.x = -200;
+              strikerFouledThisTurn = true;
+              showBannerMessage('FOUL! ⚠️');
+            } else {
+              obj.inPocket = true;
+              pocketedThisTurn.push(obj.type);
+              updatePuckCounts();
+            }
+          }
+        });
+      });
+
+      let collisionsThisFrame = 0;
+      for (let i = 0; i < all.length; i++) {
+        for (let j = i + 1; j < all.length; j++) {
+          let o1 = all[i], o2 = all[j];
+          let dx = o2.x - o1.x, dy = o2.y - o1.y;
+          let dist = Math.hypot(dx, dy);
+
+          if (dist < o1.r + o2.r && dist > 0) {
+            collisionsThisFrame++;
+            let overlap = (o1.r + o2.r) - dist;
+            let nx = dx / dist, ny = dy / dist;
+            o1.x -= nx * overlap * 0.5; o1.y -= ny * overlap * 0.5;
+            o2.x += nx * overlap * 0.5; o2.y += ny * overlap * 0.5;
+
+            let kx = o1.vx - o2.vx, ky = o1.vy - o2.vy;
+            let p = 2 * (nx * kx + ny * ky) / 2;
+            o1.vx -= p * nx * 0.96; o1.vy -= p * ny * 0.96;
+            o2.vx += p * nx * 0.96; o2.vy += p * ny * 0.96;
+          }
+        }
+      }
+
+      if (collisionsThisFrame >= 3) {
+        AudioEngine.playPuckClusterClatter(1.15);
+      } else if (collisionsThisFrame > 0) {
+        AudioEngine.playPuckCut(0.9, 1.05);
+      }
+
+      if (!isMoving && !striker.inHand) handleTurnEnd();
+    }
+
+    // --- QUEEN RULE + PENALTY LOGIC ---
+    function handleTurnEnd() {
+      const myColor = currentTurn === 1 ? 'white' : 'black';
+      const myPucksRemaining = pucks.filter(p => !p.inPocket && p.type === myColor).length;
+      const queenPuck = pucks.find(p => p.type === 'queen');
+      const isQueenPocketedThisTurn = pocketedThisTurn.includes('queen');
+
+      let queenFoulOccurred = false;
+
+      // अगर रानी गिरी और अपनी गोटियाँ बाकी हैं -> फाउल पेनल्टी
+      if (isQueenPocketedThisTurn && myPucksRemaining > 0) {
+        queenFoulOccurred = true;
+        placePuckNearCenter(queenPuck);
+
+        const pocketedPucksOfMine = pucks.filter(p => p.inPocket && p.type === myColor);
+        if (pocketedPucksOfMine.length > 0) {
+          placePuckNearCenter(pocketedPucksOfMine[0]);
+        }
+
+        showBannerMessage("रानी फाउल! (PENALTY)", 1800);
+        updatePuckCounts();
+      }
+
+      // जीत की जांच
+      const p1Left = pucks.filter(p => !p.inPocket && p.type === 'white').length;
+      const p2Left = pucks.filter(p => !p.inPocket && p.type === 'black').length;
+      const queenIsPocketed = queenPuck && queenPuck.inPocket;
+
+      if (p1Left === 0 && queenIsPocketed) {
+        celebrateWin(true);
+        return;
+      }
+      if (p2Left === 0 && queenIsPocketed) {
+        celebrateWin(false);
+        return;
+      }
+
+      // टर्न चेंज
+      let keepTurn = false;
+      if (strikerFouledThisTurn || queenFoulOccurred) {
+        keepTurn = false;
+      } else {
+        const hitOwnPuck = pocketedThisTurn.includes(myColor);
+        const validQueen = isQueenPocketedThisTurn && (myPucksRemaining === 0);
+        if (hitOwnPuck || validQueen) {
+          keepTurn = true;
+        }
+      }
+
+      if (!keepTurn) {
+        currentTurn = currentTurn === 1 ? 2 : 1;
+      }
+
+      resetStriker();
+    }
+
+    function updatePuckCounts() {
+      const p1Count = pucks.filter(p => !p.inPocket && p.type === 'white').length;
+      const p2Count = pucks.filter(p => !p.inPocket && p.type === 'black').length;
+      const queenLeft = pucks.filter(p => !p.inPocket && p.type === 'queen').length;
+
+      document.getElementById('p1-left').innerText = p1Count === 0 ? (queenLeft ? 'रानी लें!' : '0') : p1Count;
+      document.getElementById('p2-left').innerText = p2Count === 0 ? (queenLeft ? 'रानी लें!' : '0') : p2Count;
+    }
+
+    function updateTurnHUD() {
+      document.getElementById('p1-box').className = 'player-box' + (currentTurn === 1 ? ' turn-active' : '');
+      document.getElementById('p2-box').className = 'player-box' + (currentTurn === 2 ? ' bot-turn-active' : '');
+    }
+
+    // --- 3D CARROM BOARD RENDERING ---
+    function drawCarromBoard() {
+      let outerWood = ctx.createLinearGradient(0, 0, SIZE, SIZE);
+      outerWood.addColorStop(0, '#381608');
+      outerWood.addColorStop(0.3, '#542612');
+      outerWood.addColorStop(0.7, '#240d04');
+      outerWood.addColorStop(1, '#150602');
+      ctx.fillStyle = outerWood;
+      ctx.fillRect(0, 0, SIZE, SIZE);
+
+      ctx.strokeStyle = '#85421d';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(3, 3, SIZE - 6, SIZE - 6);
+
+      ctx.strokeStyle = 'rgba(0,0,0,0.7)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(18, 18, SIZE - 36, SIZE - 36);
+
+      let playMat = ctx.createRadialGradient(SIZE/2, SIZE/2, 15, SIZE/2, SIZE/2, SIZE * 0.68);
+      playMat.addColorStop(0, '#fff4e1');
+      playMat.addColorStop(0.5, '#f4dcbc');
+      playMat.addColorStop(0.85, '#e2be95');
+      playMat.addColorStop(1, '#c99f70');
+      ctx.fillStyle = playMat;
+      ctx.fillRect(20, 20, SIZE - 40, SIZE - 40);
+
+      let cushionShadow = ctx.createLinearGradient(20, 20, 20, 35);
+      cushionShadow.addColorStop(0, 'rgba(0,0,0,0.55)');
+      cushionShadow.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = cushionShadow;
+      ctx.fillRect(20, 20, SIZE - 40, 15);
+
+      // Center Mandala
+      ctx.save();
+      ctx.translate(SIZE/2, SIZE/2);
+      for (let i = 0; i < 8; i++) {
+        ctx.rotate((Math.PI * 2) / 8);
+        ctx.fillStyle = i % 2 === 0 ? '#b91c1c' : '#d97706';
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.quadraticCurveTo(8, SIZE * 0.08, 0, SIZE * 0.14);
+        ctx.quadraticCurveTo(-8, SIZE * 0.08, 0, 0);
+        ctx.fill();
+      }
+
+      ctx.strokeStyle = '#b45309';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.arc(0, 0, SIZE * 0.16, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.strokeStyle = '#d97706';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.arc(0, 0, SIZE * 0.05, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath();
+      ctx.arc(0, 0, SIZE * 0.024, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // Baselines
+      [SIZE * 0.81, SIZE * 0.19].forEach(y => {
+        ctx.strokeStyle = '#991b1b';
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.moveTo(SIZE * 0.24, y);
+        ctx.lineTo(SIZE * 0.76, y);
+        ctx.stroke();
+
+        ctx.strokeStyle = '#d97706';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(SIZE * 0.24, y + (y > SIZE/2 ? 3 : -3));
+        ctx.lineTo(SIZE * 0.76, y + (y > SIZE/2 ? 3 : -3));
+        ctx.stroke();
+
+        [SIZE * 0.24, SIZE * 0.76].forEach(x => {
+          let circleGrad = ctx.createRadialGradient(x, y, 2, x, y, SIZE * 0.038);
+          circleGrad.addColorStop(0, '#f87171');
+          circleGrad.addColorStop(0.7, '#dc2626');
+          circleGrad.addColorStop(1, '#991b1b');
+          ctx.fillStyle = circleGrad;
+          ctx.beginPath();
+          ctx.arc(x, y, SIZE * 0.038, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.strokeStyle = '#fbbf24';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        });
+      });
+
+      // Pockets
+      pockets.forEach(p => {
+        let brassRim = ctx.createRadialGradient(p.x, p.y, POCKET_RADIUS * 0.7, p.x, p.y, POCKET_RADIUS);
+        brassRim.addColorStop(0, '#111');
+        brassRim.addColorStop(0.75, '#222');
+        brassRim.addColorStop(0.9, '#d97706');
+        brassRim.addColorStop(1, '#78350f');
+        ctx.fillStyle = brassRim;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, POCKET_RADIUS, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#050505';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, POCKET_RADIUS * 0.72, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Pocket VFX
+      for (let i = activeVfxPockets.length - 1; i >= 0; i--) {
+        let v = activeVfxPockets[i];
+        v.progress += 0.04;
+        ctx.save();
+        ctx.strokeStyle = v.color;
+        ctx.shadowColor = v.color;
+        ctx.shadowBlur = 14;
+
+        if (v.type === 'ring') {
+          ctx.lineWidth = 3.5 * (1 - v.progress);
+          ctx.beginPath();
+          ctx.arc(v.x, v.y, POCKET_RADIUS * (1 + v.progress * 1.6), 0, Math.PI * 2);
+          ctx.stroke();
+        } else if (v.type === 'electric') {
+          ctx.lineWidth = 2;
+          for (let e = 0; e < 6; e++) {
+            let ea = (e * Math.PI * 2) / 6 + v.progress * 3;
+            let ed = POCKET_RADIUS * (1 + v.progress * 1.4);
+            ctx.beginPath();
+            ctx.moveTo(v.x + Math.cos(ea)*POCKET_RADIUS*0.8, v.y + Math.sin(ea)*POCKET_RADIUS*0.8);
+            ctx.lineTo(v.x + Math.cos(ea)*ed, v.y + Math.sin(ea)*ed);
+            ctx.stroke();
+          }
+        } else if (v.type === 'stars') {
+          for (let s = 0; s < 6; s++) {
+            let a = (s * Math.PI * 2) / 6 + v.progress * 2;
+            let dist = POCKET_RADIUS * (0.8 + v.progress * 1.3);
+            ctx.fillStyle = v.color;
+            ctx.fillRect(v.x + Math.cos(a)*dist, v.y + Math.sin(a)*dist, 4.5, 4.5);
+          }
+        } else if (v.type === 'vortex') {
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.arc(v.x, v.y, POCKET_RADIUS * (1.8 - v.progress), v.progress * 8, v.progress * 8 + Math.PI);
+          ctx.stroke();
+        }
+        ctx.restore();
+
+        if (v.progress >= 1) activeVfxPockets.splice(i, 1);
+      }
+    }
+
+    // --- 3D PUCKS RENDERER ---
+    function drawUltraRealisticPuck(x, y, r, type) {
+      const puckSkin = PUCK_CATALOG.find(p => p.id === user.equipped.puck) || PUCK_CATALOG[0];
+      const pColor = type === 'queen' ? puckSkin.queen : (type === 'white' ? puckSkin.white : puckSkin.black);
+
+      ctx.save();
+      ctx.shadowColor = 'rgba(0,0,0,0.6)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetX = 3;
+      ctx.shadowOffsetY = 5;
+
+      let bodyGrad = ctx.createRadialGradient(x - r*0.35, y - r*0.35, r*0.08, x, y, r);
+      bodyGrad.addColorStop(0, pColor.base);
+      bodyGrad.addColorStop(0.3, pColor.mid);
+      bodyGrad.addColorStop(0.85, pColor.edge);
+      bodyGrad.addColorStop(1, '#050708');
+
+      ctx.fillStyle = bodyGrad;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.shadowColor = 'transparent';
+
+      ctx.strokeStyle = type === 'black' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.25)';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.arc(x, y, r * 0.76, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.strokeStyle = type === 'black' ? 'rgba(255,255,255,0.28)' : 'rgba(0,0,0,0.35)';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.arc(x, y, r * 0.44, 0, Math.PI * 2);
+      ctx.stroke();
+
+      let centerGrad = ctx.createRadialGradient(x, y, 0, x, y, r * 0.22);
+      centerGrad.addColorStop(0, '#ffffff');
+      centerGrad.addColorStop(0.5, pColor.core);
+      centerGrad.addColorStop(1, '#111');
+      ctx.fillStyle = centerGrad;
+      ctx.beginPath();
+      ctx.arc(x, y, r * 0.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+      ctx.beginPath();
+      ctx.ellipse(x - r*0.3, y - r*0.35, r*0.25, r*0.14, -Math.PI/4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // --- 3D ANIMATED STRIKER POWERS / AURA RENDERER ---
+    function drawStrikerPowerAura(x, y, r) {
+      const pow = POWER_CATALOG.find(p => p.id === user.equipped.power) || POWER_CATALOG[0];
+      const color = pow.color;
+      tickCount += 0.04;
+
+      ctx.save();
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 18;
+
+      if (pow.style === 'pulse_ring') {
+        let wave = r * (1.45 + Math.sin(tickCount * 3) * 0.12);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash([8, 6]);
+        ctx.beginPath();
+        ctx.arc(x, y, wave, tickCount, tickCount + Math.PI * 2);
+        ctx.stroke();
+
+        ctx.lineWidth = 1.2;
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        ctx.arc(x, y, r * 1.7, 0, Math.PI * 2);
+        ctx.stroke();
+      } else if (pow.style === 'lightning_arc') {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 4; i++) {
+          let a = tickCount * 2 + (i * Math.PI / 2);
+          ctx.beginPath();
+          ctx.arc(x, y, r * 1.5, a, a + 0.6);
+          ctx.stroke();
+        }
+      } else if (pow.style === 'orbital_sparks') {
+        for (let i = 0; i < 5; i++) {
+          let a = tickCount * 3 + (i * Math.PI * 2 / 5);
+          let ox = x + Math.cos(a) * (r * 1.6);
+          let oy = y + Math.sin(a) * (r * 1.6);
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.arc(ox, oy, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      } else if (pow.style === 'vortex_spin') {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.arc(x, y, r * 1.55, tickCount * 4, tickCount * 4 + Math.PI * 1.4);
+        ctx.stroke();
+      } else if (pow.style === 'double_gear') {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.arc(x, y, r * 1.4, -tickCount * 2, -tickCount * 2 + Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(x, y, r * 1.7, tickCount * 2, tickCount * 2 + Math.PI * 2);
+        ctx.stroke();
+      } else {
+        let wave = r * (1.3 + (Math.sin(tickCount * 4) + 1) * 0.25);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(x, y, wave, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
+    // --- 3D STRIKER RENDERER ---
+    function drawUltraRealisticStriker() {
+      const { x, y, r } = striker;
+      const sSkin = STRIKER_CATALOG.find(s => s.id === user.equipped.striker) || STRIKER_CATALOG[0];
+
+      if (striker.inHand && isGameRunning && !cueAnimation.active) {
+        drawStrikerPowerAura(x, y, r);
+      }
+
+      ctx.save();
+      ctx.shadowColor = 'rgba(0,0,0,0.65)';
+      ctx.shadowBlur = 12;
+      ctx.shadowOffsetX = 3;
+      ctx.shadowOffsetY = 6;
+
+      let stGrad = ctx.createRadialGradient(x - r*0.35, y - r*0.35, r*0.08, x, y, r);
+      stGrad.addColorStop(0, sSkin.colors[0]);
+      stGrad.addColorStop(0.2, sSkin.colors[1]);
+      stGrad.addColorStop(0.65, sSkin.colors[2]);
+      stGrad.addColorStop(0.9, sSkin.colors[3]);
+      stGrad.addColorStop(1, sSkin.colors[4]);
+
+      ctx.fillStyle = stGrad;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.shadowColor = 'transparent';
+      ctx.strokeStyle = sSkin.ring;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, r * 0.75, 0, Math.PI * 2);
+      ctx.stroke();
+
+      let core = ctx.createRadialGradient(x, y, 0, x, y, r * 0.25);
+      core.addColorStop(0, sSkin.core);
+      core.addColorStop(1, '#022c22');
+      ctx.fillStyle = core;
+      ctx.beginPath();
+      ctx.arc(x, y, r * 0.25, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(255,255,255,0.6)';
+      ctx.beginPath();
+      ctx.ellipse(x - r*0.32, y - r*0.35, r*0.3, r*0.16, -Math.PI/4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // --- 3D CUE STICK ---
+    function drawProCueStick(screenX, screenY, angle, pullDist) {
+      oCtx.save();
+      oCtx.translate(screenX, screenY);
+      oCtx.rotate(angle + Math.PI);
+
+      let cueLen = 220;
+      let startOffset = striker.r + pullDist;
+
+      oCtx.shadowColor = 'rgba(0,0,0,0.7)';
+      oCtx.shadowBlur = 14;
+      oCtx.shadowOffsetY = 8;
+
+      let shaftGrad = oCtx.createLinearGradient(startOffset, -4, startOffset + cueLen, 6);
+      shaftGrad.addColorStop(0, '#062016');
+      shaftGrad.addColorStop(0.3, '#104e38');
+      shaftGrad.addColorStop(0.7, '#083323');
+      shaftGrad.addColorStop(1, '#03140e');
+
+      oCtx.fillStyle = shaftGrad;
+      oCtx.beginPath();
+      oCtx.moveTo(startOffset, -3.5);
+      oCtx.lineTo(startOffset + cueLen, -7);
+      oCtx.lineTo(startOffset + cueLen, 7);
+      oCtx.lineTo(startOffset, 3.5);
+      oCtx.closePath();
+      oCtx.fill();
+
+      let gripStart = startOffset + cueLen * 0.55;
+      let gripLen = cueLen * 0.42;
+      let gripGrad = oCtx.createLinearGradient(gripStart, -6, gripStart + gripLen, 6);
+      gripGrad.addColorStop(0, '#854d0e');
+      gripGrad.addColorStop(0.5, '#ca8a04');
+      gripGrad.addColorStop(1, '#713f12');
+      oCtx.fillStyle = gripGrad;
+      oCtx.fillRect(gripStart, -6, gripLen, 12);
+
+      oCtx.fillStyle = '#10b981';
+      oCtx.shadowColor = '#10b981';
+      oCtx.shadowBlur = 12;
+      oCtx.beginPath();
+      oCtx.arc(startOffset, 0, 3.5, 0, Math.PI * 2);
+      oCtx.fill();
+
+      oCtx.restore();
+    }
+
+    function renderAimAndCueOverlay() {
+      oCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+
+      const boardRect = canvas.getBoundingClientRect();
+      const screenStrikerX = boardRect.left + striker.x;
+      const screenStrikerY = boardRect.top + striker.y;
+
+      if (isAiming && isGameRunning) {
+        let dx = dragOrigin.x - dragCurrent.x;
+        let dy = dragOrigin.y - dragCurrent.y;
+        let rawDist = Math.hypot(dx, dy);
+        let force = Math.min(rawDist * 0.18, 18);
+        let angle = Math.atan2(dy, dx);
+        let dirX = Math.cos(angle);
+        let dirY = Math.sin(angle);
+
+        let cx = striker.x, cy = striker.y;
+        let hitTarget = null, ghostPos = null;
+        for (let d = 0; d < SIZE * 0.85; d += 3) {
+          cx += dirX * 3;
+          cy += dirY * 3;
+          if (cx < striker.r + 20 || cx > SIZE - striker.r - 20 || cy < striker.r + 20 || cy > SIZE - striker.r - 20) {
+            ghostPos = { x: cx, y: cy };
+            break;
+          }
+          for (let p of pucks) {
+            if (!p.inPocket && Math.hypot(p.x - cx, p.y - cy) < (striker.r + p.r)) {
+              hitTarget = p;
+              ghostPos = { x: cx, y: cy };
+              break;
+            }
+          }
+          if (ghostPos) break;
+        }
+
+        ctx.save();
+        let beamColor = force > 12 ? '#ff2a5f' : '#10b981';
+        ctx.strokeStyle = beamColor;
+        ctx.shadowColor = beamColor;
+        ctx.shadowBlur = 16;
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.moveTo(striker.x, striker.y);
+        ctx.lineTo(cx, cy);
+        ctx.stroke();
+
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(striker.x, striker.y);
+        ctx.lineTo(cx, cy);
+        ctx.stroke();
+
+        if (ghostPos) {
+          ctx.strokeStyle = 'rgba(16, 185, 129, 0.9)';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([5, 5]);
+          ctx.beginPath();
+          ctx.arc(ghostPos.x, ghostPos.y, striker.r, 0, Math.PI * 2);
+          ctx.stroke();
+
+          if (hitTarget) {
+            let tDx = hitTarget.x - ghostPos.x;
+            let tDy = hitTarget.y - ghostPos.y;
+            let tDist = Math.hypot(tDx, tDy);
+            if (tDist > 0) {
+              ctx.strokeStyle = '#f1c40f';
+              ctx.shadowColor = '#f1c40f';
+              ctx.shadowBlur = 12;
+              ctx.setLineDash([]);
+              ctx.lineWidth = 2.5;
+              ctx.beginPath();
+              ctx.moveTo(hitTarget.x, hitTarget.y);
+              ctx.lineTo(hitTarget.x + (tDx/tDist)*50, hitTarget.y + (tDy/tDist)*50);
+              ctx.stroke();
+            }
+          }
+        }
+        ctx.restore();
+
+        let visualPull = Math.min(rawDist * 0.85, 95);
+        drawProCueStick(screenStrikerX, screenStrikerY, angle, visualPull);
+      }
+
+      if (cueAnimation.active) {
+        let currentPull = cueAnimation.pullDistance * (1 - cueAnimation.snapProgress);
+        drawProCueStick(screenStrikerX, screenStrikerY, cueAnimation.angle, currentPull);
+      }
+    }
+
+    function renderLoop() {
+      updatePhysics();
+      drawCarromBoard();
+      pucks.forEach(p => {
+        if (!p.inPocket) drawUltraRealisticPuck(p.x, p.y, p.r, p.type);
+      });
+      drawUltraRealisticStriker();
+      renderAimAndCueOverlay();
+      requestAnimationFrame(renderLoop);
+    }
+
+    // --- जीत पर INTERSTITIAL AD TRIGGER ---
+    function celebrateWin(isP1Winner) {
+      isGameRunning = false;
+      document.getElementById('win-screen').classList.remove('hidden');
+      if (isP1Winner) {
+        user.coins += potCoins;
+        saveUserState();
+        document.getElementById('win-title').innerText = "🎉 आप जीत गए! 🎉";
+        document.getElementById('win-reward').innerText = `+ ${potCoins}`;
+      } else {
+        document.getElementById('win-title').innerText = "😔 मैच समाप्त!";
+        document.getElementById('win-reward').innerText = `+ 0`;
+      }
+
+      // मैच पूरा होने के 700ms बाद Interstitial Ad चलेगा
+      setTimeout(() => {
+        showNativeInterstitialAd();
+      }, 700);
+    }
+
+    loadSavedUser();
+    initWelcomeSplash();
+    initAdMobEngine();
+    requestAnimationFrame(renderLoop);
+  </script>
+</body>
+</html>
