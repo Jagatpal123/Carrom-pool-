@@ -1,0 +1,58 @@
+name: Build APK and AAB
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Source Code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
+    - name: Setup Java JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Install NPM Packages
+      run: npm install
+
+    - name: Build Debug APK (Test Ads)
+      run: |
+        mkdir -p www
+        sed 's/window.IS_RELEASE_BUILD === true/false/g' index.html > www/index.html
+        cp logo.png www/ || true
+        npx cap add android || true
+        npx cap sync android
+        cd android
+        chmod +x gradlew
+        ./gradlew assembleDebug
+
+    - name: Build Release AAB (Real Ads for Play Store)
+      run: |
+        sed 's/window.IS_RELEASE_BUILD === true/true/g' index.html > www/index.html
+        npx cap sync android
+        cd android
+        ./gradlew bundleRelease
+
+    - name: Upload Test APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: Carrom-Test-APK
+        path: android/app/build/outputs/apk/debug/app-debug.apk
+
+    - name: Upload Release AAB
+      uses: actions/upload-artifact@v4
+      with:
+        name: Carrom-Release-AAB
+        path: android/app/build/outputs/bundle/release/app-release.aab
