@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Carrom Pool Pro 3D - Ultimate Online</title>
+  <title>Carrom Pool Pro 3D - Ultimate Edition</title>
   
   <!-- Firebase Compatibility Scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -50,7 +50,7 @@
     }
     .hidden { display: none !important; }
 
-    /* 3D WELCOME SPLASH SCREEN */
+    /* 0. 3D WELCOME SPLASH SCREEN */
     #welcome-screen {
       position: fixed;
       top: 0;
@@ -294,6 +294,7 @@
       text-shadow: 0 1px 2px rgba(0,0,0,0.7);
     }
 
+    /* 3D CARROM LOGO BADGE */
     .btn-carrom-badge {
       width: 32px;
       height: 32px;
@@ -358,7 +359,7 @@
       text-shadow: 0 1px 0 rgba(255,255,255,0.4);
     }
 
-    /* CATALOG GRIDS */
+    /* CATALOG GRIDS WITH TOUCH SCROLL */
     .catalog-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -454,6 +455,12 @@
       box-shadow: 0 0 18px rgba(255, 42, 95, 0.5), inset 0 1px 2px rgba(255,255,255,0.3);
     }
 
+    .avatar-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
     .large-puck-indicator {
       width: 24px;
       height: 24px;
@@ -462,6 +469,17 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.85), inset 0 2px 4px rgba(255,255,255,0.8);
       position: relative;
       flex-shrink: 0;
+    }
+    .large-puck-indicator::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,0.4);
     }
     .puck-white-large {
       background: radial-gradient(circle at 35% 30%, #ffffff 0%, #e2e8f0 45%, #94a3b8 80%, #475569 100%);
@@ -642,6 +660,10 @@
       color: #34d399;
       text-shadow: 0 0 10px rgba(52, 211, 153, 0.8);
     }
+    .nav-btn.active .icon {
+      transform: translateY(-4px) scale(1.18);
+      filter: drop-shadow(0 0 10px #10b981);
+    }
 
     #foul-banner {
       position: absolute;
@@ -653,8 +675,9 @@
       font-family: 'Orbitron', sans-serif;
       font-size: 15px;
       font-weight: 900;
+      letter-spacing: 1px;
       color: #fff;
-      box-shadow: 0 8px 30px rgba(239, 68, 68, 0.9);
+      box-shadow: 0 8px 30px rgba(239, 68, 68, 0.9), inset 0 2px 2px rgba(255,255,255,0.5);
       z-index: 50;
       transform: scale(0);
       transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -662,7 +685,7 @@
     }
     #foul-banner.show { transform: scale(1); }
 
-    /* MATCHMAKING RADAR */
+    /* ONLINE MATCHMAKING RADAR MODAL */
     #matchmaking-modal {
       position: fixed;
       top: 0;
@@ -687,7 +710,7 @@
       align-items: center;
       justify-content: center;
       margin: 20px 0;
-      box-shadow: 0 0 25px #10b981;
+      box-shadow: 0 0 25px #10b981, inset 0 0 25px rgba(16, 185, 129, 0.5);
     }
     .radar-sweep {
       position: absolute;
@@ -705,22 +728,23 @@
 </head>
 <body>
 
-  <!-- SPLASH SCREEN -->
+  <!-- 0. 3D WELCOME SPLASH SCREEN -->
   <div id="welcome-screen" onclick="dismissWelcomeScreen()">
     <div class="welcome-logo-box">
-      <img src="logo.png" class="welcome-logo-img" alt="Logo" onerror="handleLogoFallback(this)">
+      <img src="logo.png" class="welcome-logo-img" alt="Carrom Pool Logo" onerror="handleLogoFallback(this)">
     </div>
     <div class="welcome-text">WELCOME TO<br><span style="color:#10b981;">CARROM POOL PRO</span></div>
-    <div class="text-3d-sub" style="margin-top:8px;">Real Online Multiplayer...</div>
+    <div class="text-3d-sub" style="margin-top:8px;">Ready To Strike...</div>
     <div class="splash-loader-bar">
       <div class="splash-loader-fill"></div>
     </div>
+    <div style="font-size:10px; color:#94a3b8; margin-top:14px; letter-spacing:1px;">(स्क्रीन पर टैप करके तुरंत खोलें)</div>
   </div>
 
   <canvas id="cueOverlayCanvas"></canvas>
   <div id="foul-banner">FOUL! ⚠️</div>
 
-  <!-- MATCHMAKING MODAL -->
+  <!-- ONLINE MATCHMAKING MODAL -->
   <div id="matchmaking-modal" class="hidden">
     <div class="card-modal" style="max-width:330px;">
       <div class="title-3d-gold" style="font-size:18px;" id="mm-title">SEARCHING ONLINE...</div>
@@ -747,7 +771,7 @@
 
       <div style="display:flex; gap:8px; margin-top:10px;">
         <button class="btn-3d btn-cyan" style="flex:1; padding:10px; font-size:11px;" onclick="forceOfflinePlay()">
-          🤖 Play Offline
+          🤖 Play Offline (Bot)
         </button>
         <button class="btn-3d btn-ad-3d" style="background:#dc2626; flex:1; padding:10px; font-size:11px;" onclick="cancelMatchmaking()">
           रद्द करें
@@ -761,7 +785,7 @@
     <div class="top-bar">
       <div class="user-pill">
         <span id="nav-avatar" style="font-size:24px;">🤠</span>
-        <span id="nav-name" style="font-weight:900; font-size:13px;">Player</span>
+        <span id="nav-name" style="font-weight:900; font-size:13px; letter-spacing:0.5px;">Player</span>
       </div>
       <div class="coin-badge-box">
         <span class="coin-3d-badge"></span>
@@ -785,7 +809,7 @@
             <div class="btn-carrom-badge" style="border-color:#38bdf8;">
               <img src="logo.png" alt="Logo" onerror="handleLogoFallback(this)">
             </div>
-            <span>Disc Pool</span>
+            <span>Disc Pool Play</span>
           </button>
         </div>
 
@@ -795,7 +819,7 @@
       </div>
 
       <div class="card-modal" style="text-align:left;">
-        <div style="font-family:'Orbitron', sans-serif; font-size:13px; font-weight:900; color:#fbbf24; margin-bottom:10px;">
+        <div style="font-family:'Orbitron', sans-serif; font-size:13px; font-weight:900; color:#fbbf24; margin-bottom:10px; letter-spacing:1px;">
           ⚡ बैटल एरीना (TABLES)
         </div>
         <div class="arena-row">
@@ -803,14 +827,14 @@
             <div style="font-weight:900; font-size:14px; color:#fff;">मुंबई क्लब</div>
             <div style="font-size:11px; font-weight:700; color:#94a3b8;">एंट्री: 100 | पॉट: 200</div>
           </div>
-          <button class="btn-3d btn-gold" style="width:auto; padding:8px 16px; margin-top:0;" onclick="startMatchmakingFlow('classic', 100)">खेलें</button>
+          <button class="btn-3d btn-gold" style="width:auto; padding:8px 16px; margin-top:0; font-size:12px;" onclick="startMatchmakingFlow('classic', 100)">खेलें</button>
         </div>
         <div class="arena-row">
           <div>
             <div style="font-weight:900; font-size:14px; color:#fff;">दुबई रॉयल</div>
             <div style="font-size:11px; font-weight:700; color:#94a3b8;">एंट्री: 500 | पॉट: 1000</div>
           </div>
-          <button class="btn-3d btn-gold" style="width:auto; padding:8px 16px; margin-top:0;" onclick="startMatchmakingFlow('classic', 500)">खेलें</button>
+          <button class="btn-3d btn-gold" style="width:auto; padding:8px 16px; margin-top:0; font-size:12px;" onclick="startMatchmakingFlow('classic', 500)">खेलें</button>
         </div>
       </div>
     </div>
@@ -819,12 +843,12 @@
   <!-- 2. FRIENDS SCREEN (REAL ROOM CODES) -->
   <div id="friends-screen" class="screen hidden">
     <div class="top-bar">
-      <div style="font-family:'Orbitron', sans-serif; font-weight:900; font-size:16px; color:#34d399;">मित्र / FRIENDS</div>
+      <div style="font-family:'Orbitron', sans-serif; font-weight:900; font-size:16px; color:#34d399; letter-spacing:1px;">मित्र / FRIENDS</div>
       <div class="coin-badge-box"><span class="coin-3d-badge"></span><span class="sync-coins">1200</span></div>
     </div>
     <div class="main-container">
       <div class="card-modal">
-        <div class="title-3d-gold" style="font-size:18px;">प्राइवेट रूम बनाएं</div>
+        <div class="title-3d-gold" style="font-size:18px;">प्राइवेट ऑनलाइन रूम बनाएं</div>
         <div class="text-3d-sub" style="margin-bottom:12px;">रूम बनाकर अपने दोस्त को कोड WhatsApp पर भेजें</div>
         <button class="btn-3d btn-gold" onclick="createPrivateOnlineRoom()">नया रूम कोड बनाएं</button>
       </div>
@@ -837,16 +861,16 @@
 
       <div class="card-modal">
         <div class="title-3d-gold" style="font-size:18px;">पास एंड प्ले (1 vs 1)</div>
-        <div class="text-3d-sub" style="margin-bottom:12px;">एक ही फोन पर दोस्त के साथ ऑफलाइन खेलें</div>
+        <div class="text-3d-sub" style="margin-bottom:14px;">एक ही फोन पर दोस्त के साथ ऑफलाइन खेलें</div>
         <button class="btn-3d btn-ad-3d" style="width:100%;" onclick="startPassAndPlay()">2 प्लेयर्स ऑफलाइन खेलें</button>
       </div>
     </div>
   </div>
 
-  <!-- 3. EQUIPMENT SCREEN -->
+  <!-- 3. EQUIPMENT SCREEN (RESTORED 4 TABS) -->
   <div id="equipment-screen" class="screen hidden">
     <div class="top-bar">
-      <div style="font-family:'Orbitron', sans-serif; font-weight:900; font-size:16px; color:#34d399;">इक्विपमेंट्स</div>
+      <div style="font-family:'Orbitron', sans-serif; font-weight:900; font-size:16px; color:#34d399; letter-spacing:1px;">इक्विपमेंट्स</div>
       <div class="coin-badge-box"><span class="coin-3d-badge"></span><span class="sync-coins">1200</span></div>
     </div>
     <div class="main-container">
@@ -863,7 +887,7 @@
   <!-- 4. SHOP SCREEN -->
   <div id="shop-screen" class="screen hidden">
     <div class="top-bar">
-      <div style="font-family:'Orbitron', sans-serif; font-weight:900; font-size:16px; color:#fbbf24;">शॉप (मुफ़्त रिवॉर्ड्स)</div>
+      <div style="font-family:'Orbitron', sans-serif; font-weight:900; font-size:16px; color:#fbbf24; letter-spacing:1px;">शॉप (मुफ़्त रिवॉर्ड्स)</div>
       <div class="coin-badge-box"><span class="coin-3d-badge"></span><span class="sync-coins">1200</span></div>
     </div>
     <div class="main-container">
@@ -897,7 +921,7 @@
     </div>
   </div>
 
-  <!-- GAME SCREEN -->
+  <!-- GAME SCREEN WITH LARGE PUCK INDICATORS -->
   <div id="game-screen" class="screen hidden">
     <div class="game-top-bar">
       <button class="btn-3d btn-back-3d" onclick="quitToHome()">
@@ -914,32 +938,36 @@
     <div id="hud-panel">
       <!-- Player 1 -->
       <div id="p1-box" class="player-box turn-active">
-        <span id="p1-avatar" style="font-size:24px;">🤠</span>
-        <div class="large-puck-indicator puck-white-large"></div>
+        <div class="avatar-wrapper">
+          <span id="p1-avatar" style="font-size:24px;">🤠</span>
+        </div>
+        <div class="large-puck-indicator puck-white-large" title="आपकी गोटी: सफ़ेद"></div>
         <div>
           <div id="p1-name" style="font-weight:900; font-size:11px;">You</div>
-          <div style="font-size:10px; font-weight:800; color:#34d399;">बाकी: <span id="p1-left">9</span></div>
+          <div style="font-size:10px; font-weight:800; color:#34d399;">बाकी: <span id="p1-left" style="font-family:'Orbitron';">9</span></div>
         </div>
         <div id="p1-bubble" class="speech-bubble hidden"></div>
       </div>
 
       <div style="text-align:center;">
-        <div style="font-family:'Orbitron', sans-serif; font-size:11px; color:#fbbf24; font-weight:900;">
+        <div style="font-family:'Orbitron', sans-serif; font-size:11px; color:#fbbf24; font-weight:900; letter-spacing:1px;">
           POT: <span id="table-pot">200</span>
         </div>
-        <div id="match-type-indicator" style="font-family:'Orbitron', sans-serif; font-size:9px; font-weight:900; color:#ef4444; margin-top:2px;">
-          ONLINE
+        <div id="queen-indicator" style="font-family:'Orbitron', sans-serif; font-size:9px; font-weight:900; color:#ef4444; margin-top:2px;">
+          ONLINE MATCH
         </div>
       </div>
 
       <!-- Player 2 -->
       <div id="p2-box" class="player-box">
         <div style="text-align:right;">
-          <div id="p2-name" style="font-weight:900; font-size:11px;">Opponent</div>
-          <div style="font-size:10px; font-weight:800; color:#ff2a5f;">बाकी: <span id="p2-left">9</span></div>
+          <div id="p2-name" style="font-weight:900; font-size:11px;">उस्ताद बॉट</div>
+          <div style="font-size:10px; font-weight:800; color:#ff2a5f;">बाकी: <span id="p2-left" style="font-family:'Orbitron';">9</span></div>
         </div>
-        <div class="large-puck-indicator puck-black-large"></div>
-        <span id="p2-avatar" style="font-size:24px;">🤖</span>
+        <div class="large-puck-indicator puck-black-large" title="विरोधी की गोटी: काली"></div>
+        <div class="avatar-wrapper">
+          <span id="p2-avatar" style="font-size:24px;">🤖</span>
+        </div>
         <div id="p2-bubble" class="speech-bubble hidden"></div>
       </div>
     </div>
@@ -968,13 +996,13 @@
       </div>
 
       <div class="slider-box">
-        <span style="font-family:'Orbitron', sans-serif; font-size:11px; color:#10b981; font-weight:900;">STRIKER:</span>
+        <span style="font-family:'Orbitron', sans-serif; font-size:11px; color:#10b981; font-weight:900; letter-spacing:1px;">STRIKER:</span>
         <input type="range" id="strikerSlider" min="0" max="100" value="50">
       </div>
     </div>
   </div>
 
-  <!-- BOTTOM NAVIGATION -->
+  <!-- BOTTOM NAVIGATION DOCK -->
   <div id="global-nav" class="bottom-nav">
     <button class="nav-btn active" id="btn-nav-home" onclick="navTo('home')">
       <span class="icon">🏠</span>
@@ -1028,7 +1056,7 @@
     let myPlayerRole = 1; // 1 = Host/White, 2 = Guest/Black
     let isRealFirebaseMatch = false;
 
-    // --- ADMOB CONFIGURATION ---
+    // --- ADMOB CONFIGURATION: TEST vs REAL ADS ---
     const TEST_ADS = {
       interstitialId: 'ca-app-pub-3940256099942544/1033173712',
       rewardedId: 'ca-app-pub-3940256099942544/5224354917'
@@ -1118,7 +1146,7 @@
       });
     }
 
-    // --- HARDWARE BACK BUTTON LISTENER ---
+    // --- ANDROID HARDWARE BACK BUTTON LISTENER ---
     if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
       window.Capacitor.Plugins.App.addListener('backButton', () => {
         const winScreen = document.getElementById('win-screen');
@@ -1133,13 +1161,21 @@
       });
     }
 
-    // --- SMART LOGO FALLBACK ---
+    // --- SMART LOGO FALLBACK SYSTEM ---
     function handleLogoFallback(imgElement) {
       imgElement.onerror = null;
-      imgElement.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23381608'/><rect x='8' y='8' width='84' height='84' rx='14' fill='%23f4dcbc'/><circle cx='50' cy='50' r='18' fill='%23dc2626'/><circle cx='50' cy='50' r='7' fill='%23ffd700'/></svg>";
+      imgElement.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23381608'/><rect x='8' y='8' width='84' height='84' rx='14' fill='%23f4dcbc'/><circle cx='50' cy='50' r='18' fill='%23dc2626' stroke='%23ffd700' stroke-width='4'/><circle cx='50' cy='50' r='7' fill='%23ffd700'/><circle cx='18' cy='18' r='6' fill='%23111'/><circle cx='82' cy='18' r='6' fill='%23111'/><circle cx='18' cy='82' r='6' fill='%23111'/><circle cx='82' cy='82' r='6' fill='%23111'/></svg>";
+    }
+
+    let welcomeTimer = null;
+    function initWelcomeSplash() {
+      welcomeTimer = setTimeout(() => {
+        dismissWelcomeScreen();
+      }, 1800);
     }
 
     function dismissWelcomeScreen() {
+      if (welcomeTimer) clearTimeout(welcomeTimer);
       const splash = document.getElementById('welcome-screen');
       if (splash) {
         splash.style.opacity = '0';
@@ -1148,7 +1184,7 @@
       }
     }
 
-    // --- AUDIO ENGINE ---
+    // --- REAL AUDIO SYNTHESIS ENGINE ---
     const AudioEngine = {
       ctx: null,
       init() {
@@ -1161,17 +1197,36 @@
       playPuckCut(vol = 1, pitch = 1) {
         if (!this.ctx) return;
         const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(3200 * pitch, now);
-        osc.frequency.exponentialRampToValueAtTime(1400 * pitch, now + 0.012);
-        gain.gain.setValueAtTime(vol, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.015);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.016);
+        const osc1 = this.ctx.createOscillator();
+        const gain1 = this.ctx.createGain();
+        osc1.type = 'triangle';
+        osc1.frequency.setValueAtTime(3200 * pitch, now);
+        osc1.frequency.exponentialRampToValueAtTime(1400 * pitch, now + 0.012);
+        gain1.gain.setValueAtTime(1.0 * vol, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.015);
+        osc1.connect(gain1);
+        gain1.connect(this.ctx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.016);
+
+        const osc2 = this.ctx.createOscillator();
+        const gain2 = this.ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(950 * pitch, now);
+        osc2.frequency.exponentialRampToValueAtTime(380 * pitch, now + 0.025);
+        gain2.gain.setValueAtTime(0.85 * vol, now);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.028);
+        osc2.connect(gain2);
+        gain2.connect(this.ctx.destination);
+        osc2.start(now);
+        osc2.stop(now + 0.03);
+      },
+      playPuckClusterClatter(intensity = 1) {
+        if (!this.ctx) return;
+        for (let i = 0; i < 4; i++) {
+          const delay = i * 0.016 + (Math.random() * 0.01);
+          setTimeout(() => this.playPuckCut(0.7 * intensity, 1 + i * 0.1), delay * 1000);
+        }
       },
       playPocketSound() {
         if (!this.ctx) return;
@@ -1193,57 +1248,153 @@
     window.addEventListener('touchstart', () => AudioEngine.init(), { once: true });
     window.addEventListener('mousedown', () => AudioEngine.init(), { once: true });
 
-    // --- CATALOGS ---
-    const STRIKER_CATALOG = Array.from({length: 30}, (_, i) => ({
-      id: `st_${i+1}`,
-      name: `स्ट्राइकर ${i+1}`,
-      price: i === 0 ? 0 : 300 + i * 50,
-      colors: ['#ffffff', '#fdcb6e', '#e17055', '#6c2c10', '#10b981'],
-      core: '#fbbf24',
-      ring: '#ffffff'
-    }));
-
-    const PUCK_CATALOG = Array.from({length: 30}, (_, i) => ({
-      id: `pk_${i+1}`,
-      name: `गोटी सेट ${i+1}`,
-      price: i === 0 ? 0 : 250 + i * 40,
-      white: { base: '#fff', mid: '#e2e8f0', edge: '#94a3b8', core: '#fff' },
-      black: { base: '#475569', mid: '#1e293b', edge: '#0f172a', core: '#111' },
-      queen: { base: '#ef4444', mid: '#b91c1c', edge: '#450a0a', core: '#ffd700' }
-    }));
-
-    const POWER_CATALOG = Array.from({length: 30}, (_, i) => ({
-      id: `pow_${i+1}`,
-      name: `ऑरा पावर ${i+1}`,
-      color: ['#10b981', '#00f7ff', '#fbbf24', '#f43f5e', '#c084fc'][i % 5],
-      style: 'pulse_ring',
-      price: i === 0 ? 0 : 350 + i * 60
-    }));
-
-    const VFX_CATALOG = [
-      { id: 'vfx_ring', name: 'ग्रीन लाइट वेव', price: 0, color: '#10b981', type: 'ring' },
-      { id: 'vfx_electric', name: 'बिजली थंडर', price: 600, color: '#00f7ff', type: 'electric' },
-      { id: 'vfx_gold_stars', name: 'गोल्डन स्टार', price: 1000, color: '#fbbf24', type: 'stars' }
+    // --- FULL 30 STRIKERS CATALOG (ORIGINAL) ---
+    const STRIKER_NAMES = [
+      'टाइटन गोल्ड', 'इलेक्ट्रिक सायन', 'ग्रीन लेज़र', 'रूबी फ्लेम', 'ब्लैक होल', 'आइस ग्लैशियर',
+      'सन बर्न', 'डार्क मैटर', 'एमराल्ड प्रो', 'थंडर स्टॉर्म', 'वाइपर टॉक्सिक', 'प्लाज्मा कोर',
+      'गैलेक्सी स्टार', 'ओशन डीप', 'ब्लड मून', 'साइबरपंक नियॉन', 'गोल्डन ईगल', 'ड्रैगन वेंट',
+      'कॉस्मिक वॉयड', 'अल्फा टाइटन', 'फीनिक्स विंग्स', 'क्रिमसन फंग', 'शैडो हंटर', 'क्वांटम वेव',
+      'सोलारिस 3D', 'एबिसल डीप', 'मैग्मा रॉक', 'ऑरोरा बोरेलिस', 'प्रिज़्म लाइट', 'अल्टीमेट प्रो'
+    ];
+    const STRIKER_PALETTES = [
+      ['#ffffff','#ffeaa7','#fdcb6e','#e17055','#6c2c10','#10b981','#fbbf24'],
+      ['#ffffff','#cffafe','#38bdf8','#0284c7','#082f49','#00f7ff','#38bdf8'],
+      ['#ffffff','#d1fae5','#34d399','#059669','#064e3b','#10b981','#6ee7b7'],
+      ['#ffffff','#fecdd3','#f43f5e','#be123c','#4c0519','#f59e0b','#f43f5e'],
+      ['#e2e8f0','#94a3b8','#475569','#1e293b','#020617','#a855f7','#c084fc'],
+      ['#ffffff','#e0f2fe','#7dd3fc','#0369a1','#082f49','#38bdf8','#bae6fd'],
+      ['#ffffff','#fef08a','#facc15','#ca8a04','#713f12','#f97316','#fde047'],
+      ['#cbd5e1','#64748b','#334155','#0f172a','#020617','#ec4899','#f472b6'],
+      ['#ffffff','#a7f3d0','#34d399','#047857','#022c22','#059669','#6ee7b7'],
+      ['#ffffff','#fed7aa','#fb923c','#c2410c','#431407','#eab308','#fdba74'],
+      ['#ffffff','#d9f99d','#84cc16','#4d7c0f','#1a2e05','#22c55e','#bef264'],
+      ['#ffffff','#fbcfe8','#f472b6','#db2777','#500724','#ec4899','#f472b6'],
+      ['#ffffff','#e9d5ff','#c084fc','#7e22ce','#3b0764','#8b5cf6','#d8b4fe'],
+      ['#ffffff','#bae6fd','#38bdf8','#0369a1','#082f49','#0284c7','#7dd3fc'],
+      ['#ffffff','#fca5a5','#ef4444','#b91c1c','#450a0a','#dc2626','#f87171'],
+      ['#ffffff','#f5d0fe','#e879f9','#a21caf','#4a044e','#06b6d4','#22d3ee'],
+      ['#ffffff','#fef9c3','#fde047','#a16207','#422006','#eab308','#fde047'],
+      ['#ffffff','#ffedd5','#fb923c','#9a3412','#431407','#ea580c','#fed7aa'],
+      ['#f8fafc','#94a3b8','#1e293b','#0f172a','#000000','#6366f1','#818cf8'],
+      ['#ffffff','#bbf7d0','#4ade80','#15803d','#052e16','#16a34a','#86efac'],
+      ['#ffffff','#fee2e2','#f87171','#dc2626','#450a0a','#f59e0b','#fca5a5'],
+      ['#ffffff','#fda4af','#f43f5e','#9f1239','#4c0519','#e11d48','#fb7185'],
+      ['#e2e8f0','#64748b','#1e293b','#090d16','#000000','#10b981','#34d399'],
+      ['#ffffff','#c7d2fe','#818cf8','#4338ca','#1e1b4b','#3b82f6','#a5b4fc'],
+      ['#ffffff','#fef08a','#eab308','#854d0e','#422006','#d97706','#fde047'],
+      ['#ffffff','#a5f3fc','#06b6d4','#0e7490','#083344','#0891b2','#67e8f9'],
+      ['#ffffff','#ffedd5','#ea580c','#7c2d12','#2c0b02','#dc2626','#fb923c'],
+      ['#ffffff','#ccfbf1','#2dd4bf','#0f766e','#042f2e','#14b8a6','#5eead4'],
+      ['#ffffff','#f1f5f9','#94a3b8','#334155','#0f172a','#64748b','#cbd5e1'],
+      ['#ffffff','#fed7aa','#f97316','#9a3412','#3c1102','#e11d48','#ffd700']
     ];
 
-    // --- USER STATE ---
+    const STRIKER_CATALOG = STRIKER_NAMES.map((name, i) => {
+      const pal = STRIKER_PALETTES[i % STRIKER_PALETTES.length];
+      return {
+        id: `st_${i + 1}`,
+        name: `${name}`,
+        price: i === 0 ? 0 : 300 + i * 70,
+        colors: [pal[0], pal[1], pal[2], pal[3], pal[4]],
+        core: pal[5],
+        ring: pal[6]
+      };
+    });
+
+    // --- FULL 30 PUCKS CATALOG (ORIGINAL) ---
+    const PUCK_NAMES = [
+      'क्लासिक एक्रिलिक', 'ग्रीन लाइट नियॉन', 'ब्लू स्पार्क', 'रॉयल गोल्डन', 'क्रिस्टल डायमंड', 'एमराल्ड प्राइड',
+      'रूबी शाइन', 'ऑब्सीडियन नाइट', 'मूनस्टोन वाइट', 'सनबर्स्ट ऑरेंज', 'साइबर पर्पल', 'आइस मिंट',
+      'कोबाल्ट शील्ड', 'लावा मैग्मा', 'गैलेक्सी कॉस्मो', 'पर्ल मार्बल', 'रेट्रो वुड', 'टाइटन ब्रास',
+      'टॉक्सिक स्लाइम', 'ग्लिच साइबर', 'सिल्वर मून', 'रोज गोल्ड', 'डीप सी एक्वा', 'फ्लेमिंगो पिंक',
+      'नियॉन सनसेट', 'ग्रेनाइट रॉक', 'डार्क एबिस', 'स्टारडस्ट येलो', 'इलेक्ट्रिक लाइम', 'इंपीरियल जेड'
+    ];
+    const PUCK_PALETTES = [
+      { w: ['#fff','#f5efe6','#8c7d6b','#a39281'], b: ['#555','#2d3436','#050708','#111'], q: ['#ff7675','#d63031','#4a0000','#ffd700'] },
+      { w: ['#ecfdf5','#10b981','#064e3b','#34d399'], b: ['#374151','#111827','#030712','#059669'], q: ['#fde047','#eab308','#854d0e','#fff'] },
+      { w: ['#f0f9ff','#0ea5e9','#082f49','#38bdf8'], b: ['#1e293b','#0f172a','#020617','#0284c7'], q: ['#fb7185','#e11d48','#881337','#fef08a'] },
+      { w: ['#fffbeb','#f59e0b','#78350f','#fbbf24'], b: ['#292524','#1c1917','#0c0a09','#b45309'], q: ['#ff4d4d','#b91c1c','#450a0a','#ffd700'] },
+      { w: ['#ffffff','#cbd5e1','#64748b','#e2e8f0'], b: ['#334155','#0f172a','#020617','#475569'], q: ['#38bdf8','#0284c7','#082f49','#e0f2fe'] },
+      { w: ['#f0fdf4','#22c55e','#14532d','#4ade80'], b: ['#1e293b','#0f172a','#020617','#15803d'], q: ['#fbbf24','#d97706','#78350f','#fde68a'] }
+    ];
+
+    const PUCK_CATALOG = PUCK_NAMES.map((name, i) => {
+      const p = PUCK_PALETTES[i % PUCK_PALETTES.length];
+      return {
+        id: `pk_${i + 1}`,
+        name: `${name} 3D`,
+        price: i === 0 ? 0 : 250 + i * 65,
+        white: { base: p.w[0], mid: p.w[1], edge: p.w[2], core: p.w[3] },
+        black: { base: p.b[0], mid: p.b[1], edge: p.b[2], core: p.b[3] },
+        queen: { base: p.q[0], mid: p.q[1], edge: p.q[2], core: p.q[3] }
+      };
+    });
+
+    // --- FULL 30 STRIKER POWERS / AURAS CATALOG (ORIGINAL) ---
+    const POWER_NAMES = [
+      'एमराल्ड पल्स', 'इलेक्ट्रिक थंडर', 'सुपरनोवा गोल्ड', 'वॉयड ब्लैकहोल', 'ड्रैगन फ्लेम', 'प्लाज्मा स्टॉर्म',
+      'साइबर ग्रिड', 'क्रायो फ्रीज', 'सोलारिस फ्लेयर', 'टॉक्सिक वेव', 'क्वांटम फील्ड', 'गैलेक्टिक वॉर्टेक्स',
+      'रेडियंट स्टार', 'शैडो ऑरा', 'नेबुला डस्ट', 'क्रिमसन वेव', 'बायोहैज़र्ड', 'अल्फा बीम',
+      'मैग्मा पल्स', 'ऑरोरा लाइट', 'थंडर शॉक', 'होली Glow', 'डार्क मैटर रिंग', 'इन्फर्नो रिंग',
+      'टाइटन फोर्स', 'कॉस्मिक सर्ज', 'पल्स शील्ड', 'ओशन टाइड', 'प्रिज़मैटिक ऑरा', 'गॉड मोड ऑरा'
+    ];
+    const POWER_COLORS = [
+      '#10b981', '#00f7ff', '#fbbf24', '#c084fc', '#f43f5e', '#38bdf8',
+      '#22c55e', '#a5f3fc', '#f59e0b', '#84cc16', '#818cf8', '#e879f9',
+      '#facc15', '#64748b', '#d8b4fe', '#ef4444', '#a3e635', '#06b6d4',
+      '#ea580c', '#5eead4', '#3b82f6', '#fef08a', '#9333ea', '#dc2626',
+      '#14b8a6', '#f472b6', '#38bdf8', '#0284c7', '#f43f5e', '#ffd700'
+    ];
+    const POWER_STYLES = ['pulse_ring', 'lightning_arc', 'orbital_sparks', 'vortex_spin', 'double_gear', 'wave_burst'];
+
+    const POWER_CATALOG = POWER_NAMES.map((name, i) => {
+      return {
+        id: `pow_${i + 1}`,
+        name: `${name}`,
+        color: POWER_COLORS[i % POWER_COLORS.length],
+        style: POWER_STYLES[i % POWER_STYLES.length],
+        price: i === 0 ? 0 : 350 + i * 80
+      };
+    });
+
+    // --- FULL VFX CATALOG (ORIGINAL) ---
+    const VFX_CATALOG = [
+      { id: 'vfx_ring', name: 'ग्रीन लाइट वेव', price: 0, color: '#10b981', type: 'ring' },
+      { id: 'vfx_electric', name: 'बिजली थंडर रिंग्स', price: 600, color: '#00f7ff', type: 'electric' },
+      { id: 'vfx_gold_stars', name: 'गोल्डन स्टार बर्स्ट', price: 1000, color: '#fbbf24', type: 'stars' },
+      { id: 'vfx_vortex', name: 'ब्लैक होल वॉर्टेक्स', price: 1500, color: '#c084fc', type: 'vortex' }
+    ];
+
+    // --- USER INVENTORY & STATE ---
     let user = {
       name: 'खिलाड़ी 1',
       emoji: '🤠',
       coins: 1200,
-      equipped: { striker: 'st_1', puck: 'pk_1', power: 'pow_1', vfx: 'vfx_ring' },
-      inventory: { strikers: ['st_1'], pucks: ['pk_1'], powers: ['pow_1'], vfx: ['vfx_ring'] }
+      equipped: {
+        striker: 'st_1',
+        puck: 'pk_1',
+        power: 'pow_1',
+        vfx: 'vfx_ring'
+      },
+      inventory: {
+        strikers: ['st_1'],
+        pucks: ['pk_1'],
+        powers: ['pow_1'],
+        vfx: ['vfx_ring']
+      }
     };
 
     function loadSavedUser() {
-      const data = localStorage.getItem('carrom_pro_state_firebase_v1');
+      const data = localStorage.getItem('carrom_pro_state_v12');
       if (data) user = JSON.parse(data);
+      if (!user.inventory.powers) user.inventory.powers = ['pow_1'];
+      if (!user.equipped.power) user.equipped.power = 'pow_1';
       syncCoinDisplays();
       document.getElementById('nav-name').innerText = user.name;
       document.getElementById('nav-avatar').innerText = user.emoji;
     }
     function saveUserState() {
-      localStorage.setItem('carrom_pro_state_firebase_v1', JSON.stringify(user));
+      localStorage.setItem('carrom_pro_state_v12', JSON.stringify(user));
       syncCoinDisplays();
     }
     function syncCoinDisplays() {
@@ -1279,36 +1430,87 @@
       }
     }
 
-    // --- EQUIPMENT TABS ---
+    // --- 4-SUB TABS RENDERER (ALL RESTORED) ---
     let currentEqTab = 'pucks';
+
     function switchEquipmentTab(tab) {
       currentEqTab = tab;
-      document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById(`tab-eq-${tab}`).classList.add('active');
+      document.getElementById('tab-eq-pucks').className = 'sub-tab-btn' + (tab === 'pucks' ? ' active' : '');
+      document.getElementById('tab-eq-strikers').className = 'sub-tab-btn' + (tab === 'strikers' ? ' active' : '');
+      document.getElementById('tab-eq-powers').className = 'sub-tab-btn' + (tab === 'powers' ? ' active' : '');
+      document.getElementById('tab-eq-vfx').className = 'sub-tab-btn' + (tab === 'vfx' ? ' active' : '');
       renderEquipmentTab();
     }
 
     function renderEquipmentTab() {
       const container = document.getElementById('equipment-grid');
       container.innerHTML = '';
-      let catalog = currentEqTab === 'pucks' ? PUCK_CATALOG : currentEqTab === 'strikers' ? STRIKER_CATALOG : currentEqTab === 'powers' ? POWER_CATALOG : VFX_CATALOG;
-      let inventoryList = user.inventory[currentEqTab];
-      let equippedId = user.equipped[currentEqTab.slice(0, -1)] || user.equipped[currentEqTab];
+
+      let catalog = [];
+      let inventoryList = [];
+      let equippedId = '';
+
+      if (currentEqTab === 'pucks') {
+        catalog = PUCK_CATALOG;
+        inventoryList = user.inventory.pucks;
+        equippedId = user.equipped.puck;
+      } else if (currentEqTab === 'strikers') {
+        catalog = STRIKER_CATALOG;
+        inventoryList = user.inventory.strikers;
+        equippedId = user.equipped.striker;
+      } else if (currentEqTab === 'powers') {
+        catalog = POWER_CATALOG;
+        inventoryList = user.inventory.powers;
+        equippedId = user.equipped.power;
+      } else {
+        catalog = VFX_CATALOG;
+        inventoryList = user.inventory.vfx;
+        equippedId = user.equipped.vfx;
+      }
 
       catalog.forEach(item => {
         const isOwned = inventoryList.includes(item.id);
         const isEquipped = equippedId === item.id;
         const card = document.createElement('div');
         card.className = `catalog-card ${isOwned ? 'owned' : ''} ${isEquipped ? 'equipped' : ''}`;
+
+        let previewHtml = '';
+        if (currentEqTab === 'strikers') {
+          previewHtml = `<div style="width:40px; height:40px; border-radius:50%; background:radial-gradient(circle at 35% 35%, ${item.colors[0]}, ${item.colors[2]}, ${item.colors[4]}); border:2.5px solid ${item.ring}; box-shadow:0 0 14px ${item.core}; margin:6px 0;"></div>`;
+        } else if (currentEqTab === 'pucks') {
+          previewHtml = `
+            <div style="display:flex; gap:5px; margin:8px 0;">
+              <div style="width:18px; height:18px; border-radius:50%; background:radial-gradient(circle at 35% 35%, ${item.white.base}, ${item.white.mid}, ${item.white.edge}); border:1px solid #fff; box-shadow:0 2px 5px rgba(0,0,0,0.7);"></div>
+              <div style="width:18px; height:18px; border-radius:50%; background:radial-gradient(circle at 35% 35%, ${item.black.base}, ${item.black.mid}, ${item.black.edge}); border:1px solid #444; box-shadow:0 2px 5px rgba(0,0,0,0.7);"></div>
+              <div style="width:18px; height:18px; border-radius:50%; background:radial-gradient(circle at 35% 35%, ${item.queen.base}, ${item.queen.mid}, ${item.queen.edge}); border:1.5px solid #fbbf24; box-shadow:0 0 8px #f59e0b;"></div>
+            </div>`;
+        } else if (currentEqTab === 'powers') {
+          previewHtml = `
+            <div style="position:relative; width:44px; height:44px; display:flex; align-items:center; justify-content:center; margin:5px 0;">
+              <div style="position:absolute; width:40px; height:40px; border-radius:50%; border:2px dashed ${item.color}; box-shadow:0 0 12px ${item.color};"></div>
+              <div style="width:18px; height:18px; border-radius:50%; background:${item.color}; box-shadow:0 0 8px ${item.color};"></div>
+            </div>`;
+        } else {
+          previewHtml = `<div style="font-size:24px; margin:6px 0; text-shadow:0 0 14px ${item.color};">✨</div>`;
+        }
+
         card.innerHTML = `
           ${isEquipped ? '<div class="equipped-badge">EQUIPPED</div>' : ''}
-          <div style="font-size:24px; margin:10px 0;">✨</div>
-          <div style="font-size:11px; font-weight:900; margin-bottom:4px; text-transform:uppercase;">${item.name}</div>
+          ${previewHtml}
+          <div style="font-size:11px; font-weight:900; margin-bottom:4px; text-transform:uppercase; text-align:center;">${item.name}</div>
           <div style="width:100%; margin-top:auto;">
-            ${isEquipped ? `<div style="font-size:11px; color:#34d399; font-weight:900;">उपयोग में है</div>`
-             : isOwned ? `<button class="btn-3d btn-gold" style="padding:6px; font-size:10px;" onclick="equipItem('${currentEqTab}', '${item.id}')">उपयोग करें</button>`
-             : `<button class="btn-3d btn-gold" style="padding:6px; font-size:10px;" onclick="buyItemWithCoins('${currentEqTab}', '${item.id}',${item.price})"><span class="coin-3d-badge"></span> ${item.price}</button>
-                <button class="btn-3d btn-ad-3d" style="width:100%; margin-top:4px; padding:6px; font-size:10px;" onclick="watchAdToUnlock('${currentEqTab}', '${item.id}', '${item.name}')">📺 मुफ़्त अनलॉक</button>`}
+            ${isEquipped ? `
+              <div style="font-size:11px; color:#34d399; font-weight:900; text-align:center; margin-top:6px;">उपयोग में है</div>
+            ` : isOwned ? `
+              <button class="btn-3d btn-gold" style="padding:6px; font-size:10px; margin-top:4px;" onclick="equipItem('${currentEqTab}', '${item.id}')">उपयोग करें</button>
+            ` : `
+              <button class="btn-3d btn-gold" style="padding:6px; font-size:10px; margin-top:4px;" onclick="buyItemWithCoins('${currentEqTab}', '${item.id}', ${item.price})">
+                <span class="coin-3d-badge"></span> ${item.price}
+              </button>
+              <button class="btn-3d btn-ad-3d" style="width:100%; margin-top:4px; padding:6px; font-size:10px;" onclick="watchAdToUnlock('${currentEqTab}', '${item.id}', '${item.name}')">
+                📺 फ्री अनलॉक
+              </button>
+            `}
           </div>
         `;
         container.appendChild(card);
@@ -1325,7 +1527,10 @@
     }
 
     function buyItemWithCoins(category, itemId, price) {
-      if (user.coins < price) return alert("पर्याप्त सिक्के नहीं हैं! शॉप से मुफ़्त सिक्के क्लेम करें।");
+      if (user.coins < price) {
+        alert("पर्याप्त सिक्के नहीं हैं! विज्ञापन देखें या शॉप से मुफ़्त सिक्के क्लेम करें।");
+        return;
+      }
       user.coins -= price;
       user.inventory[category].push(itemId);
       equipItem(category, itemId);
@@ -1334,21 +1539,24 @@
     function claimDailyReward() {
       user.coins += 500;
       saveUserState();
-      alert("🎉 +500 डेली सिक्के क्लेम हो गए!");
+      alert("🎉 शानदार! आपका डेली बोनस +500 सिक्के खाते में जोड़ दिए गए हैं।");
     }
+
     function claimHourlyReward() {
       user.coins += 150;
       saveUserState();
-      alert("⚡ +150 सिक्के क्लेम हो गए!");
+      alert("⚡ बधाई! +150 सिक्के मुफ़्त जोड़ दिए गए हैं।");
     }
 
-    // --- GAME ENGINE & HYBRID ONLINE / ROOM CODES ---
+    // --- GAME ENGINE, HYBRID ONLINE & ROOM CODES ---
     let currentBet = 100;
     let potCoins = 200;
+    let isPassAndPlay = false;
     let currentTurn = 1;
     let isGameRunning = false;
-    let isPassAndPlay = false;
+    let activeVfxPockets = [];
     let matchmakingTimer = null;
+
     let pocketedThisTurn = [];
     let strikerFouledThisTurn = false;
 
@@ -1356,7 +1564,7 @@
     function createPrivateOnlineRoom() {
       const code = 'CP-' + Math.floor(1000 + Math.random() * 9000);
       currentRoomId = code;
-      myPlayerRole = 1; // P1
+      myPlayerRole = 1;
       isRealFirebaseMatch = true;
 
       const roomRef = database.ref('rooms/' + currentRoomId);
@@ -1372,7 +1580,6 @@
       navigator.clipboard?.writeText(code);
       alert(`🎉 आपका रूम बन गया: ${code}\n\n(कोड कॉपी हो गया है! इसे अपने दोस्त को भेजें)`);
 
-      // दोस्त के जुड़ने का इंतज़ार
       roomRef.on('value', (snap) => {
         const data = snap.val();
         if (data && data.status === 'playing' && !isGameRunning) {
@@ -1386,7 +1593,7 @@
       const code = document.getElementById('room-code-input').value.trim();
       if (!code) return alert("कृपया वैध रूम कोड दर्ज करें!");
       currentRoomId = code;
-      myPlayerRole = 2; // P2
+      myPlayerRole = 2;
       isRealFirebaseMatch = true;
 
       const roomRef = database.ref('rooms/' + currentRoomId);
@@ -1406,7 +1613,7 @@
 
     // 3. RANDOM MATCHMAKING (HYBRID: FIREBASE OR SMART BOT)
     function startMatchmakingFlow(mode, bet = 100) {
-      if (user.coins < bet) return alert("पर्याप्त सिक्के नहीं हैं!");
+      if (user.coins < bet) return alert("पर्याप्त सिक्के नहीं हैं! शॉप से मुफ़्त सिक्के क्लेम करें।");
       currentBet = bet;
       potCoins = bet * 2;
       isPassAndPlay = false;
@@ -1415,13 +1622,12 @@
       const oppAvatar = document.getElementById('mm-opp-avatar');
       const oppName = document.getElementById('mm-opp-name');
       const mmTitle = document.getElementById('mm-title');
-
+      
       mmTitle.innerText = "SEARCHING ONLINE...";
       oppAvatar.innerText = "❓";
       oppName.innerText = "Searching...";
       mmModal.classList.remove('hidden');
 
-      // Firebase Match Queue
       const queueRef = database.ref('match_queue');
       const myId = 'usr_' + Math.floor(Math.random() * 100000);
       let matched = false;
@@ -1430,7 +1636,6 @@
 
       matchmakingTimer = setTimeout(() => {
         if (!matched) {
-          // अगर 6 सेकंड में कोई नहीं मिला तो स्मार्ट बॉट से जोड़ें
           queueRef.remove();
           isRealFirebaseMatch = false;
           myPlayerRole = 1;
@@ -1471,7 +1676,7 @@
       myPlayerRole = 1;
       currentBet = 0;
       potCoins = 0;
-      launchBoard("दोस्त (Player 2)", "🤠", "PASS & PLAY");
+      launchBoard("दोस्त (Player 2)", "🤠", "LOCAL PASS & PLAY");
     }
 
     function launchBoard(oppName, oppAvatar, modeText) {
@@ -1486,7 +1691,7 @@
       document.getElementById('p1-name').innerText = myPlayerRole === 1 ? user.name : oppName;
       document.getElementById('p2-avatar').innerText = myPlayerRole === 1 ? oppAvatar : user.emoji;
       document.getElementById('p2-name').innerText = myPlayerRole === 1 ? oppName : user.name;
-      document.getElementById('match-type-indicator').innerText = modeText;
+      document.getElementById('queen-indicator').innerText = modeText;
       document.getElementById('table-pot').innerText = `${potCoins}`;
 
       initBoard();
@@ -1519,7 +1724,6 @@
           time: Date.now()
         });
       } else if (!isPassAndPlay && myPlayerRole === 1) {
-        // ऑफलाइन बॉट ऑटो-रिप्लाई
         setTimeout(() => {
           const replies = ['😂', '🔥', 'Well Played!', 'Lucky! 😉'];
           const botReply = replies[Math.floor(Math.random() * replies.length)];
@@ -1541,7 +1745,6 @@
       if (!isRealFirebaseMatch || !currentRoomId) return;
       const roomRef = database.ref('rooms/' + currentRoomId);
 
-      // शॉट सिंक लिसनर
       roomRef.child('shot').on('value', (snap) => {
         const shot = snap.val();
         if (shot && shot.player !== myPlayerRole) {
@@ -1554,7 +1757,6 @@
         }
       });
 
-      // चैट लिसनर
       roomRef.child('chat').on('value', (snap) => {
         const chat = snap.val();
         if (chat && chat.sender !== myPlayerRole) {
@@ -1563,7 +1765,7 @@
       });
     }
 
-    // --- CANVAS & PHYSICS ENGINE ---
+    // --- CANVAS, PHYSICS & SCREEN-WIDE DRAG AIMING ---
     const canvas = document.getElementById('carromCanvas');
     const ctx = canvas.getContext('2d');
     const overlayCanvas = document.getElementById('cueOverlayCanvas');
@@ -1595,12 +1797,14 @@
     let isAiming = false;
     let dragOrigin = { x: 0, y: 0 };
     let dragCurrent = { x: 0, y: 0 };
+    let tickCount = 0;
     let cueAnimation = { active: false, pullDistance: 0, angle: 0, force: 0, snapProgress: 0 };
 
     function initBoard() {
       pucks = [];
       currentTurn = 1;
       isGameRunning = true;
+      activeVfxPockets = [];
       pocketedThisTurn = [];
       strikerFouledThisTurn = false;
       const center = { x: SIZE/2, y: SIZE/2 };
@@ -1655,7 +1859,7 @@
 
     canvas.addEventListener('touchstart', (e) => {
       AudioEngine.init();
-      if (!striker.inHand || isRealFirebaseMatch && currentTurn !== myPlayerRole || !isPassAndPlay && currentTurn === 2 || !isGameRunning || cueAnimation.active) return;
+      if (!striker.inHand || (isRealFirebaseMatch && currentTurn !== myPlayerRole) || (!isPassAndPlay && !isRealFirebaseMatch && currentTurn === 2) || !isGameRunning || cueAnimation.active) return;
       const rect = canvas.getBoundingClientRect();
       const tx = e.touches[0].clientX - rect.left;
       const ty = e.touches[0].clientY - rect.top;
@@ -1667,7 +1871,9 @@
     canvas.addEventListener('touchmove', (e) => {
       if (!isAiming) return;
       const rect = canvas.getBoundingClientRect();
-      dragCurrent = { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+      const tx = e.touches[0].clientX - rect.left;
+      const ty = e.touches[0].clientY - rect.top;
+      dragCurrent = { x: tx, y: ty };
     });
 
     canvas.addEventListener('touchend', () => {
@@ -1686,7 +1892,6 @@
         cueAnimation.force = force;
         cueAnimation.snapProgress = 0;
 
-        // Firebase Sync
         if (isRealFirebaseMatch && currentRoomId) {
           database.ref('rooms/' + currentRoomId + '/shot').set({
             player: myPlayerRole,
@@ -1702,16 +1907,27 @@
 
     function playAITurn() {
       if (!isGameRunning || currentTurn !== 2) return;
-      const targetPucks = pucks.filter(p => !p.inPocket && (p.type === 'black' || p.type === 'queen'));
-      if (targetPucks.length === 0) return;
-      const target = targetPucks[Math.floor(Math.random() * targetPucks.length)];
+      const botPucksLeft = pucks.filter(p => !p.inPocket && p.type === 'black').length;
+      let active = [];
 
+      if (botPucksLeft === 0) {
+        active = pucks.filter(p => !p.inPocket && p.type === 'queen');
+      } else {
+        active = pucks.filter(p => !p.inPocket && p.type === 'black');
+      }
+
+      if (active.length === 0) {
+        active = pucks.filter(p => !p.inPocket);
+      }
+      if (active.length === 0) return;
+
+      const target = active[Math.floor(Math.random() * active.length)];
       slider.value = Math.floor(Math.random() * 60) + 20;
       updateStrikerX();
 
       let dx = target.x - striker.x;
       let dy = target.y - striker.y;
-      let angle = Math.atan2(dy, dx) + (Math.random() - 0.5) * 0.05;
+      let angle = Math.atan2(dy, dx) + (Math.random() - 0.5) * 0.04;
 
       setTimeout(() => {
         if (!isGameRunning) return;
@@ -1723,13 +1939,57 @@
       }, 650);
     }
 
+    function triggerPocketVfx(pocket) {
+      const vfxId = user.equipped.vfx;
+      const vfxObj = VFX_CATALOG.find(v => v.id === vfxId) || VFX_CATALOG[0];
+      activeVfxPockets.push({
+        x: pocket.x,
+        y: pocket.y,
+        color: vfxObj.color,
+        type: vfxObj.type,
+        progress: 0
+      });
+    }
+
+    function showBannerMessage(msg, duration = 1400) {
+      const banner = document.getElementById('foul-banner');
+      banner.innerText = msg;
+      banner.classList.add('show');
+      setTimeout(() => banner.classList.remove('show'), duration);
+    }
+
     function placePuckNearCenter(puckObj) {
-      const cx = SIZE / 2, cy = SIZE / 2;
-      puckObj.x = cx;
-      puckObj.y = cy;
-      puckObj.vx = 0;
-      puckObj.vy = 0;
-      puckObj.inPocket = false;
+      const cx = SIZE / 2;
+      const cy = SIZE / 2;
+      let placed = false;
+      let offset = 0;
+      let step = puckObj.r * 2.2;
+
+      while (!placed && offset < SIZE * 0.35) {
+        for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 4) {
+          let testX = cx + Math.cos(angle) * offset;
+          let testY = cy + Math.sin(angle) * offset;
+
+          let overlap = pucks.some(p => !p.inPocket && p !== puckObj && Math.hypot(p.x - testX, p.y - testY) < (p.r + puckObj.r + 2));
+          if (!overlap) {
+            puckObj.x = testX;
+            puckObj.y = testY;
+            puckObj.vx = 0;
+            puckObj.vy = 0;
+            puckObj.inPocket = false;
+            placed = true;
+            break;
+          }
+        }
+        offset += step;
+      }
+      if (!placed) {
+        puckObj.x = cx;
+        puckObj.y = cy;
+        puckObj.vx = 0;
+        puckObj.vy = 0;
+        puckObj.inPocket = false;
+      }
     }
 
     function updatePhysics() {
@@ -1759,7 +2019,8 @@
         if (Math.abs(obj.vy) < 0.04) obj.vy = 0;
         if (obj.vx !== 0 || obj.vy !== 0) isMoving = true;
 
-        const minB = obj.r + 20, maxB = SIZE - obj.r - 20;
+        const minB = obj.r + 20;
+        const maxB = SIZE - obj.r - 20;
         if (obj.x < minB) { obj.x = minB; obj.vx *= -0.85; AudioEngine.playPuckCut(0.3, 0.85); }
         if (obj.x > maxB) { obj.x = maxB; obj.vx *= -0.85; AudioEngine.playPuckCut(0.3, 0.85); }
         if (obj.y < minB) { obj.y = minB; obj.vy *= -0.85; AudioEngine.playPuckCut(0.3, 0.85); }
@@ -1769,6 +2030,7 @@
           if (Math.hypot(p.x - obj.x, p.y - obj.y) < POCKET_RADIUS) {
             obj.vx = 0; obj.vy = 0;
             AudioEngine.playPocketSound();
+            triggerPocketVfx(p);
             if (obj === striker) {
               obj.x = -200;
               strikerFouledThisTurn = true;
@@ -1782,7 +2044,7 @@
         });
       });
 
-      // Collisions
+      let collisionsThisFrame = 0;
       for (let i = 0; i < all.length; i++) {
         for (let j = i + 1; j < all.length; j++) {
           let o1 = all[i], o2 = all[j];
@@ -1790,6 +2052,7 @@
           let dist = Math.hypot(dx, dy);
 
           if (dist < o1.r + o2.r && dist > 0) {
+            collisionsThisFrame++;
             let overlap = (o1.r + o2.r) - dist;
             let nx = dx / dist, ny = dy / dist;
             o1.x -= nx * overlap * 0.5; o1.y -= ny * overlap * 0.5;
@@ -1799,54 +2062,79 @@
             let p = 2 * (nx * kx + ny * ky) / 2;
             o1.vx -= p * nx * 0.96; o1.vy -= p * ny * 0.96;
             o2.vx += p * nx * 0.96; o2.vy += p * ny * 0.96;
-            AudioEngine.playPuckCut(0.8, 1.05);
           }
         }
+      }
+
+      if (collisionsThisFrame >= 3) {
+        AudioEngine.playPuckClusterClatter(1.15);
+      } else if (collisionsThisFrame > 0) {
+        AudioEngine.playPuckCut(0.9, 1.05);
       }
 
       if (!isMoving && !striker.inHand) handleTurnEnd();
     }
 
-    // --- TURN LOGIC + QUEEN PENALTY ---
+    // --- QUEEN RULE + PENALTY LOGIC ---
     function handleTurnEnd() {
       const myColor = currentTurn === 1 ? 'white' : 'black';
       const myPucksRemaining = pucks.filter(p => !p.inPocket && p.type === myColor).length;
       const queenPuck = pucks.find(p => p.type === 'queen');
-      const isQueenPocketed = pocketedThisTurn.includes('queen');
+      const isQueenPocketedThisTurn = pocketedThisTurn.includes('queen');
 
       let queenFoulOccurred = false;
-      if (isQueenPocketed && myPucksRemaining > 0) {
+
+      if (isQueenPocketedThisTurn && myPucksRemaining > 0) {
         queenFoulOccurred = true;
         placePuckNearCenter(queenPuck);
-        const myPocketedPucks = pucks.filter(p => p.inPocket && p.type === myColor);
-        if (myPocketedPucks.length > 0) placePuckNearCenter(myPocketedPucks[0]);
+
+        const pocketedPucksOfMine = pucks.filter(p => p.inPocket && p.type === myColor);
+        if (pocketedPucksOfMine.length > 0) {
+          placePuckNearCenter(pocketedPucksOfMine[0]);
+        }
+
         showBannerMessage("रानी फाउल! (PENALTY)", 1800);
         updatePuckCounts();
       }
 
       const p1Left = pucks.filter(p => !p.inPocket && p.type === 'white').length;
       const p2Left = pucks.filter(p => !p.inPocket && p.type === 'black').length;
-      const queenDone = queenPuck && queenPuck.inPocket;
+      const queenIsPocketed = queenPuck && queenPuck.inPocket;
 
-      if (p1Left === 0 && queenDone) return celebrateWin(true);
-      if (p2Left === 0 && queenDone) return celebrateWin(false);
+      if (p1Left === 0 && queenIsPocketed) {
+        celebrateWin(true);
+        return;
+      }
+      if (p2Left === 0 && queenIsPocketed) {
+        celebrateWin(false);
+        return;
+      }
 
       let keepTurn = false;
-      if (!strikerFouledThisTurn && !queenFoulOccurred) {
-        if (pocketedThisTurn.includes(myColor) || (isQueenPocketed && myPucksRemaining === 0)) {
+      if (strikerFouledThisTurn || queenFoulOccurred) {
+        keepTurn = false;
+      } else {
+        const hitOwnPuck = pocketedThisTurn.includes(myColor);
+        const validQueen = isQueenPocketedThisTurn && (myPucksRemaining === 0);
+        if (hitOwnPuck || validQueen) {
           keepTurn = true;
         }
       }
 
-      if (!keepTurn) currentTurn = currentTurn === 1 ? 2 : 1;
+      if (!keepTurn) {
+        currentTurn = currentTurn === 1 ? 2 : 1;
+      }
+
       resetStriker();
     }
 
     function updatePuckCounts() {
-      const p1 = pucks.filter(p => !p.inPocket && p.type === 'white').length;
-      const p2 = pucks.filter(p => !p.inPocket && p.type === 'black').length;
-      document.getElementById('p1-left').innerText = p1;
-      document.getElementById('p2-left').innerText = p2;
+      const p1Count = pucks.filter(p => !p.inPocket && p.type === 'white').length;
+      const p2Count = pucks.filter(p => !p.inPocket && p.type === 'black').length;
+      const queenLeft = pucks.filter(p => !p.inPocket && p.type === 'queen').length;
+
+      document.getElementById('p1-left').innerText = p1Count === 0 ? (queenLeft ? 'रानी लें!' : '0') : p1Count;
+      document.getElementById('p2-left').innerText = p2Count === 0 ? (queenLeft ? 'रानी लें!' : '0') : p2Count;
     }
 
     function updateTurnHUD() {
@@ -1854,35 +2142,63 @@
       document.getElementById('p2-box').className = 'player-box' + (currentTurn === 2 ? ' bot-turn-active' : '');
     }
 
-    function showBannerMessage(msg, duration = 1400) {
-      const banner = document.getElementById('foul-banner');
-      banner.innerText = msg;
-      banner.classList.add('show');
-      setTimeout(() => banner.classList.remove('show'), duration);
-    }
-
-    // --- DRAW FUNCTIONS ---
+    // --- 3D CARROM BOARD RENDERING ---
     function drawCarromBoard() {
       let outerWood = ctx.createLinearGradient(0, 0, SIZE, SIZE);
       outerWood.addColorStop(0, '#381608');
+      outerWood.addColorStop(0.3, '#542612');
+      outerWood.addColorStop(0.7, '#240d04');
       outerWood.addColorStop(1, '#150602');
       ctx.fillStyle = outerWood;
       ctx.fillRect(0, 0, SIZE, SIZE);
 
+      ctx.strokeStyle = '#85421d';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(3, 3, SIZE - 6, SIZE - 6);
+
+      ctx.strokeStyle = 'rgba(0,0,0,0.7)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(18, 18, SIZE - 36, SIZE - 36);
+
       let playMat = ctx.createRadialGradient(SIZE/2, SIZE/2, 15, SIZE/2, SIZE/2, SIZE * 0.68);
       playMat.addColorStop(0, '#fff4e1');
+      playMat.addColorStop(0.5, '#f4dcbc');
+      playMat.addColorStop(0.85, '#e2be95');
       playMat.addColorStop(1, '#c99f70');
       ctx.fillStyle = playMat;
       ctx.fillRect(20, 20, SIZE - 40, SIZE - 40);
 
-      // Mandala
+      let cushionShadow = ctx.createLinearGradient(20, 20, 20, 35);
+      cushionShadow.addColorStop(0, 'rgba(0,0,0,0.55)');
+      cushionShadow.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = cushionShadow;
+      ctx.fillRect(20, 20, SIZE - 40, 15);
+
+      // Center Mandala
       ctx.save();
       ctx.translate(SIZE/2, SIZE/2);
+      for (let i = 0; i < 8; i++) {
+        ctx.rotate((Math.PI * 2) / 8);
+        ctx.fillStyle = i % 2 === 0 ? '#b91c1c' : '#d97706';
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.quadraticCurveTo(8, SIZE * 0.08, 0, SIZE * 0.14);
+        ctx.quadraticCurveTo(-8, SIZE * 0.08, 0, 0);
+        ctx.fill();
+      }
+
       ctx.strokeStyle = '#b45309';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 1.8;
       ctx.beginPath();
       ctx.arc(0, 0, SIZE * 0.16, 0, Math.PI * 2);
       ctx.stroke();
+
+      ctx.strokeStyle = '#d97706';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.arc(0, 0, SIZE * 0.05, 0, Math.PI * 2);
+      ctx.stroke();
+
       ctx.fillStyle = '#dc2626';
       ctx.beginPath();
       ctx.arc(0, 0, SIZE * 0.024, 0, Math.PI * 2);
@@ -1892,62 +2208,404 @@
       // Baselines
       [SIZE * 0.81, SIZE * 0.19].forEach(y => {
         ctx.strokeStyle = '#991b1b';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2.2;
         ctx.beginPath();
         ctx.moveTo(SIZE * 0.24, y);
         ctx.lineTo(SIZE * 0.76, y);
         ctx.stroke();
+
+        ctx.strokeStyle = '#d97706';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(SIZE * 0.24, y + (y > SIZE/2 ? 3 : -3));
+        ctx.lineTo(SIZE * 0.76, y + (y > SIZE/2 ? 3 : -3));
+        ctx.stroke();
+
+        [SIZE * 0.24, SIZE * 0.76].forEach(x => {
+          let circleGrad = ctx.createRadialGradient(x, y, 2, x, y, SIZE * 0.038);
+          circleGrad.addColorStop(0, '#f87171');
+          circleGrad.addColorStop(0.7, '#dc2626');
+          circleGrad.addColorStop(1, '#991b1b');
+          ctx.fillStyle = circleGrad;
+          ctx.beginPath();
+          ctx.arc(x, y, SIZE * 0.038, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.strokeStyle = '#fbbf24';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        });
       });
 
       // Pockets
       pockets.forEach(p => {
+        let brassRim = ctx.createRadialGradient(p.x, p.y, POCKET_RADIUS * 0.7, p.x, p.y, POCKET_RADIUS);
+        brassRim.addColorStop(0, '#111');
+        brassRim.addColorStop(0.75, '#222');
+        brassRim.addColorStop(0.9, '#d97706');
+        brassRim.addColorStop(1, '#78350f');
+        ctx.fillStyle = brassRim;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, POCKET_RADIUS, 0, Math.PI * 2);
+        ctx.fill();
+
         ctx.fillStyle = '#050505';
         ctx.beginPath();
-        ctx.arc(p.x, p.y, POCKET_RADIUS * 0.75, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, POCKET_RADIUS * 0.72, 0, Math.PI * 2);
         ctx.fill();
       });
+
+      // Pocket VFX
+      for (let i = activeVfxPockets.length - 1; i >= 0; i--) {
+        let v = activeVfxPockets[i];
+        v.progress += 0.04;
+        ctx.save();
+        ctx.strokeStyle = v.color;
+        ctx.shadowColor = v.color;
+        ctx.shadowBlur = 14;
+
+        if (v.type === 'ring') {
+          ctx.lineWidth = 3.5 * (1 - v.progress);
+          ctx.beginPath();
+          ctx.arc(v.x, v.y, POCKET_RADIUS * (1 + v.progress * 1.6), 0, Math.PI * 2);
+          ctx.stroke();
+        } else if (v.type === 'electric') {
+          ctx.lineWidth = 2;
+          for (let e = 0; e < 6; e++) {
+            let ea = (e * Math.PI * 2) / 6 + v.progress * 3;
+            let ed = POCKET_RADIUS * (1 + v.progress * 1.4);
+            ctx.beginPath();
+            ctx.moveTo(v.x + Math.cos(ea)*POCKET_RADIUS*0.8, v.y + Math.sin(ea)*POCKET_RADIUS*0.8);
+            ctx.lineTo(v.x + Math.cos(ea)*ed, v.y + Math.sin(ea)*ed);
+            ctx.stroke();
+          }
+        } else if (v.type === 'stars') {
+          for (let s = 0; s < 6; s++) {
+            let a = (s * Math.PI * 2) / 6 + v.progress * 2;
+            let dist = POCKET_RADIUS * (0.8 + v.progress * 1.3);
+            ctx.fillStyle = v.color;
+            ctx.fillRect(v.x + Math.cos(a)*dist, v.y + Math.sin(a)*dist, 4.5, 4.5);
+          }
+        } else if (v.type === 'vortex') {
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.arc(v.x, v.y, POCKET_RADIUS * (1.8 - v.progress), v.progress * 8, v.progress * 8 + Math.PI);
+          ctx.stroke();
+        }
+        ctx.restore();
+
+        if (v.progress >= 1) activeVfxPockets.splice(i, 1);
+      }
     }
 
+    // --- 3D PUCKS RENDERER (FULL DETAIL RESTORED) ---
     function drawUltraRealisticPuck(x, y, r, type) {
+      const puckSkin = PUCK_CATALOG.find(p => p.id === user.equipped.puck) || PUCK_CATALOG[0];
+      const pColor = type === 'queen' ? puckSkin.queen : (type === 'white' ? puckSkin.white : puckSkin.black);
+
       ctx.save();
-      let color = type === 'queen' ? '#dc2626' : type === 'white' ? '#f8fafc' : '#1e293b';
-      ctx.fillStyle = color;
+      ctx.shadowColor = 'rgba(0,0,0,0.6)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetX = 3;
+      ctx.shadowOffsetY = 5;
+
+      let bodyGrad = ctx.createRadialGradient(x - r*0.35, y - r*0.35, r*0.08, x, y, r);
+      bodyGrad.addColorStop(0, pColor.base);
+      bodyGrad.addColorStop(0.3, pColor.mid);
+      bodyGrad.addColorStop(0.85, pColor.edge);
+      bodyGrad.addColorStop(1, '#050708');
+
+      ctx.fillStyle = bodyGrad;
       ctx.beginPath();
       ctx.arc(x, y, r, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = '#fff';
-      ctx.lineWidth = 1;
+
+      ctx.shadowColor = 'transparent';
+
+      ctx.strokeStyle = type === 'black' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.25)';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.arc(x, y, r * 0.76, 0, Math.PI * 2);
       ctx.stroke();
+
+      ctx.strokeStyle = type === 'black' ? 'rgba(255,255,255,0.28)' : 'rgba(0,0,0,0.35)';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.arc(x, y, r * 0.44, 0, Math.PI * 2);
+      ctx.stroke();
+
+      let centerGrad = ctx.createRadialGradient(x, y, 0, x, y, r * 0.22);
+      centerGrad.addColorStop(0, '#ffffff');
+      centerGrad.addColorStop(0.5, pColor.core);
+      centerGrad.addColorStop(1, '#111');
+      ctx.fillStyle = centerGrad;
+      ctx.beginPath();
+      ctx.arc(x, y, r * 0.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+      ctx.beginPath();
+      ctx.ellipse(x - r*0.3, y - r*0.35, r*0.25, r*0.14, -Math.PI/4, 0, Math.PI * 2);
+      ctx.fill();
+
       ctx.restore();
     }
 
+    // --- 3D ANIMATED STRIKER POWERS / AURA RENDERER (RESTORED) ---
+    function drawStrikerPowerAura(x, y, r) {
+      const pow = POWER_CATALOG.find(p => p.id === user.equipped.power) || POWER_CATALOG[0];
+      const color = pow.color;
+      tickCount += 0.04;
+
+      ctx.save();
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 18;
+
+      if (pow.style === 'pulse_ring') {
+        let wave = r * (1.45 + Math.sin(tickCount * 3) * 0.12);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash([8, 6]);
+        ctx.beginPath();
+        ctx.arc(x, y, wave, tickCount, tickCount + Math.PI * 2);
+        ctx.stroke();
+
+        ctx.lineWidth = 1.2;
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        ctx.arc(x, y, r * 1.7, 0, Math.PI * 2);
+        ctx.stroke();
+      } else if (pow.style === 'lightning_arc') {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 4; i++) {
+          let a = tickCount * 2 + (i * Math.PI / 2);
+          ctx.beginPath();
+          ctx.arc(x, y, r * 1.5, a, a + 0.6);
+          ctx.stroke();
+        }
+      } else if (pow.style === 'orbital_sparks') {
+        for (let i = 0; i < 5; i++) {
+          let a = tickCount * 3 + (i * Math.PI * 2 / 5);
+          let ox = x + Math.cos(a) * (r * 1.6);
+          let oy = y + Math.sin(a) * (r * 1.6);
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.arc(ox, oy, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      } else if (pow.style === 'vortex_spin') {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.arc(x, y, r * 1.55, tickCount * 4, tickCount * 4 + Math.PI * 1.4);
+        ctx.stroke();
+      } else if (pow.style === 'double_gear') {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.arc(x, y, r * 1.4, -tickCount * 2, -tickCount * 2 + Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(x, y, r * 1.7, tickCount * 2, tickCount * 2 + Math.PI * 2);
+        ctx.stroke();
+      } else {
+        let wave = r * (1.3 + (Math.sin(tickCount * 4) + 1) * 0.25);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(x, y, wave, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
+    // --- 3D STRIKER RENDERER (RESTORED) ---
     function drawUltraRealisticStriker() {
       const { x, y, r } = striker;
+      const sSkin = STRIKER_CATALOG.find(s => s.id === user.equipped.striker) || STRIKER_CATALOG[0];
+
+      if (striker.inHand && isGameRunning && !cueAnimation.active) {
+        drawStrikerPowerAura(x, y, r);
+      }
+
       ctx.save();
-      ctx.fillStyle = '#f59e0b';
+      ctx.shadowColor = 'rgba(0,0,0,0.65)';
+      ctx.shadowBlur = 12;
+      ctx.shadowOffsetX = 3;
+      ctx.shadowOffsetY = 6;
+
+      let stGrad = ctx.createRadialGradient(x - r*0.35, y - r*0.35, r*0.08, x, y, r);
+      stGrad.addColorStop(0, sSkin.colors[0]);
+      stGrad.addColorStop(0.2, sSkin.colors[1]);
+      stGrad.addColorStop(0.65, sSkin.colors[2]);
+      stGrad.addColorStop(0.9, sSkin.colors[3]);
+      stGrad.addColorStop(1, sSkin.colors[4]);
+
+      ctx.fillStyle = stGrad;
       ctx.beginPath();
       ctx.arc(x, y, r, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = '#fff';
+
+      ctx.shadowColor = 'transparent';
+      ctx.strokeStyle = sSkin.ring;
       ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, r * 0.75, 0, Math.PI * 2);
       ctx.stroke();
+
+      let core = ctx.createRadialGradient(x, y, 0, x, y, r * 0.25);
+      core.addColorStop(0, sSkin.core);
+      core.addColorStop(1, '#022c22');
+      ctx.fillStyle = core;
+      ctx.beginPath();
+      ctx.arc(x, y, r * 0.25, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(255,255,255,0.6)';
+      ctx.beginPath();
+      ctx.ellipse(x - r*0.32, y - r*0.35, r*0.3, r*0.16, -Math.PI/4, 0, Math.PI * 2);
+      ctx.fill();
+
       ctx.restore();
+    }
+
+    // --- 3D CUE STICK (RESTORED) ---
+    function drawProCueStick(screenX, screenY, angle, pullDist) {
+      oCtx.save();
+      oCtx.translate(screenX, screenY);
+      oCtx.rotate(angle + Math.PI);
+
+      let cueLen = 220;
+      let startOffset = striker.r + pullDist;
+
+      oCtx.shadowColor = 'rgba(0,0,0,0.7)';
+      oCtx.shadowBlur = 14;
+      oCtx.shadowOffsetY = 8;
+
+      let shaftGrad = oCtx.createLinearGradient(startOffset, -4, startOffset + cueLen, 6);
+      shaftGrad.addColorStop(0, '#062016');
+      shaftGrad.addColorStop(0.3, '#104e38');
+      shaftGrad.addColorStop(0.7, '#083323');
+      shaftGrad.addColorStop(1, '#03140e');
+
+      oCtx.fillStyle = shaftGrad;
+      oCtx.beginPath();
+      oCtx.moveTo(startOffset, -3.5);
+      oCtx.lineTo(startOffset + cueLen, -7);
+      oCtx.lineTo(startOffset + cueLen, 7);
+      oCtx.lineTo(startOffset, 3.5);
+      oCtx.closePath();
+      oCtx.fill();
+
+      let gripStart = startOffset + cueLen * 0.55;
+      let gripLen = cueLen * 0.42;
+      let gripGrad = oCtx.createLinearGradient(gripStart, -6, gripStart + gripLen, 6);
+      gripGrad.addColorStop(0, '#854d0e');
+      gripGrad.addColorStop(0.5, '#ca8a04');
+      gripGrad.addColorStop(1, '#713f12');
+      oCtx.fillStyle = gripGrad;
+      oCtx.fillRect(gripStart, -6, gripLen, 12);
+
+      oCtx.fillStyle = '#10b981';
+      oCtx.shadowColor = '#10b981';
+      oCtx.shadowBlur = 12;
+      oCtx.beginPath();
+      oCtx.arc(startOffset, 0, 3.5, 0, Math.PI * 2);
+      oCtx.fill();
+
+      oCtx.restore();
     }
 
     function renderAimAndCueOverlay() {
       oCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+
+      const boardRect = canvas.getBoundingClientRect();
+      const screenStrikerX = boardRect.left + striker.x;
+      const screenStrikerY = boardRect.top + striker.y;
+
       if (isAiming && isGameRunning) {
         let dx = dragOrigin.x - dragCurrent.x;
         let dy = dragOrigin.y - dragCurrent.y;
+        let rawDist = Math.hypot(dx, dy);
+        let force = Math.min(rawDist * 0.18, 18);
         let angle = Math.atan2(dy, dx);
+        let dirX = Math.cos(angle);
+        let dirY = Math.sin(angle);
+
+        let cx = striker.x, cy = striker.y;
+        let hitTarget = null, ghostPos = null;
+        for (let d = 0; d < SIZE * 0.85; d += 3) {
+          cx += dirX * 3;
+          cy += dirY * 3;
+          if (cx < striker.r + 20 || cx > SIZE - striker.r - 20 || cy < striker.r + 20 || cy > SIZE - striker.r - 20) {
+            ghostPos = { x: cx, y: cy };
+            break;
+          }
+          for (let p of pucks) {
+            if (!p.inPocket && Math.hypot(p.x - cx, p.y - cy) < (striker.r + p.r)) {
+              hitTarget = p;
+              ghostPos = { x: cx, y: cy };
+              break;
+            }
+          }
+          if (ghostPos) break;
+        }
+
         ctx.save();
-        ctx.strokeStyle = '#10b981';
-        ctx.lineWidth = 3;
+        let beamColor = force > 12 ? '#ff2a5f' : '#10b981';
+        ctx.strokeStyle = beamColor;
+        ctx.shadowColor = beamColor;
+        ctx.shadowBlur = 16;
+        ctx.lineWidth = 3.5;
         ctx.beginPath();
         ctx.moveTo(striker.x, striker.y);
-        ctx.lineTo(striker.x + Math.cos(angle) * 70, striker.y + Math.sin(angle) * 70);
+        ctx.lineTo(cx, cy);
         ctx.stroke();
+
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(striker.x, striker.y);
+        ctx.lineTo(cx, cy);
+        ctx.stroke();
+
+        if (ghostPos) {
+          ctx.strokeStyle = 'rgba(16, 185, 129, 0.9)';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([5, 5]);
+          ctx.beginPath();
+          ctx.arc(ghostPos.x, ghostPos.y, striker.r, 0, Math.PI * 2);
+          ctx.stroke();
+
+          if (hitTarget) {
+            let tDx = hitTarget.x - ghostPos.x;
+            let tDy = hitTarget.y - ghostPos.y;
+            let tDist = Math.hypot(tDx, tDy);
+            if (tDist > 0) {
+              ctx.strokeStyle = '#f1c40f';
+              ctx.shadowColor = '#f1c40f';
+              ctx.shadowBlur = 12;
+              ctx.setLineDash([]);
+              ctx.lineWidth = 2.5;
+              ctx.beginPath();
+              ctx.moveTo(hitTarget.x, hitTarget.y);
+              ctx.lineTo(hitTarget.x + (tDx/tDist)*50, hitTarget.y + (tDy/tDist)*50);
+              ctx.stroke();
+            }
+          }
+        }
         ctx.restore();
+
+        let visualPull = Math.min(rawDist * 0.85, 95);
+        drawProCueStick(screenStrikerX, screenStrikerY, angle, visualPull);
+      }
+
+      if (cueAnimation.active) {
+        let currentPull = cueAnimation.pullDistance * (1 - cueAnimation.snapProgress);
+        drawProCueStick(screenStrikerX, screenStrikerY, cueAnimation.angle, currentPull);
       }
     }
 
@@ -1962,10 +2620,11 @@
       requestAnimationFrame(renderLoop);
     }
 
+    // --- जीत पर INTERSTITIAL AD TRIGGER ---
     function celebrateWin(isP1Winner) {
       isGameRunning = false;
       document.getElementById('win-screen').classList.remove('hidden');
-      if ((isP1Winner && myPlayerRole === 1) || (!isP1Winner && myPlayerRole === 2)) {
+      if (isP1Winner) {
         user.coins += potCoins;
         saveUserState();
         document.getElementById('win-title').innerText = "🎉 आप जीत गए! 🎉";
@@ -1974,11 +2633,14 @@
         document.getElementById('win-title').innerText = "😔 मैच समाप्त!";
         document.getElementById('win-reward').innerText = `+ 0`;
       }
-      setTimeout(showNativeInterstitialAd, 800);
+
+      setTimeout(() => {
+        showNativeInterstitialAd();
+      }, 700);
     }
 
     loadSavedUser();
-    dismissWelcomeScreen();
+    initWelcomeSplash();
     window.addEventListener('load', () => setTimeout(initAdMobEngine, 600));
     requestAnimationFrame(renderLoop);
   </script>
