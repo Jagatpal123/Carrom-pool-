@@ -48,6 +48,12 @@ jobs:
         npx @capacitor/assets generate --android || true
         npx cap sync android
 
+    - name: Inject AdMob App ID into AndroidManifest (Prevents Crash)
+      run: |
+        MANIFEST="android/app/src/main/AndroidManifest.xml"
+        # AdMob App ID को AndroidManifest.xml में इंजेक्ट करना ताकि ऐप खुले ही क्रैश न हो
+        sed -i '/<\/application>/i \        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6302105448775587~3166646352"\/>' "$MANIFEST"
+
     - name: Build Debug APK (Test Ads + App Logo)
       run: |
         cd android
@@ -56,7 +62,6 @@ jobs:
 
     - name: Build Release AAB (Real Ads + App Logo)
       run: |
-        # रूट डायरेक्टरी में ही sed चलाएं
         sed -i 's/window.IS_RELEASE_BUILD === true/true/g' www/index.html
         npx cap copy android
         cd android
