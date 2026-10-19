@@ -56,10 +56,11 @@ jobs:
 
     - name: Build Release AAB (Real Ads + App Logo)
       run: |
-        cd ..
+        # रूट डायरेक्टरी में ही sed चलाएं
         sed -i 's/window.IS_RELEASE_BUILD === true/true/g' www/index.html
         npx cap copy android
         cd android
+        chmod +x gradlew
         ./gradlew bundleRelease --stacktrace
 
     - name: Upload Test APK
