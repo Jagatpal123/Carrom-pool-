@@ -925,16 +925,15 @@
   <script>
     // --- ADMOB CONFIGURATION: TEST vs REAL ADS ---
     const TEST_ADS = {
-      interstitialId: 'ca-app-pub-3940256099942544/1033173712', // Google Official Test Interstitial
-      rewardedId: 'ca-app-pub-3940256099942544/5224354917'       // Google Official Test Rewarded
+      interstitialId: 'ca-app-pub-3940256099942544/1033173712',
+      rewardedId: 'ca-app-pub-3940256099942544/5224354917'
     };
 
     const REAL_ADS = {
-      interstitialId: 'ca-app-pub-6302105448775587/1791739528', // Your Real Interstitial ID
-      rewardedId: 'ca-app-pub-6302105448775587/8722225362'       // Your Real Rewarded ID
+      interstitialId: 'ca-app-pub-6302105448775587/1791739528',
+      rewardedId: 'ca-app-pub-6302105448775587/8722225362'
     };
 
-    // Auto-detect Release (AAB) vs Debug (APK)
     const isRelease = window.IS_RELEASE_BUILD === true;
     const ADMOB_CONFIG = isRelease ? REAL_ADS : TEST_ADS;
 
@@ -942,35 +941,42 @@
     let pendingRewardCallback = null;
 
     async function initAdMobEngine() {
-      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
-        try {
-          const { AdMob } = window.Capacitor.Plugins;
-          await AdMob.initialize({ requestTrackingAuthorization: true });
-          isAdMobReady = true;
+      if (typeof window.Capacitor === 'undefined' || !window.Capacitor.isNativePlatform()) {
+        return;
+      }
 
-          // Rewarded Ad listeners
-          AdMob.addListener('onRewardedVideoAdReward', () => {
-            if (pendingRewardCallback) {
-              pendingRewardCallback();
-              pendingRewardCallback = null;
-            }
-          });
+      try {
+        const { AdMob } = window.Capacitor.Plugins;
+        if (!AdMob) return;
 
-          AdMob.addListener('onRewardedVideoAdDismissed', () => {
-            prepareRewardedAd();
-          });
+        await AdMob.initialize({
+          testingDevices: [],
+          initializeForTesting: !isRelease
+        });
+        isAdMobReady = true;
 
-          // Interstitial Ad listeners
-          AdMob.addListener('onInterstitialDismissed', () => {
-            prepareInterstitialAd();
-          });
+        AdMob.addListener('onRewardedVideoAdReward', () => {
+          if (pendingRewardCallback) {
+            pendingRewardCallback();
+            pendingRewardCallback = null;
+          }
+        });
 
-          // Preload initial ads
+        AdMob.addListener('onRewardedVideoAdDismissed', () => {
+          prepareRewardedAd();
+        });
+
+        AdMob.addListener('onInterstitialDismissed', () => {
+          prepareInterstitialAd();
+        });
+
+        setTimeout(() => {
           prepareRewardedAd();
           prepareInterstitialAd();
-        } catch (err) {
-          console.log('AdMob initialization error:', err);
-        }
+        }, 1500);
+
+      } catch (err) {
+        console.warn('AdMob Init notice:', err);
       }
     }
 
@@ -1011,7 +1017,6 @@
           }
         }
       } else {
-        // Local Browser testing fallback
         setTimeout(() => {
           onSuccess();
         }, 800);
@@ -1848,7 +1853,6 @@
 
       let queenFoulOccurred = false;
 
-      // अगर अपनी गोटियाँ बाकी होने पर रानी गिरा दी -> फाउल पेनल्टी
       if (isQueenPocketedThisTurn && myPucksRemaining > 0) {
         queenFoulOccurred = true;
         placePuckNearCenter(queenPuck);
@@ -1862,7 +1866,6 @@
         updatePuckCounts();
       }
 
-      // जीत की जांच (सारी गोटियां + रानी अनिवार्य)
       const p1Left = pucks.filter(p => !p.inPocket && p.type === 'white').length;
       const p2Left = pucks.filter(p => !p.inPocket && p.type === 'black').length;
       const queenIsPocketed = queenPuck && queenPuck.inPocket;
@@ -1876,7 +1879,6 @@
         return;
       }
 
-      // टर्न डिसीजन
       let keepTurn = false;
       if (strikerFouledThisTurn || queenFoulOccurred) {
         keepTurn = false;
@@ -2401,7 +2403,6 @@
         document.getElementById('win-reward').innerText = `+ 0`;
       }
 
-      // मैच पूरा होने के तुरंत बाद Interstitial Ad चलेगा
       setTimeout(() => {
         showNativeInterstitialAd();
       }, 700);
@@ -2409,7 +2410,12 @@
 
     loadSavedUser();
     initWelcomeSplash();
-    initAdMobEngine();
+
+    // DOM और Capacitor लोड होने के बाद AdMob इंजन शुरू करना
+    window.addEventListener('load', () => {
+      setTimeout(initAdMobEngine, 600);
+    });
+
     requestAnimationFrame(renderLoop);
   </script>
 </body>
