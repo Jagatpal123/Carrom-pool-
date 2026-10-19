@@ -1,4 +1,4 @@
-name: Build APK and AAB with App Icon
+name: Build Signed Carrom APK and Production AAB
 
 on:
   push:
@@ -10,72 +10,93 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Source Code
+    - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup Node.js
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
         node-version: 20
 
-    - name: Setup Java JDK
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-
-    - name: Install NPM Packages & Assets Generator
+    - name: Install dependencies
       run: |
-        npm install
-        npm install -D @capacitor/assets
+        npm install --legacy-peer-deps || npm install
 
-    - name: Prepare Assets & Generate App Icons
+    - name: Prepare Web Assets
       run: |
         mkdir -p www
-        mkdir -p assets
         cp index.html www/index.html
-        if [ -f logo.png ]; then
+        if [ -f "logo.png" ]; then
           cp logo.png www/logo.png
-          cp logo.png assets/icon.png
-          cp logo.png assets/icon-only.png || true
-          cp logo.png assets/icon-foreground.png || true
-          cp logo.png assets/icon-background.png || true
         fi
 
     - name: Setup Capacitor Android
       run: |
         npx cap add android || true
-        npx @capacitor/assets generate --android || true
         npx cap sync android
 
-    - name: Inject AdMob App ID into AndroidManifest (Prevents Crash)
+    - name: Configure Package, AdMob & App Icons
       run: |
-        MANIFEST="android/app/src/main/AndroidManifest.xml"
-        # AdMob App ID को AndroidManifest.xml में इंजेक्ट करना ताकि ऐप खुले ही क्रैश न हो
-        sed -i '/<\/application>/i \        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6302105448775587~3166646352"\/>' "$MANIFEST"
+        # 1. Force Exact Package Name
+        sed -i 's/applicationId .*/applicationId "com.jagatpal.carrompool"/' android/app/build.gradle
+        
+        # 2. Version Code & Version Name
+        sed -i 's/versionCode [0-9]*/versionCode 1/g' android/app/build.gradle
+        sed -i 's/versionName ".*"/versionName "1.0.0"/g' android/app/build.gradle
 
-    - name: Build Debug APK (Test Ads + App Logo)
+        # 3. Inject App Icon Safely
+        if [ -f "logo.png" ]; then
+          rm -rf android/app/src/main/res/mipmap-anydpi-v26
+          for dir in android/app/src/main/res/mipmap-hdpi android/app/src/main/res/mipmap-mdpi android/app/src/main/res/mipmap-xhdpi android/app/src/main/res/mipmap-xxhdpi android/app/src/main/res/mipmap-xxxhdpi; do
+            mkdir -p "$dir"
+            cp logo.png "$dir/ic_launcher.png"
+            cp logo.png "$dir/ic_launcher_round.png"
+            cp logo.png "$dir/ic_launcher_foreground.png" 2>/dev/null || true
+          done
+        fi
+
+        # 4. Permissions in Manifest
+        sed -i '/<manifest/a \    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />' android/app/src/main/AndroidManifest.xml
+
+        # 5. AdMob App ID Injection
+        sed -i '/<\/application>/i \        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6302105448775587~3166646352"\/>' android/app/src/main/AndroidManifest.xml
+
+    # --- STEP A: TEST AD WALI SIGNED APK BANANA ---
+    - name: Prepare, Build and Sign Test-Ad APK
       run: |
         cd android
         chmod +x gradlew
-        ./gradlew assembleDebug --stacktrace
+        ./gradlew assembleRelease
 
-    - name: Build Release AAB (Real Ads + App Logo)
+        BUILD_TOOLS_DIR=$(ls -d $ANDROID_HOME/build-tools/* | tail -1)
+        $BUILD_TOOLS_DIR/zipalign -v -p 4 app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/app-aligned.apk
+        $BUILD_TOOLS_DIR/apksigner sign --ks ../release.keystore --ks-key-alias bhakti --ks-pass pass:Jagatpal@2026 --key-pass pass:Jagatpal@2026 --out app/build/outputs/apk/release/CarromPool-TestAds.apk app/build/outputs/apk/release/app-aligned.apk
+
+    # --- STEP B: PRODUCTION REAL AD WALI SIGNED AAB BANANA ---
+    - name: Prepare, Build and Sign Production AAB
       run: |
         sed -i 's/window.IS_RELEASE_BUILD === true/true/g' www/index.html
         npx cap copy android
-        cd android
-        chmod +x gradlew
-        ./gradlew bundleRelease --stacktrace
 
+        cd android
+        ./gradlew bundleRelease
+        jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore ../release.keystore -storepass Jagatpal@2026 -keypass Jagatpal@2026 app/build/outputs/bundle/release/app-release.aab bhakti
+
+    # --- UPLOAD ARTIFACTS ---
     - name: Upload Test APK
       uses: actions/upload-artifact@v4
       with:
-        name: Carrom-Test-APK
-        path: android/app/build/outputs/apk/debug/app-debug.apk
+        name: CarromPool-TestAds-APK
+        path: android/app/build/outputs/apk/release/CarromPool-TestAds.apk
 
-    - name: Upload Release AAB
+    - name: Upload Production Real-Ad AAB
       uses: actions/upload-artifact@v4
       with:
-        name: Carrom-Release-AAB
+        name: CarromPool-Production-RealAds-AAB
         path: android/app/build/outputs/bundle/release/app-release.aab
