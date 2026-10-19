@@ -1,4 +1,4 @@
-name: Build APK and AAB
+name: Build APK and AAB with App Icon
 
 on:
   push:
@@ -24,26 +24,43 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Install NPM Packages
-      run: npm install
+    - name: Install NPM Packages & Assets Generator
+      run: |
+        npm install
+        npm install -D @capacitor/assets
 
-    - name: Build Debug APK (Test Ads)
+    - name: Prepare Assets & Generate App Icons
       run: |
         mkdir -p www
-        sed 's/window.IS_RELEASE_BUILD === true/false/g' index.html > www/index.html
-        cp logo.png www/ || true
+        mkdir -p assets
+        cp index.html www/index.html
+        if [ -f logo.png ]; then
+          cp logo.png www/logo.png
+          cp logo.png assets/icon.png
+          cp logo.png assets/icon-only.png || true
+          cp logo.png assets/icon-foreground.png || true
+          cp logo.png assets/icon-background.png || true
+        fi
+
+    - name: Setup Capacitor Android
+      run: |
         npx cap add android || true
+        npx @capacitor/assets generate --android || true
         npx cap sync android
+
+    - name: Build Debug APK (Test Ads + App Logo)
+      run: |
         cd android
         chmod +x gradlew
-        ./gradlew assembleDebug
+        ./gradlew assembleDebug --stacktrace
 
-    - name: Build Release AAB (Real Ads for Play Store)
+    - name: Build Release AAB (Real Ads + App Logo)
       run: |
-        sed 's/window.IS_RELEASE_BUILD === true/true/g' index.html > www/index.html
-        npx cap sync android
+        cd ..
+        sed -i 's/window.IS_RELEASE_BUILD === true/true/g' www/index.html
+        npx cap copy android
         cd android
-        ./gradlew bundleRelease
+        ./gradlew bundleRelease --stacktrace
 
     - name: Upload Test APK
       uses: actions/upload-artifact@v4
