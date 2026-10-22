@@ -22,7 +22,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 18
 
     - name: Install dependencies
       run: |
@@ -46,13 +46,14 @@ jobs:
         # 1. Force Package Name
         sed -i 's/applicationId .*/applicationId "com.jagatpal.carrompool"/' android/app/build.gradle
         
-        # 2. Update to Target SDK 36 & Version Code 3 (Next Release)
+        # 2. Update to Target SDK 36 & Version Code 4
+        sed -i 's/minSdkVersion = .*/minSdkVersion = 24/' android/variables.gradle
         sed -i 's/compileSdkVersion = .*/compileSdkVersion = 36/' android/variables.gradle
         sed -i 's/targetSdkVersion = .*/targetSdkVersion = 36/' android/variables.gradle
         echo "android.suppressUnsupportedCompileSdk=36" >> android/gradle.properties
 
-        sed -i 's/versionCode [0-9]*/versionCode 3/g' android/app/build.gradle
-        sed -i 's/versionName ".*"/versionName "1.0.2"/g' android/app/build.gradle
+        sed -i 's/versionCode [0-9]*/versionCode 4/g' android/app/build.gradle
+        sed -i 's/versionName ".*"/versionName "1.0.3"/g' android/app/build.gradle
 
         # 3. Inject App Icon Safely
         if [ -f "logo.png" ]; then
@@ -68,13 +69,16 @@ jobs:
         # 4. Permissions in Manifest
         sed -i '/<manifest/a \    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />' android/app/src/main/AndroidManifest.xml
 
-        # 5. AdMob App ID & Hardware Acceleration Injection
+        # 5. AdMob App ID
         sed -i '/<\/application>/i \        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6302105448775587~3166646352"\/>' android/app/src/main/AndroidManifest.xml
-        sed -i 's/<activity/<activity android:hardwareAccelerated="true"/g' android/app/src/main/AndroidManifest.xml
 
     # --- STEP A: TEST AD WALI SIGNED APK BANANA ---
     - name: Prepare, Build and Sign Test-Ad APK
       run: |
+        sed -i 's/ca-app-pub-6302105448775587\/1791739528/ca-app-pub-3940256099942544\/1033173712/g' android/app/src/main/assets/public/index.html || true
+        sed -i 's/ca-app-pub-6302105448775587\/8722225362/ca-app-pub-3940256099942544\/5224354917/g' android/app/src/main/assets/public/index.html || true
+        sed -i 's/isTesting: false/isTesting: true/g' android/app/src/main/assets/public/index.html || true
+
         cd android
         chmod +x gradlew
         ./gradlew assembleRelease
@@ -86,8 +90,9 @@ jobs:
     # --- STEP B: PRODUCTION REAL AD WALI SIGNED AAB BANANA ---
     - name: Prepare, Build and Sign Production AAB
       run: |
-        sed -i 's/window.IS_RELEASE_BUILD === true/true/g' www/index.html
-        npx cap copy android
+        sed -i 's/ca-app-pub-3940256099942544\/1033173712/ca-app-pub-6302105448775587\/1791739528/g' android/app/src/main/assets/public/index.html || true
+        sed -i 's/ca-app-pub-3940256099942544\/5224354917/ca-app-pub-6302105448775587\/8722225362/g' android/app/src/main/assets/public/index.html || true
+        sed -i 's/isTesting: true/isTesting: false/g' android/app/src/main/assets/public/index.html || true
 
         cd android
         ./gradlew bundleRelease
