@@ -2,7 +2,7 @@
 <html lang="hi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Carrom Pool Pro 3D - Ultimate Edition</title>
   
   <!-- Firebase Compatibility Scripts -->
@@ -13,6 +13,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Orbitron:wght@800;900&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --sat: env(safe-area-inset-top, 0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+    }
     * {
       box-sizing: border-box;
       margin: 0;
@@ -20,7 +24,11 @@
       user-select: none;
       -webkit-user-select: none;
     }
-    body {
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
       background: radial-gradient(circle at 50% 28%, #1f5745 0%, #0d2e23 45%, #051610 85%, #020906 100%);
       color: #fff;
       font-family: 'Montserrat', sans-serif;
@@ -28,7 +36,6 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100vh;
       overflow: hidden;
       touch-action: none;
     }
@@ -43,7 +50,8 @@
       align-items: center;
       justify-content: flex-start;
       z-index: 10;
-      padding-bottom: 74px;
+      padding-top: var(--sat);
+      padding-bottom: calc(74px + var(--sab));
       overflow-y: auto;
       touch-action: pan-y;
       -webkit-overflow-scrolling: touch;
@@ -408,8 +416,8 @@
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
-      height: 100vh;
-      padding: 10px 0 16px;
+      height: 100%;
+      padding: calc(var(--sat) + 8px) 0 calc(var(--sab) + 12px);
       overflow: hidden;
       touch-action: none;
     }
@@ -585,7 +593,7 @@
     }
     #chat-drawer {
       position: fixed;
-      bottom: 74px;
+      bottom: calc(74px + var(--sab));
       left: 5%;
       width: 90%;
       max-width: 380px;
@@ -629,7 +637,8 @@
       bottom: 0;
       left: 0;
       width: 100%;
-      height: 68px;
+      height: calc(68px + var(--sab));
+      padding-bottom: var(--sab);
       background: linear-gradient(180deg, rgba(12, 40, 30, 0.98) 0%, rgba(4, 18, 13, 0.98) 100%);
       border-top: 2px solid rgba(52, 211, 153, 0.4);
       display: flex;
@@ -1069,6 +1078,7 @@
     const ADMOB_CONFIG = isRelease ? REAL_ADS : TEST_ADS;
 
     let isAdMobReady = false;
+    let isAdShowing = false;
     let pendingRewardCallback = null;
 
     async function initAdMobEngine() {
@@ -1085,8 +1095,14 @@
             pendingRewardCallback = null;
           }
         });
-        AdMob.addListener('onRewardedVideoAdDismissed', () => prepareRewardedAd());
-        AdMob.addListener('onInterstitialDismissed', () => prepareInterstitialAd());
+        AdMob.addListener('onRewardedVideoAdDismissed', () => {
+          isAdShowing = false;
+          prepareRewardedAd();
+        });
+        AdMob.addListener('onInterstitialDismissed', () => {
+          isAdShowing = false;
+          prepareInterstitialAd();
+        });
 
         setTimeout(() => {
           prepareRewardedAd();
@@ -1109,12 +1125,15 @@
       if (isAdMobReady) {
         try {
           pendingRewardCallback = onSuccess;
+          isAdShowing = true;
           await window.Capacitor.Plugins.AdMob.showRewardVideoAd();
         } catch (e) {
           try {
             await prepareRewardedAd();
+            isAdShowing = true;
             await window.Capacitor.Plugins.AdMob.showRewardVideoAd();
           } catch (err) {
+            isAdShowing = false;
             alert('विज्ञापन लोड हो रहा है, कृपया 2 सेकंड बाद पुनः प्रयास करें।');
             pendingRewardCallback = null;
           }
@@ -1125,7 +1144,12 @@
     }
     async function showNativeInterstitialAd() {
       if (isAdMobReady) {
-        try { await window.Capacitor.Plugins.AdMob.showInterstitial(); } catch (e) {}
+        try {
+          isAdShowing = true;
+          await window.Capacitor.Plugins.AdMob.showInterstitial();
+        } catch (e) {
+          isAdShowing = false;
+        }
       }
     }
 
@@ -1146,9 +1170,13 @@
       });
     }
 
-    // --- ANDROID HARDWARE BACK BUTTON LISTENER ---
+    // --- ANDROID HARDWARE BACK BUTTON LISTENER (ADS + APP SAFE) ---
     if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
       window.Capacitor.Plugins.App.addListener('backButton', () => {
+        if (isAdShowing) {
+          isAdShowing = false;
+          return;
+        }
         const winScreen = document.getElementById('win-screen');
         const matchmakingModal = document.getElementById('matchmaking-modal');
         if (matchmakingModal && !matchmakingModal.classList.contains('hidden')) {
@@ -1248,7 +1276,7 @@
     window.addEventListener('touchstart', () => AudioEngine.init(), { once: true });
     window.addEventListener('mousedown', () => AudioEngine.init(), { once: true });
 
-    // --- FULL 30 STRIKERS CATALOG (ORIGINAL) ---
+    // --- FULL 30 STRIKERS CATALOG ---
     const STRIKER_NAMES = [
       'टाइटन गोल्ड', 'इलेक्ट्रिक सायन', 'ग्रीन लेज़र', 'रूबी फ्लेम', 'ब्लैक होल', 'आइस ग्लैशियर',
       'सन बर्न', 'डार्क मैटर', 'एमराल्ड प्रो', 'थंडर स्टॉर्म', 'वाइपर टॉक्सिक', 'प्लाज्मा कोर',
@@ -1301,7 +1329,7 @@
       };
     });
 
-    // --- FULL 30 PUCKS CATALOG (ORIGINAL) ---
+    // --- FULL 30 PUCKS CATALOG ---
     const PUCK_NAMES = [
       'क्लासिक एक्रिलिक', 'ग्रीन लाइट नियॉन', 'ब्लू स्पार्क', 'रॉयल गोल्डन', 'क्रिस्टल डायमंड', 'एमराल्ड प्राइड',
       'रूबी शाइन', 'ऑब्सीडियन नाइट', 'मूनस्टोन वाइट', 'सनबर्स्ट ऑरेंज', 'साइबर पर्पल', 'आइस मिंट',
@@ -1330,7 +1358,7 @@
       };
     });
 
-    // --- FULL 30 STRIKER POWERS / AURAS CATALOG (ORIGINAL) ---
+    // --- FULL 30 STRIKER POWERS / AURAS CATALOG ---
     const POWER_NAMES = [
       'एमराल्ड पल्स', 'इलेक्ट्रिक थंडर', 'सुपरनोवा गोल्ड', 'वॉयड ब्लैकहोल', 'ड्रैगन फ्लेम', 'प्लाज्मा स्टॉर्म',
       'साइबर ग्रिड', 'क्रायो फ्रीज', 'सोलारिस फ्लेयर', 'टॉक्सिक वेव', 'क्वांटम फील्ड', 'गैलेक्टिक वॉर्टेक्स',
@@ -1357,7 +1385,7 @@
       };
     });
 
-    // --- FULL VFX CATALOG (ORIGINAL) ---
+    // --- FULL VFX CATALOG ---
     const VFX_CATALOG = [
       { id: 'vfx_ring', name: 'ग्रीन लाइट वेव', price: 0, color: '#10b981', type: 'ring' },
       { id: 'vfx_electric', name: 'बिजली थंडर रिंग्स', price: 600, color: '#00f7ff', type: 'electric' },
@@ -1430,7 +1458,7 @@
       }
     }
 
-    // --- 4-SUB TABS RENDERER (ALL RESTORED) ---
+    // --- 4-SUB TABS RENDERER ---
     let currentEqTab = 'pucks';
 
     function switchEquipmentTab(tab) {
@@ -1560,7 +1588,6 @@
     let pocketedThisTurn = [];
     let strikerFouledThisTurn = false;
 
-    // 1. CREATE PRIVATE ONLINE ROOM
     function createPrivateOnlineRoom() {
       const code = 'CP-' + Math.floor(1000 + Math.random() * 9000);
       currentRoomId = code;
@@ -1588,7 +1615,6 @@
       });
     }
 
-    // 2. JOIN PRIVATE ONLINE ROOM
     function joinPrivateOnlineRoom() {
       const code = document.getElementById('room-code-input').value.trim();
       if (!code) return alert("कृपया वैध रूम कोड दर्ज करें!");
@@ -1611,7 +1637,6 @@
       });
     }
 
-    // 3. RANDOM MATCHMAKING (HYBRID: FIREBASE OR SMART BOT)
     function startMatchmakingFlow(mode, bet = 100) {
       if (user.coins < bet) return alert("पर्याप्त सिक्के नहीं हैं! शॉप से मुफ़्त सिक्के क्लेम करें।");
       currentBet = bet;
@@ -1707,7 +1732,6 @@
       navTo('home');
     }
 
-    // --- LIVE STICKER & CHAT SYSTEM ---
     function toggleChatDrawer() {
       const drawer = document.getElementById('chat-drawer');
       drawer.classList.toggle('hidden');
@@ -2075,7 +2099,6 @@
       if (!isMoving && !striker.inHand) handleTurnEnd();
     }
 
-    // --- QUEEN RULE + PENALTY LOGIC ---
     function handleTurnEnd() {
       const myColor = currentTurn === 1 ? 'white' : 'black';
       const myPucksRemaining = pucks.filter(p => !p.inPocket && p.type === myColor).length;
@@ -2142,7 +2165,6 @@
       document.getElementById('p2-box').className = 'player-box' + (currentTurn === 2 ? ' bot-turn-active' : '');
     }
 
-    // --- 3D CARROM BOARD RENDERING ---
     function drawCarromBoard() {
       let outerWood = ctx.createLinearGradient(0, 0, SIZE, SIZE);
       outerWood.addColorStop(0, '#381608');
@@ -2174,7 +2196,6 @@
       ctx.fillStyle = cushionShadow;
       ctx.fillRect(20, 20, SIZE - 40, 15);
 
-      // Center Mandala
       ctx.save();
       ctx.translate(SIZE/2, SIZE/2);
       for (let i = 0; i < 8; i++) {
@@ -2205,7 +2226,6 @@
       ctx.fill();
       ctx.restore();
 
-      // Baselines
       [SIZE * 0.81, SIZE * 0.19].forEach(y => {
         ctx.strokeStyle = '#991b1b';
         ctx.lineWidth = 2.2;
@@ -2237,7 +2257,6 @@
         });
       });
 
-      // Pockets
       pockets.forEach(p => {
         let brassRim = ctx.createRadialGradient(p.x, p.y, POCKET_RADIUS * 0.7, p.x, p.y, POCKET_RADIUS);
         brassRim.addColorStop(0, '#111');
@@ -2255,7 +2274,6 @@
         ctx.fill();
       });
 
-      // Pocket VFX
       for (let i = activeVfxPockets.length - 1; i >= 0; i--) {
         let v = activeVfxPockets[i];
         v.progress += 0.04;
@@ -2298,7 +2316,6 @@
       }
     }
 
-    // --- 3D PUCKS RENDERER (FULL DETAIL RESTORED) ---
     function drawUltraRealisticPuck(x, y, r, type) {
       const puckSkin = PUCK_CATALOG.find(p => p.id === user.equipped.puck) || PUCK_CATALOG[0];
       const pColor = type === 'queen' ? puckSkin.queen : (type === 'white' ? puckSkin.white : puckSkin.black);
@@ -2351,7 +2368,6 @@
       ctx.restore();
     }
 
-    // --- 3D ANIMATED STRIKER POWERS / AURA RENDERER (RESTORED) ---
     function drawStrikerPowerAura(x, y, r) {
       const pow = POWER_CATALOG.find(p => p.id === user.equipped.power) || POWER_CATALOG[0];
       const color = pow.color;
@@ -2422,7 +2438,6 @@
       ctx.restore();
     }
 
-    // --- 3D STRIKER RENDERER (RESTORED) ---
     function drawUltraRealisticStriker() {
       const { x, y, r } = striker;
       const sSkin = STRIKER_CATALOG.find(s => s.id === user.equipped.striker) || STRIKER_CATALOG[0];
@@ -2472,7 +2487,6 @@
       ctx.restore();
     }
 
-    // --- 3D CUE STICK (RESTORED) ---
     function drawProCueStick(screenX, screenY, angle, pullDist) {
       oCtx.save();
       oCtx.translate(screenX, screenY);
@@ -2620,7 +2634,6 @@
       requestAnimationFrame(renderLoop);
     }
 
-    // --- जीत पर INTERSTITIAL AD TRIGGER ---
     function celebrateWin(isP1Winner) {
       isGameRunning = false;
       document.getElementById('win-screen').classList.remove('hidden');
