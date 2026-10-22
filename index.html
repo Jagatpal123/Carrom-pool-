@@ -917,14 +917,14 @@
             <div style="font-weight:900; font-size:14px; color:#fff;">डेली लकी बोनस</div>
             <div style="font-size:11px; font-weight:700; color:#34d399;">+500 सिक्के मुफ़्त</div>
           </div>
-          <button class="btn-3d btn-gold" style="width:auto; padding:6px 16px; margin-top:0;" onclick="claimDailyReward()">क्लेम करें</button>
+          <button class="btn-3d btn-gold" style="width:auto; padding:6px 16px; margin-top:0;" onclick="claimDailyReward()">📺 क्लेम करें</button>
         </div>
         <div class="arena-row">
           <div>
             <div style="font-weight:900; font-size:14px; color:#fff;">हर घंटे का सरप्राइज</div>
             <div style="font-size:11px; font-weight:700; color:#38bdf8;">+150 सिक्के मुफ़्त</div>
           </div>
-          <button class="btn-3d btn-cyan" style="width:auto; padding:6px 16px; margin-top:0;" onclick="claimHourlyReward()">क्लेम करें</button>
+          <button class="btn-3d btn-cyan" style="width:auto; padding:6px 16px; margin-top:0;" onclick="claimHourlyReward()">📺 क्लेम करें</button>
         </div>
       </div>
     </div>
@@ -1079,6 +1079,7 @@
 
     let isAdMobReady = false;
     let isAdShowing = false;
+    let rewardGrantedThisSession = false;
     let pendingRewardCallback = null;
 
     async function initAdMobEngine() {
@@ -1090,15 +1091,29 @@
         isAdMobReady = true;
 
         AdMob.addListener('onRewardedVideoAdReward', () => {
-          if (pendingRewardCallback) {
+          rewardGrantedThisSession = true;
+          if (typeof pendingRewardCallback === 'function') {
             pendingRewardCallback();
             pendingRewardCallback = null;
           }
         });
+
         AdMob.addListener('onRewardedVideoAdDismissed', () => {
           isAdShowing = false;
+          if (rewardGrantedThisSession && typeof pendingRewardCallback === 'function') {
+            pendingRewardCallback();
+            pendingRewardCallback = null;
+          }
+          rewardGrantedThisSession = false;
           prepareRewardedAd();
         });
+
+        AdMob.addListener('onRewardedVideoAdFailedToShow', () => {
+          isAdShowing = false;
+          pendingRewardCallback = null;
+          rewardGrantedThisSession = false;
+        });
+
         AdMob.addListener('onInterstitialDismissed', () => {
           isAdShowing = false;
           prepareInterstitialAd();
@@ -1121,10 +1136,13 @@
       if (!isAdMobReady) return;
       try { await window.Capacitor.Plugins.AdMob.prepareInterstitial({ adId: ADMOB_CONFIG.interstitialId }); } catch (e) {}
     }
+
     async function showNativeRewardedAd(onSuccess) {
+      rewardGrantedThisSession = false;
+      pendingRewardCallback = onSuccess;
+
       if (isAdMobReady) {
         try {
-          pendingRewardCallback = onSuccess;
           isAdShowing = true;
           await window.Capacitor.Plugins.AdMob.showRewardVideoAd();
         } catch (e) {
@@ -1134,14 +1152,20 @@
             await window.Capacitor.Plugins.AdMob.showRewardVideoAd();
           } catch (err) {
             isAdShowing = false;
-            alert('विज्ञापन लोड हो रहा है, कृपया 2 सेकंड बाद पुनः प्रयास करें।');
             pendingRewardCallback = null;
+            alert('विज्ञापन लोड हो रहा है, कृपया 2 सेकंड बाद पुनः प्रयास करें।');
           }
         }
       } else {
-        setTimeout(onSuccess, 800);
+        setTimeout(() => {
+          if (typeof pendingRewardCallback === 'function') {
+            pendingRewardCallback();
+            pendingRewardCallback = null;
+          }
+        }, 1000);
       }
     }
+
     async function showNativeInterstitialAd() {
       if (isAdMobReady) {
         try {
@@ -1157,20 +1181,42 @@
       showNativeRewardedAd(() => {
         user.coins += 250;
         saveUserState();
+        syncCoinDisplays();
         alert("🎉 बधाई! +250 सिक्के आपके खाते में जुड़ गए।");
       });
     }
 
     function watchAdToUnlock(category, itemId, itemName) {
       showNativeRewardedAd(() => {
-        if (!user.inventory[category].includes(itemId)) user.inventory[category].push(itemId);
+        if (!user.inventory[category].includes(itemId)) {
+          user.inventory[category].push(itemId);
+        }
         equipItem(category, itemId);
         saveUserState();
+        renderEquipmentTab();
         alert(`🎉 बधाई! "${itemName}" मुफ़्त अनलॉक हो गया!`);
       });
     }
 
-    // --- ANDROID HARDWARE BACK BUTTON LISTENER (ADS + APP SAFE) ---
+    function claimDailyReward() {
+      showNativeRewardedAd(() => {
+        user.coins += 500;
+        saveUserState();
+        syncCoinDisplays();
+        alert("🎉 शानदार! आपका डेली बोनस +500 सिक्के खाते में जोड़ दिए गए हैं।");
+      });
+    }
+
+    function claimHourlyReward() {
+      showNativeRewardedAd(() => {
+        user.coins += 150;
+        saveUserState();
+        syncCoinDisplays();
+        alert("⚡ बधाई! +150 सिक्के मुफ़्त जोड़ दिए गए हैं।");
+      });
+    }
+
+    // --- ANDROID HARDWARE BACK BUTTON LISTENER ---
     if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
       window.Capacitor.Plugins.App.addListener('backButton', () => {
         if (isAdShowing) {
@@ -1562,18 +1608,6 @@
       user.coins -= price;
       user.inventory[category].push(itemId);
       equipItem(category, itemId);
-    }
-
-    function claimDailyReward() {
-      user.coins += 500;
-      saveUserState();
-      alert("🎉 शानदार! आपका डेली बोनस +500 सिक्के खाते में जोड़ दिए गए हैं।");
-    }
-
-    function claimHourlyReward() {
-      user.coins += 150;
-      saveUserState();
-      alert("⚡ बधाई! +150 सिक्के मुफ़्त जोड़ दिए गए हैं।");
     }
 
     // --- GAME ENGINE, HYBRID ONLINE & ROOM CODES ---
