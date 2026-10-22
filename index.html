@@ -1045,8 +1045,161 @@
     </div>
   </div>
 
+  <!-- ================= ADMOB NATIVE INTEGRATION ENGINE (BAL GYAN PROVEN PATTERN) ================= -->
   <script>
-    // --- FIREBASE REALTIME MULTIPLAYER INTEGRATION ---
+    const AdConfig = {
+      interstitialId: 'ca-app-pub-6302105448775587/1791739528',
+      rewardedId: 'ca-app-pub-6302105448775587/8722225362',
+      isRewardedLoaded: false
+    };
+
+    const AdService = {
+      async init() {
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
+          try {
+            const { AdMob } = window.Capacitor.Plugins;
+            await AdMob.initialize({
+              testingDevices: [],
+              initializeForTesting: false
+            });
+            this.preloadRewarded();
+            this.preloadInterstitial();
+          } catch (e) {
+            console.warn('AdMob Init Error:', e);
+          }
+        }
+      },
+
+      async preloadInterstitial() {
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
+          try {
+            const { AdMob } = window.Capacitor.Plugins;
+            await AdMob.prepareInterstitial({
+              adId: AdConfig.interstitialId,
+              isTesting: false
+            });
+          } catch (e) {}
+        }
+      },
+
+      async showInterstitial() {
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
+          try {
+            const { AdMob } = window.Capacitor.Plugins;
+            await AdMob.showInterstitial();
+            this.preloadInterstitial();
+          } catch (e) {
+            try {
+              await this.preloadInterstitial();
+              await window.Capacitor.Plugins.AdMob.showInterstitial();
+            } catch (err) {}
+          }
+        }
+      },
+
+      async preloadRewarded() {
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
+          try {
+            const { AdMob } = window.Capacitor.Plugins;
+            await AdMob.prepareRewardVideoAd({
+              adId: AdConfig.rewardedId,
+              isTesting: false
+            });
+            AdConfig.isRewardedLoaded = true;
+          } catch (e) {
+            console.warn('Rewarded Preload Error:', e);
+          }
+        }
+      },
+
+      // BAL GYAN'S EXACT WORKING REWARDED ENGINE WITH OFFICIAL AD EVENTS
+      async showRewarded(onRewardCallback) {
+        let callbackExecuted = false;
+        const executeCallback = () => {
+          if (!callbackExecuted && typeof onRewardCallback === 'function') {
+            callbackExecuted = true;
+            onRewardCallback();
+          }
+        };
+
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
+          try {
+            const { AdMob, RewardAdEvents } = window.Capacitor.Plugins;
+            let rewardedGranted = false;
+
+            const onRewarded = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Rewarded : 'onRewarded', () => {
+              rewardedGranted = true;
+            });
+
+            const onDismissed = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Dismissed : 'onDismissed', () => {
+              onRewarded.remove();
+              onDismissed.remove();
+              AdConfig.isRewardedLoaded = false;
+              AdService.preloadRewarded();
+              if (rewardedGranted) {
+                executeCallback();
+              }
+            });
+
+            await AdMob.showRewardVideoAd();
+            return;
+          } catch (e) {
+            console.warn('Rewarded Show Error (Trying Preload):', e);
+            try {
+              await this.preloadRewarded();
+              await window.Capacitor.Plugins.AdMob.showRewardVideoAd();
+            } catch (err) {
+              alert('विज्ञापन लोड हो रहा है, कृपया 2 सेकंड बाद पुनः प्रयास करें।');
+            }
+          }
+        } else {
+          executeCallback();
+        }
+      }
+    };
+
+    function watchAdForFreeCoins() {
+      AdService.showRewarded(() => {
+        user.coins += 250;
+        saveUserState();
+        syncCoinDisplays();
+        alert("🎉 बधाई! +250 सिक्के आपके खाते में जुड़ गए।");
+      });
+    }
+
+    function watchAdToUnlock(category, itemId, itemName) {
+      AdService.showRewarded(() => {
+        if (!user.inventory[category].includes(itemId)) {
+          user.inventory[category].push(itemId);
+        }
+        equipItem(category, itemId);
+        saveUserState();
+        renderEquipmentTab();
+        alert(`🎉 बधाई! "${itemName}" मुफ़्त अनलॉक हो गया!`);
+      });
+    }
+
+    function claimDailyReward() {
+      AdService.showRewarded(() => {
+        user.coins += 500;
+        saveUserState();
+        syncCoinDisplays();
+        alert("🎉 शानदार! आपका डेली बोनस +500 सिक्के खाते में जोड़ दिए गए हैं।");
+      });
+    }
+
+    function claimHourlyReward() {
+      AdService.showRewarded(() => {
+        user.coins += 150;
+        saveUserState();
+        syncCoinDisplays();
+        alert("⚡ बधाई! +150 सिक्के मुफ़्त जोड़ दिए गए हैं।");
+      });
+    }
+  </script>
+
+  <!-- ================= CARROM APPLICATION ENGINE ================= -->
+  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyDDUuCe12Z2W6O3yG9uRdPjLjBsY8ZyqUc",
       authDomain: "carrom-pool-online.firebaseapp.com",
@@ -1062,127 +1215,9 @@
     const database = firebase.database();
 
     let currentRoomId = null;
-    let myPlayerRole = 1; // 1 = Host/White, 2 = Guest/Black
+    let myPlayerRole = 1;
     let isRealFirebaseMatch = false;
 
-    // --- ADMOB CONFIGURATION: EXACT BHAKTI REELS PATTERN ---
-    const TEST_ADS = {
-      interstitialId: 'ca-app-pub-3940256099942544/1033173712',
-      rewardedId: 'ca-app-pub-3940256099942544/5224354917'
-    };
-    const REAL_ADS = {
-      interstitialId: 'ca-app-pub-6302105448775587/1791739528',
-      rewardedId: 'ca-app-pub-6302105448775587/8722225362'
-    };
-    const isRelease = window.IS_RELEASE_BUILD === true;
-    const ADMOB_CONFIG = isRelease ? REAL_ADS : TEST_ADS;
-
-    async function initAdMobEngine() {
-      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
-        try {
-          await window.Capacitor.Plugins.AdMob.initialize({
-            requestTrackingAuthorization: true,
-            initializeForTesting: !isRelease
-          });
-          preloadInterstitial();
-        } catch (e) {
-          console.error("AdMob Init error: ", e);
-        }
-      }
-    }
-
-    async function preloadInterstitial() {
-      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
-        try {
-          await window.Capacitor.Plugins.AdMob.prepareInterstitial({
-            adId: ADMOB_CONFIG.interstitialId,
-            isTesting: !isRelease
-          });
-        } catch (e) {}
-      }
-    }
-
-    // EXACT BHAKTI REELS REWARDED LOGIC (AWAIT DIRECT RESULT)
-    async function showNativeRewardedAd(onSuccess) {
-      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
-        const { AdMob } = window.Capacitor.Plugins;
-        try {
-          await AdMob.prepareRewardVideoAd({
-            adId: ADMOB_CONFIG.rewardedId,
-            isTesting: !isRelease
-          });
-
-          const rewardResult = await AdMob.showRewardVideoAd();
-          // Timer khatam hone aur close button dabte hi direct trigger
-          if (rewardResult) {
-            onSuccess();
-          }
-        } catch (e) {
-          console.error("Ad playback error: ", e);
-          alert("विज्ञापन लोड नहीं हो सका। कृपया 2 सेकंड बाद पुनः प्रयास करें।");
-        }
-      } else {
-        // Web / Browser Fallback
-        alert("विज्ञापन पूरा हुआ!");
-        onSuccess();
-      }
-    }
-
-    async function showNativeInterstitialAd() {
-      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
-        const { AdMob } = window.Capacitor.Plugins;
-        try {
-          await AdMob.showInterstitial();
-          preloadInterstitial();
-        } catch (e) {
-          try {
-            await preloadInterstitial();
-            await AdMob.showInterstitial();
-          } catch (err) {}
-        }
-      }
-    }
-
-    function watchAdForFreeCoins() {
-      showNativeRewardedAd(() => {
-        user.coins += 250;
-        saveUserState();
-        syncCoinDisplays();
-        alert("🎉 बधाई! +250 सिक्के आपके खाते में जुड़ गए।");
-      });
-    }
-
-    function watchAdToUnlock(category, itemId, itemName) {
-      showNativeRewardedAd(() => {
-        if (!user.inventory[category].includes(itemId)) {
-          user.inventory[category].push(itemId);
-        }
-        equipItem(category, itemId);
-        saveUserState();
-        renderEquipmentTab();
-        alert(`🎉 बधाई! "${itemName}" मुफ़्त अनलॉक हो गया!`);
-      });
-    }
-
-    function claimDailyReward() {
-      showNativeRewardedAd(() => {
-        user.coins += 500;
-        saveUserState();
-        syncCoinDisplays();
-        alert("🎉 शानदार! आपका डेली बोनस +500 सिक्के खाते में जोड़ दिए गए हैं।");
-      });
-    }
-
-    function claimHourlyReward() {
-      showNativeRewardedAd(() => {
-        user.coins += 150;
-        saveUserState();
-        syncCoinDisplays();
-        alert("⚡ बधाई! +150 सिक्के मुफ़्त जोड़ दिए गए हैं।");
-      });
-    }
-
-    // --- ANDROID HARDWARE BACK BUTTON LISTENER ---
     if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
       window.Capacitor.Plugins.App.addListener('backButton', () => {
         const winScreen = document.getElementById('win-screen');
@@ -1197,7 +1232,6 @@
       });
     }
 
-    // --- SMART LOGO FALLBACK SYSTEM ---
     function handleLogoFallback(imgElement) {
       imgElement.onerror = null;
       imgElement.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23381608'/><rect x='8' y='8' width='84' height='84' rx='14' fill='%23f4dcbc'/><circle cx='50' cy='50' r='18' fill='%23dc2626' stroke='%23ffd700' stroke-width='4'/><circle cx='50' cy='50' r='7' fill='%23ffd700'/><circle cx='18' cy='18' r='6' fill='%23111'/><circle cx='82' cy='18' r='6' fill='%23111'/><circle cx='18' cy='82' r='6' fill='%23111'/><circle cx='82' cy='82' r='6' fill='%23111'/></svg>";
@@ -1220,7 +1254,6 @@
       }
     }
 
-    // --- REAL AUDIO SYNTHESIS ENGINE ---
     const AudioEngine = {
       ctx: null,
       init() {
@@ -1284,7 +1317,6 @@
     window.addEventListener('touchstart', () => AudioEngine.init(), { once: true });
     window.addEventListener('mousedown', () => AudioEngine.init(), { once: true });
 
-    // --- FULL 30 STRIKERS CATALOG ---
     const STRIKER_NAMES = [
       'टाइटन गोल्ड', 'इलेक्ट्रिक सायन', 'ग्रीन लेज़र', 'रूबी फ्लेम', 'ब्लैक होल', 'आइस ग्लैशियर',
       'सन बर्न', 'डार्क मैटर', 'एमराल्ड प्रो', 'थंडर स्टॉर्म', 'वाइपर टॉक्सिक', 'प्लाज्मा कोर',
@@ -1337,7 +1369,6 @@
       };
     });
 
-    // --- FULL 30 PUCKS CATALOG ---
     const PUCK_NAMES = [
       'क्लासिक एक्रिलिक', 'ग्रीन लाइट नियॉन', 'ब्लू स्पार्क', 'रॉयल गोल्डन', 'क्रिस्टल डायमंड', 'एमराल्ड प्राइड',
       'रूबी शाइन', 'ऑब्सीडियन नाइट', 'मूनस्टोन वाइट', 'सनबर्स्ट ऑरेंज', 'साइबर पर्पल', 'आइस मिंट',
@@ -1366,7 +1397,6 @@
       };
     });
 
-    // --- FULL 30 STRIKER POWERS / AURAS CATALOG ---
     const POWER_NAMES = [
       'एमराल्ड पल्स', 'इलेक्ट्रिक थंडर', 'सुपरनोवा गोल्ड', 'वॉयड ब्लैकहोल', 'ड्रैगन फ्लेम', 'प्लाज्मा स्टॉर्म',
       'साइबर ग्रिड', 'क्रायो फ्रीज', 'सोलारिस फ्लेयर', 'टॉक्सिक वेव', 'क्वांटम फील्ड', 'गैलेक्टिक वॉर्टेक्स',
@@ -1393,7 +1423,6 @@
       };
     });
 
-    // --- FULL VFX CATALOG ---
     const VFX_CATALOG = [
       { id: 'vfx_ring', name: 'ग्रीन लाइट वेव', price: 0, color: '#10b981', type: 'ring' },
       { id: 'vfx_electric', name: 'बिजली थंडर रिंग्स', price: 600, color: '#00f7ff', type: 'electric' },
@@ -1401,7 +1430,6 @@
       { id: 'vfx_vortex', name: 'ब्लैक होल वॉर्टेक्स', price: 1500, color: '#c084fc', type: 'vortex' }
     ];
 
-    // --- USER INVENTORY & STATE ---
     let user = {
       name: 'खिलाड़ी 1',
       emoji: '🤠',
@@ -1438,7 +1466,6 @@
       document.getElementById('home-coins').innerText = user.coins;
     }
 
-    // --- NAVIGATION ---
     function navTo(screen) {
       document.getElementById('home-screen').classList.add('hidden');
       document.getElementById('friends-screen').classList.add('hidden');
@@ -1466,7 +1493,6 @@
       }
     }
 
-    // --- 4-SUB TABS RENDERER ---
     let currentEqTab = 'pucks';
 
     function switchEquipmentTab(tab) {
@@ -1572,7 +1598,6 @@
       equipItem(category, itemId);
     }
 
-    // --- GAME ENGINE, HYBRID ONLINE & ROOM CODES ---
     let currentBet = 100;
     let potCoins = 200;
     let isPassAndPlay = false;
@@ -1785,7 +1810,6 @@
       });
     }
 
-    // --- CANVAS, PHYSICS & SCREEN-WIDE DRAG AIMING ---
     const canvas = document.getElementById('carromCanvas');
     const ctx = canvas.getContext('2d');
     const overlayCanvas = document.getElementById('cueOverlayCanvas');
@@ -1830,7 +1854,6 @@
       const center = { x: SIZE/2, y: SIZE/2 };
       const pr = SIZE * 0.036;
 
-      // रानी (Queen)
       pucks.push({ x: center.x, y: center.y, r: pr, vx: 0, vy: 0, type: 'queen', inPocket: false });
 
       for (let i = 0; i < 6; i++) {
@@ -2644,13 +2667,13 @@
       }
 
       setTimeout(() => {
-        showNativeInterstitialAd();
+        AdService.showInterstitial();
       }, 700);
     }
 
     loadSavedUser();
     initWelcomeSplash();
-    window.addEventListener('load', () => setTimeout(initAdMobEngine, 600));
+    window.addEventListener('load', () => setTimeout(() => AdService.init(), 600));
     requestAnimationFrame(renderLoop);
   </script>
 </body>
