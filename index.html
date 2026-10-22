@@ -1065,7 +1065,7 @@
     let myPlayerRole = 1; // 1 = Host/White, 2 = Guest/Black
     let isRealFirebaseMatch = false;
 
-    // --- ADMOB CONFIGURATION: TEST vs REAL ADS ---
+    // --- ADMOB CONFIGURATION: EXACT BHAKTI REELS PATTERN ---
     const TEST_ADS = {
       interstitialId: 'ca-app-pub-3940256099942544/1033173712',
       rewardedId: 'ca-app-pub-3940256099942544/5224354917'
@@ -1077,102 +1077,68 @@
     const isRelease = window.IS_RELEASE_BUILD === true;
     const ADMOB_CONFIG = isRelease ? REAL_ADS : TEST_ADS;
 
-    let isAdMobReady = false;
-    let isAdShowing = false;
-    let rewardGrantedThisSession = false;
-    let pendingRewardCallback = null;
-
     async function initAdMobEngine() {
-      if (typeof window.Capacitor === 'undefined' || !window.Capacitor.isNativePlatform()) return;
-      try {
-        const { AdMob } = window.Capacitor.Plugins;
-        if (!AdMob) return;
-        await AdMob.initialize({ testingDevices: [], initializeForTesting: !isRelease });
-        isAdMobReady = true;
-
-        AdMob.addListener('onRewardedVideoAdReward', () => {
-          rewardGrantedThisSession = true;
-          if (typeof pendingRewardCallback === 'function') {
-            pendingRewardCallback();
-            pendingRewardCallback = null;
-          }
-        });
-
-        AdMob.addListener('onRewardedVideoAdDismissed', () => {
-          isAdShowing = false;
-          if (rewardGrantedThisSession && typeof pendingRewardCallback === 'function') {
-            pendingRewardCallback();
-            pendingRewardCallback = null;
-          }
-          rewardGrantedThisSession = false;
-          prepareRewardedAd();
-        });
-
-        AdMob.addListener('onRewardedVideoAdFailedToShow', () => {
-          isAdShowing = false;
-          pendingRewardCallback = null;
-          rewardGrantedThisSession = false;
-        });
-
-        AdMob.addListener('onInterstitialDismissed', () => {
-          isAdShowing = false;
-          prepareInterstitialAd();
-        });
-
-        setTimeout(() => {
-          prepareRewardedAd();
-          prepareInterstitialAd();
-        }, 1500);
-      } catch (err) {
-        console.warn('AdMob Notice:', err);
+      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
+        try {
+          await window.Capacitor.Plugins.AdMob.initialize({
+            requestTrackingAuthorization: true,
+            initializeForTesting: !isRelease
+          });
+          preloadInterstitial();
+        } catch (e) {
+          console.error("AdMob Init error: ", e);
+        }
       }
     }
 
-    async function prepareRewardedAd() {
-      if (!isAdMobReady) return;
-      try { await window.Capacitor.Plugins.AdMob.prepareRewardVideoAd({ adId: ADMOB_CONFIG.rewardedId }); } catch (e) {}
-    }
-    async function prepareInterstitialAd() {
-      if (!isAdMobReady) return;
-      try { await window.Capacitor.Plugins.AdMob.prepareInterstitial({ adId: ADMOB_CONFIG.interstitialId }); } catch (e) {}
-    }
-
-    async function showNativeRewardedAd(onSuccess) {
-      rewardGrantedThisSession = false;
-      pendingRewardCallback = onSuccess;
-
-      if (isAdMobReady) {
+    async function preloadInterstitial() {
+      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
         try {
-          isAdShowing = true;
-          await window.Capacitor.Plugins.AdMob.showRewardVideoAd();
-        } catch (e) {
-          try {
-            await prepareRewardedAd();
-            isAdShowing = true;
-            await window.Capacitor.Plugins.AdMob.showRewardVideoAd();
-          } catch (err) {
-            isAdShowing = false;
-            pendingRewardCallback = null;
-            alert('विज्ञापन लोड हो रहा है, कृपया 2 सेकंड बाद पुनः प्रयास करें।');
+          await window.Capacitor.Plugins.AdMob.prepareInterstitial({
+            adId: ADMOB_CONFIG.interstitialId,
+            isTesting: !isRelease
+          });
+        } catch (e) {}
+      }
+    }
+
+    // EXACT BHAKTI REELS REWARDED LOGIC (AWAIT DIRECT RESULT)
+    async function showNativeRewardedAd(onSuccess) {
+      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
+        const { AdMob } = window.Capacitor.Plugins;
+        try {
+          await AdMob.prepareRewardVideoAd({
+            adId: ADMOB_CONFIG.rewardedId,
+            isTesting: !isRelease
+          });
+
+          const rewardResult = await AdMob.showRewardVideoAd();
+          // Timer khatam hone aur close button dabte hi direct trigger
+          if (rewardResult) {
+            onSuccess();
           }
+        } catch (e) {
+          console.error("Ad playback error: ", e);
+          alert("विज्ञापन लोड नहीं हो सका। कृपया 2 सेकंड बाद पुनः प्रयास करें।");
         }
       } else {
-        setTimeout(() => {
-          if (typeof pendingRewardCallback === 'function') {
-            pendingRewardCallback();
-            pendingRewardCallback = null;
-          }
-        }, 1000);
+        // Web / Browser Fallback
+        alert("विज्ञापन पूरा हुआ!");
+        onSuccess();
       }
     }
 
     async function showNativeInterstitialAd() {
-      if (isAdMobReady) {
+      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
+        const { AdMob } = window.Capacitor.Plugins;
         try {
-          isAdShowing = true;
-          await window.Capacitor.Plugins.AdMob.showInterstitial();
+          await AdMob.showInterstitial();
+          preloadInterstitial();
         } catch (e) {
-          isAdShowing = false;
+          try {
+            await preloadInterstitial();
+            await AdMob.showInterstitial();
+          } catch (err) {}
         }
       }
     }
@@ -1219,10 +1185,6 @@
     // --- ANDROID HARDWARE BACK BUTTON LISTENER ---
     if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
       window.Capacitor.Plugins.App.addListener('backButton', () => {
-        if (isAdShowing) {
-          isAdShowing = false;
-          return;
-        }
         const winScreen = document.getElementById('win-screen');
         const matchmakingModal = document.getElementById('matchmaking-modal');
         if (matchmakingModal && !matchmakingModal.classList.contains('hidden')) {
