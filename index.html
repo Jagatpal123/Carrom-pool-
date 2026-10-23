@@ -1045,13 +1045,12 @@
     </div>
   </div>
 
-  <!-- ================= ADMOB NATIVE INTEGRATION ENGINE (BULLETPROOF HARDWARE-SYNCED) ================= -->
+  <!-- ================= RELIABLE HARDWARE-LEVEL ADMOB ENGINE ================= -->
   <script>
     const AdConfig = {
       interstitialId: 'ca-app-pub-6302105448775587/1791739528',
       rewardedId: 'ca-app-pub-6302105448775587/8722225362',
-      isRelease: true,
-      isPreloaded: false
+      isRelease: true
     };
 
     const AdService = {
@@ -1063,15 +1062,14 @@
               testingDevices: [],
               initializeForTesting: !AdConfig.isRelease
             });
-            this.prepareRewarded();
-            this.prepareInterstitial();
+            this.preloadInterstitial();
           } catch (e) {
             console.warn('AdMob Init Error:', e);
           }
         }
       },
 
-      async prepareInterstitial() {
+      async preloadInterstitial() {
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           try {
             await window.Capacitor.Plugins.AdMob.prepareInterstitial({
@@ -1086,77 +1084,70 @@
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           try {
             await window.Capacitor.Plugins.AdMob.showInterstitial();
-            setTimeout(() => this.prepareInterstitial(), 2000);
+            setTimeout(() => this.preloadInterstitial(), 2000);
           } catch (e) {
             try {
-              await this.prepareInterstitial();
+              await this.preloadInterstitial();
               await window.Capacitor.Plugins.AdMob.showInterstitial();
             } catch (err) {}
           }
         }
       },
 
-      async prepareRewarded() {
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
-          try {
-            await window.Capacitor.Plugins.AdMob.prepareRewardVideoAd({
-              adId: AdConfig.rewardedId,
-              isTesting: !AdConfig.isRelease
-            });
-            AdConfig.isPreloaded = true;
-          } catch (err) {
-            AdConfig.isPreloaded = false;
-          }
-        }
-      },
-
-      // CLEAN DYNAMIC LIFECYCLE: NO DEADLOCK, GUARANTEED REWARD DISPATCH
+      // CLEAN HARDWARE-DIRECT METHOD: NO LOCKS, NO LEAKS, DIRECT EXECUTION
       async showRewarded(onRewardCallback) {
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           const { AdMob, RewardAdEvents } = window.Capacitor.Plugins;
-          let earned = false;
+          let isRewarded = false;
           let rListener = null;
           let dListener = null;
+          let hasFinished = false;
 
-          const removeListeners = async () => {
+          const finishAdSession = () => {
+            if (hasFinished) return;
+            hasFinished = true;
+
             try {
-              if (rListener) await rListener.remove();
-              if (dListener) await dListener.remove();
+              if (rListener) rListener.remove();
+              if (dListener) dListener.remove();
             } catch (e) {}
-            AdConfig.isPreloaded = false;
-            // Native Android view ko unbind hone ke liye 1.5s clear gap
-            setTimeout(() => {
-              AdService.prepareRewarded();
-            }, 1500);
+
+            // Callback run karein
+            if (isRewarded && typeof onRewardCallback === 'function') {
+              setTimeout(() => {
+                onRewardCallback();
+              }, 250);
+            }
           };
 
           try {
-            // Prepare agar cached na ho
-            if (!AdConfig.isPreloaded) {
-              await AdMob.prepareRewardVideoAd({
-                adId: AdConfig.rewardedId,
-                isTesting: !AdConfig.isRelease
-              });
-              AdConfig.isPreloaded = true;
-            }
+            // 1. Prepare video immediately
+            await AdMob.prepareRewardVideoAd({
+              adId: AdConfig.rewardedId,
+              isTesting: !AdConfig.isRelease
+            });
 
+            // 2. Attach listeners
             rListener = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Rewarded : 'onRewarded', () => {
-              earned = true;
+              isRewarded = true;
             });
 
-            dListener = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Dismissed : 'onDismissed', async () => {
-              await removeListeners();
-              if (earned && typeof onRewardCallback === 'function') {
-                // Focus phone screen par wapas aane ke baad update execute karein
-                setTimeout(() => {
-                  onRewardCallback();
-                }, 200);
-              }
+            dListener = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Dismissed : 'onDismissed', () => {
+              finishAdSession();
             });
 
+            // 3. Show ad
             await AdMob.showRewardVideoAd();
-          } catch (err) {
-            await removeListeners();
+
+            // Fail-safe: Agar AdMob dismiss event miss kar de, toh window focus aate hi check karein
+            const onFocusReturn = () => {
+              window.removeEventListener('focus', onFocusReturn);
+              setTimeout(finishAdSession, 600);
+            };
+            window.addEventListener('focus', onFocusReturn, { once: true });
+
+          } catch (showError) {
+            finishAdSession();
             alert('अगला विज्ञापन लोड हो रहा है, कृपया 2-3 सेकंड बाद पुनः दबाएं।');
           }
         } else {
@@ -1177,10 +1168,10 @@
       });
     }
 
-    // 100% BULLETPROOF UNLOCK & EQUIP ENGINE
+    // 100% WORKING UNLOCK & EQUIP FUNCTION
     function watchAdToUnlock(category, itemId, itemName) {
       AdService.showRewarded(() => {
-        // 1. Inventory me add karein
+        // 1. Inventory array update
         if (!user.inventory[category]) {
           user.inventory[category] = [];
         }
@@ -1188,21 +1179,19 @@
           user.inventory[category].push(itemId);
         }
 
-        // 2. Singular Key Mapping (pucks -> puck, strikers -> striker, powers -> power, vfx -> vfx)
-        const singularMap = {
+        // 2. Equipped item mapping
+        const keyMap = {
           'pucks': 'puck',
           'strikers': 'striker',
           'powers': 'power',
           'vfx': 'vfx'
         };
-        const eqKey = singularMap[category] || category;
+        const eqKey = keyMap[category] || category;
         user.equipped[eqKey] = itemId;
 
-        // 3. Save state & force instant UI refresh
+        // 3. Force state save & direct DOM re-draw
         saveUserState();
-        requestAnimationFrame(() => {
-          renderEquipmentTab();
-        });
+        renderEquipmentTab();
 
         alert(`🎉 बधाई! "${itemName}" मुफ़्त अनलॉक होकर उपयोग में आ गया है!`);
       });
