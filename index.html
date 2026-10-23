@@ -1045,12 +1045,14 @@
     </div>
   </div>
 
-  <!-- ================= RELIABLE HARDWARE-LEVEL ADMOB ENGINE ================= -->
+  <!-- ================= ADMOB NATIVE INTEGRATION ENGINE (FOOLPROOF REWARD & AUTO-RESET) ================= -->
   <script>
     const AdConfig = {
       interstitialId: 'ca-app-pub-6302105448775587/1791739528',
       rewardedId: 'ca-app-pub-6302105448775587/8722225362',
-      isRelease: true
+      isRelease: true,
+      isLoaded: false,
+      isWatching: false
     };
 
     const AdService = {
@@ -1062,6 +1064,7 @@
               testingDevices: [],
               initializeForTesting: !AdConfig.isRelease
             });
+            this.preloadRewarded();
             this.preloadInterstitial();
           } catch (e) {
             console.warn('AdMob Init Error:', e);
@@ -1094,64 +1097,84 @@
         }
       },
 
-      // CLEAN HARDWARE-DIRECT METHOD: NO LOCKS, NO LEAKS, DIRECT EXECUTION
-      async showRewarded(onRewardCallback) {
+      async preloadRewarded() {
+        if (AdConfig.isWatching) return;
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
-          const { AdMob, RewardAdEvents } = window.Capacitor.Plugins;
-          let isRewarded = false;
-          let rListener = null;
-          let dListener = null;
-          let hasFinished = false;
-
-          const finishAdSession = () => {
-            if (hasFinished) return;
-            hasFinished = true;
-
-            try {
-              if (rListener) rListener.remove();
-              if (dListener) dListener.remove();
-            } catch (e) {}
-
-            // Callback run karein
-            if (isRewarded && typeof onRewardCallback === 'function') {
-              setTimeout(() => {
-                onRewardCallback();
-              }, 250);
-            }
-          };
-
           try {
-            // 1. Prepare video immediately
+            const { AdMob } = window.Capacitor.Plugins;
             await AdMob.prepareRewardVideoAd({
               adId: AdConfig.rewardedId,
               isTesting: !AdConfig.isRelease
             });
+            AdConfig.isLoaded = true;
+          } catch (e) {
+            AdConfig.isLoaded = false;
+          }
+        }
+      },
 
-            // 2. Attach listeners
-            rListener = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Rewarded : 'onRewarded', () => {
-              isRewarded = true;
+      async showRewarded(onRewardCallback) {
+        if (AdConfig.isWatching) return;
+
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
+          const { AdMob, RewardAdEvents } = window.Capacitor.Plugins;
+          let userEarnedReward = false;
+          let rewardListener1 = null;
+          let rewardListener2 = null;
+          let dismissListener = null;
+
+          AdConfig.isWatching = true;
+
+          const cleanup = async () => {
+            try {
+              if (rewardListener1) await rewardListener1.remove();
+              if (rewardListener2) await rewardListener2.remove();
+              if (dismissListener) await dismissListener.remove();
+            } catch (err) {}
+            AdConfig.isWatching = false;
+            AdConfig.isLoaded = false;
+            
+            // Ad बंद होने के ठीक 2 सेकंड बाद अगला वीडियो बैकग्राउंड में लोड होगा
+            setTimeout(() => {
+              AdService.preloadRewarded();
+            }, 2000);
+          };
+
+          try {
+            if (!AdConfig.isLoaded) {
+              await AdMob.prepareRewardVideoAd({
+                adId: AdConfig.rewardedId,
+                isTesting: !AdConfig.isRelease
+              });
+              AdConfig.isLoaded = true;
+            }
+
+            // Capacitor AdMob के सभी संभव इवेंट्स को एक साथ सुना जा रहा है
+            rewardListener1 = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.RewardReceived : 'onRewardReceived', () => {
+              userEarnedReward = true;
             });
 
-            dListener = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Dismissed : 'onDismissed', () => {
-              finishAdSession();
+            rewardListener2 = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Rewarded : 'onRewarded', () => {
+              userEarnedReward = true;
             });
 
-            // 3. Show ad
+            dismissListener = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Dismissed : 'onDismissed', async () => {
+              await cleanup();
+              if (userEarnedReward && typeof onRewardCallback === 'function') {
+                setTimeout(() => {
+                  onRewardCallback();
+                }, 150);
+              }
+            });
+
             await AdMob.showRewardVideoAd();
 
-            // Fail-safe: Agar AdMob dismiss event miss kar de, toh window focus aate hi check karein
-            const onFocusReturn = () => {
-              window.removeEventListener('focus', onFocusReturn);
-              setTimeout(finishAdSession, 600);
-            };
-            window.addEventListener('focus', onFocusReturn, { once: true });
-
           } catch (showError) {
-            finishAdSession();
+            await cleanup();
             alert('अगला विज्ञापन लोड हो रहा है, कृपया 2-3 सेकंड बाद पुनः दबाएं।');
           }
         } else {
-          // Web testing fallback
+          // वेब ब्राउज़र टेस्ट फ़ॉलबैक
           if (typeof onRewardCallback === 'function') {
             onRewardCallback();
           }
@@ -1161,17 +1184,17 @@
 
     function watchAdForFreeCoins() {
       AdService.showRewarded(() => {
-        user.coins += 250;
+        user.coins = Number(user.coins || 0) + 250;
         saveUserState();
         syncCoinDisplays();
-        alert("🎉 बधाई! +250 सिक्के आपके खाते में जुड़ गए।");
+        alert("🎉 बधाई! +250 सिक्के आपके खाते में जुड़ गए हैं।");
       });
     }
 
-    // 100% WORKING UNLOCK & EQUIP FUNCTION
+    // 100% सटीक अनलॉक और इक्विप फ़ंक्शन
     function watchAdToUnlock(category, itemId, itemName) {
       AdService.showRewarded(() => {
-        // 1. Inventory array update
+        // 1. इन्वेंट्री में जोड़ें
         if (!user.inventory[category]) {
           user.inventory[category] = [];
         }
@@ -1179,17 +1202,19 @@
           user.inventory[category].push(itemId);
         }
 
-        // 2. Equipped item mapping
-        const keyMap = {
+        // 2. Plural से Singular में बदलें (pucks -> puck, strikers -> striker, powers -> power, vfx -> vfx)
+        const singularMap = {
           'pucks': 'puck',
           'strikers': 'striker',
           'powers': 'power',
           'vfx': 'vfx'
         };
-        const eqKey = keyMap[category] || category;
+        const eqKey = singularMap[category] || category;
+        
+        // 3. तुरंत उपयोग में लाएं (Equip)
         user.equipped[eqKey] = itemId;
 
-        // 3. Force state save & direct DOM re-draw
+        // 4. सेव करें और स्क्रीन तुरंत दोबारा रेंडर करें
         saveUserState();
         renderEquipmentTab();
 
@@ -1199,7 +1224,7 @@
 
     function claimDailyReward() {
       AdService.showRewarded(() => {
-        user.coins += 500;
+        user.coins = Number(user.coins || 0) + 500;
         saveUserState();
         syncCoinDisplays();
         alert("🎉 शानदार! आपका डेली बोनस +500 सिक्के खाते में जोड़ दिए गए हैं।");
@@ -1208,7 +1233,7 @@
 
     function claimHourlyReward() {
       AdService.showRewarded(() => {
-        user.coins += 150;
+        user.coins = Number(user.coins || 0) + 150;
         saveUserState();
         syncCoinDisplays();
         alert("⚡ बधाई! +150 सिक्के मुफ़्त जोड़ दिए गए हैं।");
