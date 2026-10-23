@@ -1045,12 +1045,12 @@
     </div>
   </div>
 
-  <!-- ================= ADMOB NATIVE INTEGRATION ENGINE (WITH EVENT CLEANUP) ================= -->
+  <!-- ================= ADMOB NATIVE INTEGRATION ENGINE (BAL GYAN TESTED SYSTEM) ================= -->
   <script>
     const AdConfig = {
       interstitialId: 'ca-app-pub-6302105448775587/1791739528',
       rewardedId: 'ca-app-pub-6302105448775587/8722225362',
-      isReady: false,
+      isRelease: true,
       isShowing: false
     };
 
@@ -1061,22 +1061,22 @@
             const { AdMob } = window.Capacitor.Plugins;
             await AdMob.initialize({
               testingDevices: [],
-              initializeForTesting: false
+              initializeForTesting: !AdConfig.isRelease
             });
-            this.loadRewarded();
-            this.preloadInterstitial();
+            this.prepareRewarded();
+            this.prepareInterstitial();
           } catch (e) {
             console.warn('AdMob Init Error:', e);
           }
         }
       },
 
-      async preloadInterstitial() {
+      async prepareInterstitial() {
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           try {
             await window.Capacitor.Plugins.AdMob.prepareInterstitial({
               adId: AdConfig.interstitialId,
-              isTesting: false
+              isTesting: !AdConfig.isRelease
             });
           } catch (e) {}
         }
@@ -1086,36 +1086,29 @@
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           try {
             await window.Capacitor.Plugins.AdMob.showInterstitial();
-            setTimeout(() => this.preloadInterstitial(), 2000);
+            setTimeout(() => this.prepareInterstitial(), 2000);
           } catch (e) {
             try {
-              await this.preloadInterstitial();
+              await this.prepareInterstitial();
               await window.Capacitor.Plugins.AdMob.showInterstitial();
             } catch (err) {}
           }
         }
       },
 
-      // ताज़ा Rewarded Video लोड करने का फ़ंक्शन
-      async loadRewarded() {
+      async prepareRewarded() {
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           try {
-            const { AdMob } = window.Capacitor.Plugins;
-            await AdMob.prepareRewardVideoAd({
+            await window.Capacitor.Plugins.AdMob.prepareRewardVideoAd({
               adId: AdConfig.rewardedId,
-              isTesting: false
+              isTesting: !AdConfig.isRelease
             });
-            AdConfig.isReady = true;
           } catch (err) {
-            AdConfig.isReady = false;
-            setTimeout(() => {
-              AdService.loadRewarded();
-            }, 4000);
+            setTimeout(() => AdService.prepareRewarded(), 3000);
           }
         }
       },
 
-      // Rewarded Video चलाने और हर बार मेमोरी साफ़ करके नया वीडियो तैयार करने का फ़ंक्शन
       async showRewarded(onRewardCallback) {
         if (AdConfig.isShowing) return;
 
@@ -1124,32 +1117,25 @@
           let isRewarded = false;
           AdConfig.isShowing = true;
 
-          if (!AdConfig.isReady) {
-            try {
-              await this.loadRewarded();
-            } catch (e) {}
-          }
-
-          let rewardHandle = null;
-          let dismissHandle = null;
+          let rewardListener = null;
+          let dismissListener = null;
 
           const cleanup = async () => {
-            if (rewardHandle) await rewardHandle.remove();
-            if (dismissHandle) await dismissHandle.remove();
+            if (rewardListener) await rewardListener.remove();
+            if (dismissListener) await dismissListener.remove();
             AdConfig.isShowing = false;
-            AdConfig.isReady = false;
-            // ऐड बंद होते ही 1.5 सेकंड बाद अगले बटन के लिए नया ऐड तैयार हो जाएगा
+            // Video band hote hi agle button ke liye naya video load karein
             setTimeout(() => {
-              AdService.loadRewarded();
-            }, 1500);
+              AdService.prepareRewarded();
+            }, 1000);
           };
 
           try {
-            rewardHandle = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Rewarded : 'onRewarded', () => {
+            rewardListener = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Rewarded : 'onRewarded', () => {
               isRewarded = true;
             });
 
-            dismissHandle = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Dismissed : 'onDismissed', async () => {
+            dismissListener = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Dismissed : 'onDismissed', async () => {
               await cleanup();
               if (isRewarded && typeof onRewardCallback === 'function') {
                 onRewardCallback();
@@ -1158,8 +1144,13 @@
 
             await AdMob.showRewardVideoAd();
           } catch (showError) {
-            await cleanup();
-            alert('अगला विज्ञापन लोड हो रहा है, कृपया 2-3 सेकंड बाद पुनः दबाएं।');
+            try {
+              await this.prepareRewarded();
+              await AdMob.showRewardVideoAd();
+            } catch (retryError) {
+              await cleanup();
+              alert('अगला विज्ञापन लोड हो रहा है, कृपया 2 सेकंड बाद पुनः प्रयास करें।');
+            }
           }
         } else {
           if (typeof onRewardCallback === 'function') {
@@ -1383,7 +1374,7 @@
     const PUCK_NAMES = [
       'क्लासिक एक्रिलिक', 'ग्रीन लाइट नियॉन', 'ब्लू स्पार्क', 'रॉयल गोल्डन', 'क्रिस्टल डायमंड', 'एमराल्ड प्राइड',
       'रूबी शाइन', 'ऑब्सीडियन नाइट', 'मूनस्टोन वाइट', 'सनबर्स्ट ऑरेंज', 'साइबर पर्पल', 'आइस मिंट',
-      'कोबाल्ट शील्ड', 'लावा मैग्मा', 'गैलेक्सी कॉस्मो', 'पर्ल मार्बल', 'रेट्रो वुड', 'टाइटन ब्रास',
+      'कोबाल्ट शील्ड', 'lava मैग्मा', 'गैलेक्सी कॉस्मो', 'पर्ल मार्बल', 'रेट्रो वुड', 'टाइटन ब्रास',
       'टॉक्सिक स्लाइम', 'ग्लिच साइबर', 'सिल्वर मून', 'रोज गोल्ड', 'डीप सी एक्वा', 'फ्लेमिंगो पिंक',
       'नियॉन सनसेट', 'ग्रेनाइट रॉक', 'डार्क एबिस', 'स्टारडस्ट येलो', 'इलेक्ट्रिक लाइम', 'इंपीरियल जेड'
     ];
