@@ -1045,54 +1045,23 @@
     </div>
   </div>
 
-  <!-- ================= ADMOB NATIVE INTEGRATION ENGINE (RELOAD-SAFE ARCHITECTURE) ================= -->
+  <!-- ================= ADMOB NATIVE INTEGRATION ENGINE (BAL GYAN EXACT PROVEN ENGINE) ================= -->
   <script>
     const AdConfig = {
       interstitialId: 'ca-app-pub-6302105448775587/1791739528',
       rewardedId: 'ca-app-pub-6302105448775587/8722225362',
-      isRelease: true,
-      isLoaded: false,
-      isShowing: false,
-      activeRewardCallback: null,
-      rewardEarned: false
+      isRewardedLoaded: false
     };
 
     const AdService = {
       async init() {
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           try {
-            const { AdMob, RewardAdEvents } = window.Capacitor.Plugins;
+            const { AdMob } = window.Capacitor.Plugins;
             await AdMob.initialize({
               testingDevices: [],
-              initializeForTesting: !AdConfig.isRelease
+              initializeForTesting: false
             });
-
-            // Single global listener registration to prevent state freeze & listener leaks
-            AdMob.addListener(RewardAdEvents ? RewardAdEvents.Rewarded : 'onRewarded', () => {
-              AdConfig.rewardEarned = true;
-            });
-
-            AdMob.addListener(RewardAdEvents ? RewardAdEvents.Dismissed : 'onDismissed', () => {
-              AdConfig.isShowing = false;
-              AdConfig.isLoaded = false;
-
-              // Immediately execute callback if reward earned
-              if (AdConfig.rewardEarned && typeof AdConfig.activeRewardCallback === 'function') {
-                const cb = AdConfig.activeRewardCallback;
-                AdConfig.activeRewardCallback = null;
-                AdConfig.rewardEarned = false;
-                setTimeout(cb, 100);
-              } else {
-                AdConfig.activeRewardCallback = null;
-                AdConfig.rewardEarned = false;
-              }
-
-              // Preload next ad in background
-              setTimeout(() => {
-                AdService.preloadRewarded();
-              }, 1200);
-            });
-
             this.preloadRewarded();
             this.preloadInterstitial();
           } catch (e) {
@@ -1106,7 +1075,7 @@
           try {
             await window.Capacitor.Plugins.AdMob.prepareInterstitial({
               adId: AdConfig.interstitialId,
-              isTesting: !AdConfig.isRelease
+              isTesting: false
             });
           } catch (e) {}
         }
@@ -1116,7 +1085,7 @@
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           try {
             await window.Capacitor.Plugins.AdMob.showInterstitial();
-            setTimeout(() => this.preloadInterstitial(), 2000);
+            this.preloadInterstitial();
           } catch (e) {
             try {
               await this.preloadInterstitial();
@@ -1127,56 +1096,62 @@
       },
 
       async preloadRewarded() {
-        if (AdConfig.isLoaded || AdConfig.isShowing) return;
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           try {
             const { AdMob } = window.Capacitor.Plugins;
             await AdMob.prepareRewardVideoAd({
               adId: AdConfig.rewardedId,
-              isTesting: !AdConfig.isRelease
+              isTesting: false
             });
-            AdConfig.isLoaded = true;
-          } catch (err) {
-            AdConfig.isLoaded = false;
-            setTimeout(() => AdService.preloadRewarded(), 4000);
+            AdConfig.isRewardedLoaded = true;
+          } catch (e) {
+            console.warn('Rewarded Preload Error:', e);
           }
         }
       },
 
+      // BAL GYAN'S EXACT SHOW METHOD - NO FREEZE, IMMEDIATE CALLBACK EXECUTION
       async showRewarded(onRewardCallback) {
-        if (AdConfig.isShowing) {
-          alert('विज्ञापन पहले से लोड हो रहा है, कृपया प्रतीक्षा करें...');
-          return;
-        }
-
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
-          const { AdMob } = window.Capacitor.Plugins;
-          AdConfig.activeRewardCallback = onRewardCallback;
-          AdConfig.rewardEarned = false;
-          AdConfig.isShowing = true;
-
-          try {
-            if (!AdConfig.isLoaded) {
-              await AdMob.prepareRewardVideoAd({
-                adId: AdConfig.rewardedId,
-                isTesting: !AdConfig.isRelease
-              });
-              AdConfig.isLoaded = true;
-            }
-
-            await AdMob.showRewardVideoAd();
-          } catch (err) {
-            AdConfig.isShowing = false;
-            AdConfig.isLoaded = false;
-            AdConfig.activeRewardCallback = null;
-            alert('अगला विज्ञापन लोड हो रहा है, कृपया 2-3 सेकंड बाद दोबारा दबाएं।');
-            setTimeout(() => this.preloadRewarded(), 1000);
-          }
-        } else {
-          // Direct fallback for web test
-          if (typeof onRewardCallback === 'function') {
+        let callbackExecuted = false;
+        const executeCallback = () => {
+          if (!callbackExecuted && typeof onRewardCallback === 'function') {
+            callbackExecuted = true;
             onRewardCallback();
           }
+        };
+
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
+          try {
+            const { AdMob, RewardAdEvents } = window.Capacitor.Plugins;
+            let rewardedGranted = false;
+
+            const onRewarded = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Rewarded : 'onRewarded', () => {
+              rewardedGranted = true;
+            });
+
+            const onDismissed = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Dismissed : 'onDismissed', () => {
+              onRewarded.remove();
+              onDismissed.remove();
+              AdConfig.isRewardedLoaded = false;
+              AdService.preloadRewarded();
+              if (rewardedGranted) {
+                executeCallback();
+              }
+            });
+
+            await AdMob.showRewardVideoAd();
+            return;
+          } catch (e) {
+            console.warn('Rewarded show error:', e);
+            try {
+              await this.preloadRewarded();
+              await window.Capacitor.Plugins.AdMob.showRewardVideoAd();
+            } catch (err) {
+              alert('अगला विज्ञापन लोड हो रहा है, कृपया 2 सेकंड बाद पुनः प्रयास करें।');
+            }
+          }
+        } else {
+          executeCallback();
         }
       }
     };
