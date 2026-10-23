@@ -1045,12 +1045,13 @@
     </div>
   </div>
 
-  <!-- ================= ADMOB NATIVE INTEGRATION ENGINE (BAL GYAN PROVEN PATTERN) ================= -->
+  <!-- ================= ADMOB NATIVE INTEGRATION ENGINE (WITH EVENT CLEANUP) ================= -->
   <script>
     const AdConfig = {
       interstitialId: 'ca-app-pub-6302105448775587/1791739528',
       rewardedId: 'ca-app-pub-6302105448775587/8722225362',
-      isRewardedLoaded: false
+      isReady: false,
+      isShowing: false
     };
 
     const AdService = {
@@ -1062,7 +1063,7 @@
               testingDevices: [],
               initializeForTesting: false
             });
-            this.preloadRewarded();
+            this.loadRewarded();
             this.preloadInterstitial();
           } catch (e) {
             console.warn('AdMob Init Error:', e);
@@ -1073,8 +1074,7 @@
       async preloadInterstitial() {
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           try {
-            const { AdMob } = window.Capacitor.Plugins;
-            await AdMob.prepareInterstitial({
+            await window.Capacitor.Plugins.AdMob.prepareInterstitial({
               adId: AdConfig.interstitialId,
               isTesting: false
             });
@@ -1085,9 +1085,8 @@
       async showInterstitial() {
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           try {
-            const { AdMob } = window.Capacitor.Plugins;
-            await AdMob.showInterstitial();
-            this.preloadInterstitial();
+            await window.Capacitor.Plugins.AdMob.showInterstitial();
+            setTimeout(() => this.preloadInterstitial(), 2000);
           } catch (e) {
             try {
               await this.preloadInterstitial();
@@ -1097,7 +1096,8 @@
         }
       },
 
-      async preloadRewarded() {
+      // ताज़ा Rewarded Video लोड करने का फ़ंक्शन
+      async loadRewarded() {
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           try {
             const { AdMob } = window.Capacitor.Plugins;
@@ -1105,55 +1105,66 @@
               adId: AdConfig.rewardedId,
               isTesting: false
             });
-            AdConfig.isRewardedLoaded = true;
-          } catch (e) {
-            console.warn('Rewarded Preload Error:', e);
+            AdConfig.isReady = true;
+          } catch (err) {
+            AdConfig.isReady = false;
+            setTimeout(() => {
+              AdService.loadRewarded();
+            }, 4000);
           }
         }
       },
 
-      // BAL GYAN'S EXACT WORKING REWARDED ENGINE WITH OFFICIAL AD EVENTS
+      // Rewarded Video चलाने और हर बार मेमोरी साफ़ करके नया वीडियो तैयार करने का फ़ंक्शन
       async showRewarded(onRewardCallback) {
-        let callbackExecuted = false;
-        const executeCallback = () => {
-          if (!callbackExecuted && typeof onRewardCallback === 'function') {
-            callbackExecuted = true;
-            onRewardCallback();
-          }
-        };
+        if (AdConfig.isShowing) return;
 
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
-          try {
-            const { AdMob, RewardAdEvents } = window.Capacitor.Plugins;
-            let rewardedGranted = false;
+          const { AdMob, RewardAdEvents } = window.Capacitor.Plugins;
+          let isRewarded = false;
+          AdConfig.isShowing = true;
 
-            const onRewarded = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Rewarded : 'onRewarded', () => {
-              rewardedGranted = true;
+          if (!AdConfig.isReady) {
+            try {
+              await this.loadRewarded();
+            } catch (e) {}
+          }
+
+          let rewardHandle = null;
+          let dismissHandle = null;
+
+          const cleanup = async () => {
+            if (rewardHandle) await rewardHandle.remove();
+            if (dismissHandle) await dismissHandle.remove();
+            AdConfig.isShowing = false;
+            AdConfig.isReady = false;
+            // ऐड बंद होते ही 1.5 सेकंड बाद अगले बटन के लिए नया ऐड तैयार हो जाएगा
+            setTimeout(() => {
+              AdService.loadRewarded();
+            }, 1500);
+          };
+
+          try {
+            rewardHandle = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Rewarded : 'onRewarded', () => {
+              isRewarded = true;
             });
 
-            const onDismissed = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Dismissed : 'onDismissed', () => {
-              onRewarded.remove();
-              onDismissed.remove();
-              AdConfig.isRewardedLoaded = false;
-              AdService.preloadRewarded();
-              if (rewardedGranted) {
-                executeCallback();
+            dismissHandle = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Dismissed : 'onDismissed', async () => {
+              await cleanup();
+              if (isRewarded && typeof onRewardCallback === 'function') {
+                onRewardCallback();
               }
             });
 
             await AdMob.showRewardVideoAd();
-            return;
-          } catch (e) {
-            console.warn('Rewarded Show Error (Trying Preload):', e);
-            try {
-              await this.preloadRewarded();
-              await window.Capacitor.Plugins.AdMob.showRewardVideoAd();
-            } catch (err) {
-              alert('विज्ञापन लोड हो रहा है, कृपया 2 सेकंड बाद पुनः प्रयास करें।');
-            }
+          } catch (showError) {
+            await cleanup();
+            alert('अगला विज्ञापन लोड हो रहा है, कृपया 2-3 सेकंड बाद पुनः दबाएं।');
           }
         } else {
-          executeCallback();
+          if (typeof onRewardCallback === 'function') {
+            onRewardCallback();
+          }
         }
       }
     };
