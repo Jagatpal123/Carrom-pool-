@@ -1045,33 +1045,63 @@
     </div>
   </div>
 
-  <!-- ================= ADMOB NATIVE INTEGRATION ENGINE (BAL GYAN TESTED SYSTEM) ================= -->
+  <!-- ================= ADMOB NATIVE INTEGRATION ENGINE (RELOAD-SAFE ARCHITECTURE) ================= -->
   <script>
     const AdConfig = {
       interstitialId: 'ca-app-pub-6302105448775587/1791739528',
       rewardedId: 'ca-app-pub-6302105448775587/8722225362',
       isRelease: true,
-      isShowing: false
+      isLoaded: false,
+      isShowing: false,
+      activeRewardCallback: null,
+      rewardEarned: false
     };
 
     const AdService = {
       async init() {
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           try {
-            const { AdMob } = window.Capacitor.Plugins;
+            const { AdMob, RewardAdEvents } = window.Capacitor.Plugins;
             await AdMob.initialize({
               testingDevices: [],
               initializeForTesting: !AdConfig.isRelease
             });
-            this.prepareRewarded();
-            this.prepareInterstitial();
+
+            // Single global listener registration to prevent state freeze & listener leaks
+            AdMob.addListener(RewardAdEvents ? RewardAdEvents.Rewarded : 'onRewarded', () => {
+              AdConfig.rewardEarned = true;
+            });
+
+            AdMob.addListener(RewardAdEvents ? RewardAdEvents.Dismissed : 'onDismissed', () => {
+              AdConfig.isShowing = false;
+              AdConfig.isLoaded = false;
+
+              // Immediately execute callback if reward earned
+              if (AdConfig.rewardEarned && typeof AdConfig.activeRewardCallback === 'function') {
+                const cb = AdConfig.activeRewardCallback;
+                AdConfig.activeRewardCallback = null;
+                AdConfig.rewardEarned = false;
+                setTimeout(cb, 100);
+              } else {
+                AdConfig.activeRewardCallback = null;
+                AdConfig.rewardEarned = false;
+              }
+
+              // Preload next ad in background
+              setTimeout(() => {
+                AdService.preloadRewarded();
+              }, 1200);
+            });
+
+            this.preloadRewarded();
+            this.preloadInterstitial();
           } catch (e) {
             console.warn('AdMob Init Error:', e);
           }
         }
       },
 
-      async prepareInterstitial() {
+      async preloadInterstitial() {
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           try {
             await window.Capacitor.Plugins.AdMob.prepareInterstitial({
@@ -1086,73 +1116,64 @@
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           try {
             await window.Capacitor.Plugins.AdMob.showInterstitial();
-            setTimeout(() => this.prepareInterstitial(), 2000);
+            setTimeout(() => this.preloadInterstitial(), 2000);
           } catch (e) {
             try {
-              await this.prepareInterstitial();
+              await this.preloadInterstitial();
               await window.Capacitor.Plugins.AdMob.showInterstitial();
             } catch (err) {}
           }
         }
       },
 
-      async prepareRewarded() {
+      async preloadRewarded() {
+        if (AdConfig.isLoaded || AdConfig.isShowing) return;
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           try {
-            await window.Capacitor.Plugins.AdMob.prepareRewardVideoAd({
+            const { AdMob } = window.Capacitor.Plugins;
+            await AdMob.prepareRewardVideoAd({
               adId: AdConfig.rewardedId,
               isTesting: !AdConfig.isRelease
             });
+            AdConfig.isLoaded = true;
           } catch (err) {
-            setTimeout(() => AdService.prepareRewarded(), 3000);
+            AdConfig.isLoaded = false;
+            setTimeout(() => AdService.preloadRewarded(), 4000);
           }
         }
       },
 
       async showRewarded(onRewardCallback) {
-        if (AdConfig.isShowing) return;
+        if (AdConfig.isShowing) {
+          alert('विज्ञापन पहले से लोड हो रहा है, कृपया प्रतीक्षा करें...');
+          return;
+        }
 
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
-          const { AdMob, RewardAdEvents } = window.Capacitor.Plugins;
-          let isRewarded = false;
+          const { AdMob } = window.Capacitor.Plugins;
+          AdConfig.activeRewardCallback = onRewardCallback;
+          AdConfig.rewardEarned = false;
           AdConfig.isShowing = true;
 
-          let rewardListener = null;
-          let dismissListener = null;
-
-          const cleanup = async () => {
-            if (rewardListener) await rewardListener.remove();
-            if (dismissListener) await dismissListener.remove();
-            AdConfig.isShowing = false;
-            // Video band hote hi agle button ke liye naya video load karein
-            setTimeout(() => {
-              AdService.prepareRewarded();
-            }, 1000);
-          };
-
           try {
-            rewardListener = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Rewarded : 'onRewarded', () => {
-              isRewarded = true;
-            });
-
-            dismissListener = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Dismissed : 'onDismissed', async () => {
-              await cleanup();
-              if (isRewarded && typeof onRewardCallback === 'function') {
-                onRewardCallback();
-              }
-            });
+            if (!AdConfig.isLoaded) {
+              await AdMob.prepareRewardVideoAd({
+                adId: AdConfig.rewardedId,
+                isTesting: !AdConfig.isRelease
+              });
+              AdConfig.isLoaded = true;
+            }
 
             await AdMob.showRewardVideoAd();
-          } catch (showError) {
-            try {
-              await this.prepareRewarded();
-              await AdMob.showRewardVideoAd();
-            } catch (retryError) {
-              await cleanup();
-              alert('अगला विज्ञापन लोड हो रहा है, कृपया 2 सेकंड बाद पुनः प्रयास करें।');
-            }
+          } catch (err) {
+            AdConfig.isShowing = false;
+            AdConfig.isLoaded = false;
+            AdConfig.activeRewardCallback = null;
+            alert('अगला विज्ञापन लोड हो रहा है, कृपया 2-3 सेकंड बाद दोबारा दबाएं।');
+            setTimeout(() => this.preloadRewarded(), 1000);
           }
         } else {
+          // Direct fallback for web test
           if (typeof onRewardCallback === 'function') {
             onRewardCallback();
           }
@@ -1169,15 +1190,27 @@
       });
     }
 
+    // 100% WORKING UNLOCK & EQUIP LOGIC
     function watchAdToUnlock(category, itemId, itemName) {
       AdService.showRewarded(() => {
+        // 1. Add to inventory
         if (!user.inventory[category].includes(itemId)) {
           user.inventory[category].push(itemId);
         }
-        equipItem(category, itemId);
+
+        // 2. Map category key to equipped key (plural to singular)
+        let eqKey = category;
+        if (category === 'pucks') eqKey = 'puck';
+        if (category === 'strikers') eqKey = 'striker';
+        if (category === 'powers') eqKey = 'power';
+        if (category === 'vfx') eqKey = 'vfx';
+
+        user.equipped[eqKey] = itemId;
+
+        // 3. Save and re-render immediately
         saveUserState();
         renderEquipmentTab();
-        alert(`🎉 बधाई! "${itemName}" मुफ़्त अनलॉक हो गया!`);
+        alert(`🎉 बधाई! "${itemName}" अनलॉक होकर उपयोग में आ गया है!`);
       });
     }
 
@@ -1582,10 +1615,13 @@
     }
 
     function equipItem(category, itemId) {
-      if (category === 'pucks') user.equipped.puck = itemId;
-      if (category === 'strikers') user.equipped.striker = itemId;
-      if (category === 'powers') user.equipped.power = itemId;
-      if (category === 'vfx') user.equipped.vfx = itemId;
+      let eqKey = category;
+      if (category === 'pucks') eqKey = 'puck';
+      if (category === 'strikers') eqKey = 'striker';
+      if (category === 'powers') eqKey = 'power';
+      if (category === 'vfx') eqKey = 'vfx';
+
+      user.equipped[eqKey] = itemId;
       saveUserState();
       renderEquipmentTab();
     }
@@ -1596,7 +1632,9 @@
         return;
       }
       user.coins -= price;
-      user.inventory[category].push(itemId);
+      if (!user.inventory[category].includes(itemId)) {
+        user.inventory[category].push(itemId);
+      }
       equipItem(category, itemId);
     }
 
