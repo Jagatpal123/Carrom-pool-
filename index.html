@@ -1045,7 +1045,7 @@
     </div>
   </div>
 
-  <!-- ================= ADMOB FAIL-SAFE HYBRID ENGINE ================= -->
+  <!-- ================= ADMOB FAIL-SAFE ENGINE (ACTIVE POLLING & NO MINIMIZE DELAY) ================= -->
   <script>
     const AdConfig = {
       interstitialId: 'ca-app-pub-6302105448775587/1791739528',
@@ -1065,6 +1065,15 @@
             });
             this.preloadRewarded();
             this.preloadInterstitial();
+
+            // Capacitor App Plugin से Android Resume Event सुनें
+            if (window.Capacitor.Plugins.App) {
+              window.Capacitor.Plugins.App.addListener('appStateChange', (state) => {
+                if (state.isActive) {
+                  window.dispatchEvent(new Event('app_resumed'));
+                }
+              });
+            }
           } catch (e) {
             console.warn('AdMob Init Error:', e);
           }
@@ -1111,39 +1120,41 @@
         }
       },
 
-      // HARDWARE LIFECYCLE REWARD ENGINE (NO LISTENER HANG)
+      // 100% INSTANT REWARD ENGINE (NO APP MINIMIZE REQUIRED)
       async showRewarded(onRewardCallback) {
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           const { AdMob, RewardAdEvents } = window.Capacitor.Plugins;
-          let sessionCompleted = false;
-          let adStartTime = 0;
-          let rEvent1 = null, rEvent2 = null, dEvent = null;
+          let isRewardGiven = false;
+          let adShownAt = 0;
+          let pollerInterval = null;
+          let rListener1 = null, rListener2 = null, dListener = null;
 
-          const executeRewardSafely = () => {
-            if (sessionCompleted) return;
-            sessionCompleted = true;
+          const dispatchRewardNow = () => {
+            if (isRewardGiven) return;
+            isRewardGiven = true;
+
+            if (pollerInterval) clearInterval(pollerInterval);
 
             try {
-              if (rEvent1) rEvent1.remove();
-              if (rEvent2) rEvent2.remove();
-              if (dEvent) dEvent.remove();
+              if (rListener1) rListener1.remove();
+              if (rListener2) rListener2.remove();
+              if (dListener) dListener.remove();
             } catch (e) {}
 
             AdConfig.isPreloaded = false;
 
-            // 1. Reward तुरंत क्रेडिट करें
+            // 1. तुरंत रिवॉर्ड दें
             if (typeof onRewardCallback === 'function') {
               onRewardCallback();
             }
 
-            // 2. 2 सेकंड बाद बैकग्राउंड में अगला ऐड लोड करें
+            // 2. 1.5 सेकंड बाद अगला ऐड बैकग्राउंड में रीलोड करें
             setTimeout(() => {
               AdService.preloadRewarded();
-            }, 2000);
+            }, 1500);
           };
 
           try {
-            // अगर पहले से तैयार नहीं है तो लाइव लोड करें
             if (!AdConfig.isPreloaded) {
               await AdMob.prepareRewardVideoAd({
                 adId: AdConfig.rewardedId,
@@ -1152,41 +1163,44 @@
               AdConfig.isPreloaded = true;
             }
 
-            // A. Native Listeners
-            rEvent1 = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.RewardReceived : 'onRewardReceived', () => {
-              executeRewardSafely();
+            // A. नेटिव AdMob इवेंट्स
+            rListener1 = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.RewardReceived : 'onRewardReceived', () => {
+              dispatchRewardNow();
             });
 
-            rEvent2 = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Rewarded : 'onRewarded', () => {
-              executeRewardSafely();
+            rListener2 = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Rewarded : 'onRewarded', () => {
+              dispatchRewardNow();
             });
 
-            dEvent = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Dismissed : 'onDismissed', () => {
-              executeRewardSafely();
+            dListener = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Dismissed : 'onDismissed', () => {
+              dispatchRewardNow();
             });
 
-            // B. Window Focus Lifecycle Fallback (अगर नेटिव इवेंट JS तक न पहुँचे)
-            const handleReturnToGame = () => {
-              window.removeEventListener('focus', handleReturnToGame);
-              document.removeEventListener('visibilitychange', handleReturnToGame);
-
-              const timeSpent = (Date.now() - adStartTime) / 1000;
-              // अगर यूजर कम से कम 5 सेकंड ऐड स्क्रीन पर रहकर वापस आया है
-              if (timeSpent >= 4 && !sessionCompleted) {
-                setTimeout(executeRewardSafely, 200);
+            // B. Active OS Detection (Native Resume Event)
+            const onNativeResume = () => {
+              window.removeEventListener('app_resumed', onNativeResume);
+              const elapsed = (Date.now() - adShownAt) / 1000;
+              if (elapsed >= 3 && !isRewardGiven) {
+                dispatchRewardNow();
               }
             };
+            window.addEventListener('app_resumed', onNativeResume);
 
-            window.addEventListener('focus', handleReturnToGame);
-            document.addEventListener('visibilitychange', () => {
-              if (document.visibilityState === 'visible') handleReturnToGame();
-            });
+            // C. Heartbeat Active Poller (बिना ऐप मिनिमाइज़ किए स्क्रीन फोकस डिटेक्ट करेगा)
+            adShownAt = Date.now();
+            pollerInterval = setInterval(() => {
+              const seconds = (Date.now() - adShownAt) / 1000;
+              // अगर 20 सेकंड बीत चुके हैं और विंडो विजिबल है, तुरंत रिवॉर्ड दो
+              if (seconds >= 18 && document.visibilityState === 'visible' && !isRewardGiven) {
+                dispatchRewardNow();
+              }
+            }, 300);
 
-            adStartTime = Date.now();
             await AdMob.showRewardVideoAd();
 
           } catch (showError) {
-            sessionCompleted = true;
+            if (pollerInterval) clearInterval(pollerInterval);
+            isRewardGiven = true;
             AdConfig.isPreloaded = false;
             alert('अगला विज्ञापन लोड हो रहा है, कृपया 2-3 सेकंड बाद पुनः दबाएं।');
             setTimeout(() => AdService.preloadRewarded(), 1000);
