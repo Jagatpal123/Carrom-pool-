@@ -1045,14 +1045,13 @@
     </div>
   </div>
 
-  <!-- ================= ADMOB NATIVE INTEGRATION ENGINE (FOOLPROOF REWARD & AUTO-RESET) ================= -->
+  <!-- ================= ADMOB FAIL-SAFE HYBRID ENGINE ================= -->
   <script>
     const AdConfig = {
       interstitialId: 'ca-app-pub-6302105448775587/1791739528',
       rewardedId: 'ca-app-pub-6302105448775587/8722225362',
       isRelease: true,
-      isLoaded: false,
-      isWatching: false
+      isPreloaded: false
     };
 
     const AdService = {
@@ -1098,7 +1097,6 @@
       },
 
       async preloadRewarded() {
-        if (AdConfig.isWatching) return;
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           try {
             const { AdMob } = window.Capacitor.Plugins;
@@ -1106,75 +1104,95 @@
               adId: AdConfig.rewardedId,
               isTesting: !AdConfig.isRelease
             });
-            AdConfig.isLoaded = true;
+            AdConfig.isPreloaded = true;
           } catch (e) {
-            AdConfig.isLoaded = false;
+            AdConfig.isPreloaded = false;
           }
         }
       },
 
+      // HARDWARE LIFECYCLE REWARD ENGINE (NO LISTENER HANG)
       async showRewarded(onRewardCallback) {
-        if (AdConfig.isWatching) return;
-
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           const { AdMob, RewardAdEvents } = window.Capacitor.Plugins;
-          let userEarnedReward = false;
-          let rewardListener1 = null;
-          let rewardListener2 = null;
-          let dismissListener = null;
+          let sessionCompleted = false;
+          let adStartTime = 0;
+          let rEvent1 = null, rEvent2 = null, dEvent = null;
 
-          AdConfig.isWatching = true;
+          const executeRewardSafely = () => {
+            if (sessionCompleted) return;
+            sessionCompleted = true;
 
-          const cleanup = async () => {
             try {
-              if (rewardListener1) await rewardListener1.remove();
-              if (rewardListener2) await rewardListener2.remove();
-              if (dismissListener) await dismissListener.remove();
-            } catch (err) {}
-            AdConfig.isWatching = false;
-            AdConfig.isLoaded = false;
-            
-            // Ad बंद होने के ठीक 2 सेकंड बाद अगला वीडियो बैकग्राउंड में लोड होगा
+              if (rEvent1) rEvent1.remove();
+              if (rEvent2) rEvent2.remove();
+              if (dEvent) dEvent.remove();
+            } catch (e) {}
+
+            AdConfig.isPreloaded = false;
+
+            // 1. Reward तुरंत क्रेडिट करें
+            if (typeof onRewardCallback === 'function') {
+              onRewardCallback();
+            }
+
+            // 2. 2 सेकंड बाद बैकग्राउंड में अगला ऐड लोड करें
             setTimeout(() => {
               AdService.preloadRewarded();
             }, 2000);
           };
 
           try {
-            if (!AdConfig.isLoaded) {
+            // अगर पहले से तैयार नहीं है तो लाइव लोड करें
+            if (!AdConfig.isPreloaded) {
               await AdMob.prepareRewardVideoAd({
                 adId: AdConfig.rewardedId,
                 isTesting: !AdConfig.isRelease
               });
-              AdConfig.isLoaded = true;
+              AdConfig.isPreloaded = true;
             }
 
-            // Capacitor AdMob के सभी संभव इवेंट्स को एक साथ सुना जा रहा है
-            rewardListener1 = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.RewardReceived : 'onRewardReceived', () => {
-              userEarnedReward = true;
+            // A. Native Listeners
+            rEvent1 = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.RewardReceived : 'onRewardReceived', () => {
+              executeRewardSafely();
             });
 
-            rewardListener2 = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Rewarded : 'onRewarded', () => {
-              userEarnedReward = true;
+            rEvent2 = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Rewarded : 'onRewarded', () => {
+              executeRewardSafely();
             });
 
-            dismissListener = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Dismissed : 'onDismissed', async () => {
-              await cleanup();
-              if (userEarnedReward && typeof onRewardCallback === 'function') {
-                setTimeout(() => {
-                  onRewardCallback();
-                }, 150);
+            dEvent = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Dismissed : 'onDismissed', () => {
+              executeRewardSafely();
+            });
+
+            // B. Window Focus Lifecycle Fallback (अगर नेटिव इवेंट JS तक न पहुँचे)
+            const handleReturnToGame = () => {
+              window.removeEventListener('focus', handleReturnToGame);
+              document.removeEventListener('visibilitychange', handleReturnToGame);
+
+              const timeSpent = (Date.now() - adStartTime) / 1000;
+              // अगर यूजर कम से कम 5 सेकंड ऐड स्क्रीन पर रहकर वापस आया है
+              if (timeSpent >= 4 && !sessionCompleted) {
+                setTimeout(executeRewardSafely, 200);
               }
+            };
+
+            window.addEventListener('focus', handleReturnToGame);
+            document.addEventListener('visibilitychange', () => {
+              if (document.visibilityState === 'visible') handleReturnToGame();
             });
 
+            adStartTime = Date.now();
             await AdMob.showRewardVideoAd();
 
           } catch (showError) {
-            await cleanup();
+            sessionCompleted = true;
+            AdConfig.isPreloaded = false;
             alert('अगला विज्ञापन लोड हो रहा है, कृपया 2-3 सेकंड बाद पुनः दबाएं।');
+            setTimeout(() => AdService.preloadRewarded(), 1000);
           }
         } else {
-          // वेब ब्राउज़र टेस्ट फ़ॉलबैक
+          // Direct Web Fallback
           if (typeof onRewardCallback === 'function') {
             onRewardCallback();
           }
