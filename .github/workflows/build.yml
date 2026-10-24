@@ -41,10 +41,12 @@ jobs:
         npx cap add android || true
         npx cap sync android
 
-    - name: Configure Target SDK 36, AdMob & Icons
+    - name: Configure Target SDK 36, Version, AdMob & Icons
       run: |
-        # 1. Force Package Name
+        # 1. Force Package Name & Bump Version (versionCode 3, versionName 1.0.2)
         sed -i 's/applicationId .*/applicationId "com.jagatpal.carrompool"/' android/app/build.gradle
+        sed -i 's/versionCode .*/versionCode 3/' android/app/build.gradle
+        sed -i 's/versionName .*/versionName "1.0.2"/' android/app/build.gradle
         
         # 2. SDK Settings
         sed -i 's/minSdkVersion = .*/minSdkVersion = 24/' android/variables.gradle
