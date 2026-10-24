@@ -50,7 +50,7 @@
       align-items: center;
       justify-content: flex-start;
       z-index: 10;
-      padding-top: var(--sat);
+      padding-top: max(var(--sat), 38px);
       padding-bottom: calc(74px + var(--sab));
       overflow-y: auto;
       touch-action: pan-y;
@@ -410,14 +410,15 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.5);
     }
 
-    /* GAME SCREEN */
+    /* GAME SCREEN - FIX TOP NOTCH / STATUS BAR PADDING */
     #game-screen {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
       height: 100%;
-      padding: calc(var(--sat) + 8px) 0 calc(var(--sab) + 12px);
+      padding-top: max(var(--sat), 46px);
+      padding-bottom: calc(var(--sab) + 12px);
       overflow: hidden;
       touch-action: none;
     }
@@ -427,7 +428,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 4px;
+      margin-top: 6px;
+      margin-bottom: 6px;
     }
     #hud-panel {
       width: 94%;
@@ -1045,7 +1047,7 @@
     </div>
   </div>
 
-  <!-- ================= ADMOB FAIL-SAFE ENGINE (ACTIVE POLLING & NO MINIMIZE DELAY) ================= -->
+  <!-- ================= ADMOB FAIL-SAFE ENGINE ================= -->
   <script>
     const AdConfig = {
       interstitialId: 'ca-app-pub-6302105448775587/1791739528',
@@ -1066,7 +1068,6 @@
             this.preloadRewarded();
             this.preloadInterstitial();
 
-            // Capacitor App Plugin से Android Resume Event सुनें
             if (window.Capacitor.Plugins.App) {
               window.Capacitor.Plugins.App.addListener('appStateChange', (state) => {
                 if (state.isActive) {
@@ -1120,7 +1121,6 @@
         }
       },
 
-      // 100% INSTANT REWARD ENGINE (NO APP MINIMIZE REQUIRED)
       async showRewarded(onRewardCallback) {
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
           const { AdMob, RewardAdEvents } = window.Capacitor.Plugins;
@@ -1143,12 +1143,10 @@
 
             AdConfig.isPreloaded = false;
 
-            // 1. तुरंत रिवॉर्ड दें
             if (typeof onRewardCallback === 'function') {
               onRewardCallback();
             }
 
-            // 2. 1.5 सेकंड बाद अगला ऐड बैकग्राउंड में रीलोड करें
             setTimeout(() => {
               AdService.preloadRewarded();
             }, 1500);
@@ -1163,7 +1161,6 @@
               AdConfig.isPreloaded = true;
             }
 
-            // A. नेटिव AdMob इवेंट्स
             rListener1 = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.RewardReceived : 'onRewardReceived', () => {
               dispatchRewardNow();
             });
@@ -1176,7 +1173,6 @@
               dispatchRewardNow();
             });
 
-            // B. Active OS Detection (Native Resume Event)
             const onNativeResume = () => {
               window.removeEventListener('app_resumed', onNativeResume);
               const elapsed = (Date.now() - adShownAt) / 1000;
@@ -1186,11 +1182,9 @@
             };
             window.addEventListener('app_resumed', onNativeResume);
 
-            // C. Heartbeat Active Poller (बिना ऐप मिनिमाइज़ किए स्क्रीन फोकस डिटेक्ट करेगा)
             adShownAt = Date.now();
             pollerInterval = setInterval(() => {
               const seconds = (Date.now() - adShownAt) / 1000;
-              // अगर 20 सेकंड बीत चुके हैं और विंडो विजिबल है, तुरंत रिवॉर्ड दो
               if (seconds >= 18 && document.visibilityState === 'visible' && !isRewardGiven) {
                 dispatchRewardNow();
               }
@@ -1206,7 +1200,6 @@
             setTimeout(() => AdService.preloadRewarded(), 1000);
           }
         } else {
-          // Direct Web Fallback
           if (typeof onRewardCallback === 'function') {
             onRewardCallback();
           }
@@ -1223,10 +1216,8 @@
       });
     }
 
-    // 100% सटीक अनलॉक और इक्विप फ़ंक्शन
     function watchAdToUnlock(category, itemId, itemName) {
       AdService.showRewarded(() => {
-        // 1. इन्वेंट्री में जोड़ें
         if (!user.inventory[category]) {
           user.inventory[category] = [];
         }
@@ -1234,7 +1225,6 @@
           user.inventory[category].push(itemId);
         }
 
-        // 2. Plural से Singular में बदलें (pucks -> puck, strikers -> striker, powers -> power, vfx -> vfx)
         const singularMap = {
           'pucks': 'puck',
           'strikers': 'striker',
@@ -1243,10 +1233,7 @@
         };
         const eqKey = singularMap[category] || category;
         
-        // 3. तुरंत उपयोग में लाएं (Equip)
         user.equipped[eqKey] = itemId;
-
-        // 4. सेव करें और स्क्रीन तुरंत दोबारा रेंडर करें
         saveUserState();
         renderEquipmentTab();
 
