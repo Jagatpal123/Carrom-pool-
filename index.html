@@ -1047,161 +1047,173 @@
     </div>
   </div>
 
-  <!-- ================= ADMOB FAIL-SAFE ENGINE ================= -->
+  <!-- ================= ADMOB FAIL-SAFE ENGINE (FIXED & FULLY INTEGRATED) ================= -->
   <script>
     const AdConfig = {
       interstitialId: 'ca-app-pub-6302105448775587/1791739528',
       rewardedId: 'ca-app-pub-6302105448775587/8722225362',
       isRelease: true,
-      isPreloaded: false
+      isPreloaded: false,
+      isLoadingNow: false
     };
 
     const AdService = {
       async init() {
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
-          try {
-            const { AdMob } = window.Capacitor.Plugins;
-            await AdMob.initialize({
-              testingDevices: [],
-              initializeForTesting: !AdConfig.isRelease
-            });
-            this.preloadRewarded();
-            this.preloadInterstitial();
+        if (!window.Capacitor?.Plugins?.AdMob) return;
+        try {
+          const { AdMob } = window.Capacitor.Plugins;
+          await AdMob.initialize({
+            testingDevices: [],
+            initializeForTesting: !AdConfig.isRelease
+          });
 
-            if (window.Capacitor.Plugins.App) {
-              window.Capacitor.Plugins.App.addListener('appStateChange', (state) => {
-                if (state.isActive) {
-                  window.dispatchEvent(new Event('app_resumed'));
+          this.setupGlobalListeners();
+          this.preloadRewarded();
+          this.preloadInterstitial();
+
+          if (window.Capacitor.Plugins.App) {
+            window.Capacitor.Plugins.App.addListener('appStateChange', (state) => {
+              if (state.isActive) {
+                window.dispatchEvent(new Event('app_resumed'));
+                if (!AdConfig.isPreloaded) {
+                  this.preloadRewarded();
                 }
-              });
-            }
-          } catch (e) {
-            console.warn('AdMob Init Error:', e);
+              }
+            });
           }
+        } catch (e) {
+          console.warn('AdMob Init Error:', e);
         }
+      },
+
+      setupGlobalListeners() {
+        const { AdMob } = window.Capacitor.Plugins;
+
+        AdMob.addListener('onRewardedVideoAdLoaded', () => {
+          AdConfig.isPreloaded = true;
+          AdConfig.isLoadingNow = false;
+        });
+
+        AdMob.addListener('onRewardedVideoAdFailedToLoad', (err) => {
+          AdConfig.isPreloaded = false;
+          AdConfig.isLoadingNow = false;
+        });
+
+        AdMob.addListener('onRewardedVideoAdDismissed', () => {
+          AdConfig.isPreloaded = false;
+          setTimeout(() => this.preloadRewarded(), 2000);
+        });
       },
 
       async preloadInterstitial() {
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
-          try {
-            await window.Capacitor.Plugins.AdMob.prepareInterstitial({
-              adId: AdConfig.interstitialId,
-              isTesting: !AdConfig.isRelease
-            });
-          } catch (e) {}
-        }
+        if (!window.Capacitor?.Plugins?.AdMob) return;
+        try {
+          await window.Capacitor.Plugins.AdMob.prepareInterstitial({
+            adId: AdConfig.interstitialId,
+            isTesting: !AdConfig.isRelease
+          });
+        } catch (e) {}
       },
 
       async showInterstitial() {
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
+        if (!window.Capacitor?.Plugins?.AdMob) return;
+        try {
+          await window.Capacitor.Plugins.AdMob.showInterstitial();
+          setTimeout(() => this.preloadInterstitial(), 3000);
+        } catch (e) {
           try {
+            await this.preloadInterstitial();
             await window.Capacitor.Plugins.AdMob.showInterstitial();
-            setTimeout(() => this.preloadInterstitial(), 2000);
-          } catch (e) {
-            try {
-              await this.preloadInterstitial();
-              await window.Capacitor.Plugins.AdMob.showInterstitial();
-            } catch (err) {}
-          }
+          } catch (err) {}
         }
       },
 
       async preloadRewarded() {
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
-          try {
-            const { AdMob } = window.Capacitor.Plugins;
-            await AdMob.prepareRewardVideoAd({
-              adId: AdConfig.rewardedId,
-              isTesting: !AdConfig.isRelease
-            });
-            AdConfig.isPreloaded = true;
-          } catch (e) {
-            AdConfig.isPreloaded = false;
-          }
+        if (!window.Capacitor?.Plugins?.AdMob || AdConfig.isLoadingNow || AdConfig.isPreloaded) return;
+        AdConfig.isLoadingNow = true;
+        try {
+          await window.Capacitor.Plugins.AdMob.prepareRewardVideoAd({
+            adId: AdConfig.rewardedId,
+            isTesting: !AdConfig.isRelease
+          });
+          AdConfig.isPreloaded = true;
+          AdConfig.isLoadingNow = false;
+        } catch (e) {
+          AdConfig.isPreloaded = false;
+          AdConfig.isLoadingNow = false;
         }
       },
 
       async showRewarded(onRewardCallback) {
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
-          const { AdMob, RewardAdEvents } = window.Capacitor.Plugins;
-          let isRewardGiven = false;
-          let adShownAt = 0;
-          let pollerInterval = null;
-          let rListener1 = null, rListener2 = null, dListener = null;
+        if (!window.Capacitor?.Plugins?.AdMob) {
+          if (typeof onRewardCallback === 'function') onRewardCallback();
+          return;
+        }
 
-          const dispatchRewardNow = () => {
-            if (isRewardGiven) return;
-            isRewardGiven = true;
+        const { AdMob } = window.Capacitor.Plugins;
+        let rewardGiven = false;
 
-            if (pollerInterval) clearInterval(pollerInterval);
-
-            try {
-              if (rListener1) rListener1.remove();
-              if (rListener2) rListener2.remove();
-              if (dListener) dListener.remove();
-            } catch (e) {}
-
-            AdConfig.isPreloaded = false;
-
-            if (typeof onRewardCallback === 'function') {
-              onRewardCallback();
-            }
-
-            setTimeout(() => {
-              AdService.preloadRewarded();
-            }, 1500);
-          };
-
-          try {
-            if (!AdConfig.isPreloaded) {
-              await AdMob.prepareRewardVideoAd({
-                adId: AdConfig.rewardedId,
-                isTesting: !AdConfig.isRelease
-              });
-              AdConfig.isPreloaded = true;
-            }
-
-            rListener1 = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.RewardReceived : 'onRewardReceived', () => {
-              dispatchRewardNow();
-            });
-
-            rListener2 = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Rewarded : 'onRewarded', () => {
-              dispatchRewardNow();
-            });
-
-            dListener = await AdMob.addListener(RewardAdEvents ? RewardAdEvents.Dismissed : 'onDismissed', () => {
-              dispatchRewardNow();
-            });
-
-            const onNativeResume = () => {
-              window.removeEventListener('app_resumed', onNativeResume);
-              const elapsed = (Date.now() - adShownAt) / 1000;
-              if (elapsed >= 3 && !isRewardGiven) {
-                dispatchRewardNow();
-              }
-            };
-            window.addEventListener('app_resumed', onNativeResume);
-
-            adShownAt = Date.now();
-            pollerInterval = setInterval(() => {
-              const seconds = (Date.now() - adShownAt) / 1000;
-              if (seconds >= 18 && document.visibilityState === 'visible' && !isRewardGiven) {
-                dispatchRewardNow();
-              }
-            }, 300);
-
-            await AdMob.showRewardVideoAd();
-
-          } catch (showError) {
-            if (pollerInterval) clearInterval(pollerInterval);
-            isRewardGiven = true;
-            AdConfig.isPreloaded = false;
-            alert('अगला विज्ञापन लोड हो रहा है, कृपया 2-3 सेकंड बाद पुनः दबाएं।');
-            setTimeout(() => AdService.preloadRewarded(), 1000);
-          }
-        } else {
+        const grantReward = () => {
+          if (rewardGiven) return;
+          rewardGiven = true;
+          AdConfig.isPreloaded = false;
           if (typeof onRewardCallback === 'function') {
             onRewardCallback();
+          }
+          setTimeout(() => this.preloadRewarded(), 2000);
+        };
+
+        if (!AdConfig.isPreloaded) {
+          const loadingBanner = document.getElementById('foul-banner');
+          if (loadingBanner) {
+            loadingBanner.innerText = "लोड हो रहा है, कृपया 2 सेकंड रुकें...";
+            loadingBanner.classList.add('show');
+          }
+
+          try {
+            await window.Capacitor.Plugins.AdMob.prepareRewardVideoAd({
+              adId: AdConfig.rewardedId,
+              isTesting: !AdConfig.isRelease
+            });
+            AdConfig.isPreloaded = true;
+          } catch (err) {
+            if (loadingBanner) loadingBanner.classList.remove('show');
+            try {
+              await this.showInterstitial();
+              grantReward();
+              return;
+            } catch (fallbackErr) {
+              alert('फिलहाल कोई विज्ञापन उपलब्ध नहीं है। कृपया थोड़ी देर बाद पुनः प्रयास करें।');
+              return;
+            }
+          } finally {
+            if (loadingBanner) loadingBanner.classList.remove('show');
+          }
+        }
+
+        let rewardListener = null;
+        let dismissListener = null;
+
+        try {
+          rewardListener = await AdMob.addListener('onRewardedVideoAdReward', () => {
+            grantReward();
+            if (rewardListener) rewardListener.remove();
+          });
+
+          dismissListener = await AdMob.addListener('onRewardedVideoAdDismissed', () => {
+            if (dismissListener) dismissListener.remove();
+            grantReward();
+          });
+
+          await AdMob.showRewardVideoAd();
+        } catch (showError) {
+          AdConfig.isPreloaded = false;
+          try {
+            await this.showInterstitial();
+            grantReward();
+          } catch (e) {
+            alert('विज्ञापन लोड होने में समय लग रहा है, कृपया 2-3 सेकंड बाद दोबारा दबाएं।');
+            this.preloadRewarded();
           }
         }
       }
