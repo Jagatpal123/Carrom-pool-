@@ -5,6 +5,13 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+# ==========================================
+# 🚀 यहाँ से आसानी से Version बदलें:
+# ==========================================
+env:
+  APP_VERSION_CODE: 4          # हर नए अपडेट पर इसे +1 करें (उदा. 4, 5, 6...)
+  APP_VERSION_NAME: "1.0.3"    # आपका मनपसंद वर्जन नाम (उदा. "1.0.3", "1.0.4"...)
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -41,12 +48,12 @@ jobs:
         npx cap add android || true
         npx cap sync android
 
-    - name: Configure Target SDK 36, Version, AdMob & Icons
+    - name: Configure Target SDK 36, Dynamic Version, AdMob & Icons
       run: |
-        # 1. Force Package Name & Bump Version (versionCode 3, versionName 1.0.2)
+        # 1. Force Package Name & Dynamic Version Setup
         sed -i 's/applicationId .*/applicationId "com.jagatpal.carrompool"/' android/app/build.gradle
-        sed -i 's/versionCode .*/versionCode 3/' android/app/build.gradle
-        sed -i 's/versionName .*/versionName "1.0.2"/' android/app/build.gradle
+        sed -i "s/versionCode .*/versionCode $APP_VERSION_CODE/" android/app/build.gradle
+        sed -i "s/versionName .*/versionName \"$APP_VERSION_NAME\"/" android/app/build.gradle
         
         # 2. SDK Settings
         sed -i 's/minSdkVersion = .*/minSdkVersion = 24/' android/variables.gradle
@@ -69,7 +76,9 @@ jobs:
         sed -i '/<manifest/a \    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />' android/app/src/main/AndroidManifest.xml
 
         # 5. AdMob App ID
-        sed -i '/<\/application>/i \        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6302105448775587~3166646352"\/>' android/app/src/main/AndroidManifest.xml
+        if ! grep -q "ca-app-pub-6302105448775587~3166646352" android/app/src/main/AndroidManifest.xml; then
+          sed -i '/<\/application>/i \        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6302105448775587~3166646352"\/>' android/app/src/main/AndroidManifest.xml
+        fi
 
     # --- STEP A: TEST AD WALI SIGNED APK BANANA ---
     - name: Prepare, Build and Sign Test-Ad APK
@@ -94,7 +103,9 @@ jobs:
         sed -i 's/isRelease: false/isRelease: true/g' android/app/src/main/assets/public/index.html || true
 
         cd android
+        ./gradlew clean
         ./gradlew bundleRelease
+
         jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore ../release.keystore -storepass Jagatpal@2026 -keypass Jagatpal@2026 app/build/outputs/bundle/release/app-release.aab bhakti
 
     # --- UPLOAD ARTIFACTS ---
