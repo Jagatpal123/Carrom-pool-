@@ -410,7 +410,7 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.5);
     }
 
-    /* GAME SCREEN - FIX TOP NOTCH / STATUS BAR PADDING */
+    /* GAME SCREEN */
     #game-screen {
       display: flex;
       flex-direction: column;
@@ -696,7 +696,7 @@
     }
     #foul-banner.show { transform: scale(1); }
 
-    /* ONLINE MATCHMAKING RADAR MODAL */
+    /* ONLINE MATCHMAKING / ROOM WAITING MODAL */
     #matchmaking-modal {
       position: fixed;
       top: 0;
@@ -755,7 +755,7 @@
   <canvas id="cueOverlayCanvas"></canvas>
   <div id="foul-banner">FOUL! ⚠️</div>
 
-  <!-- ONLINE MATCHMAKING MODAL -->
+  <!-- ONLINE MATCHMAKING / ROOM WAITING MODAL -->
   <div id="matchmaking-modal" class="hidden">
     <div class="card-modal" style="max-width:330px;">
       <div class="title-3d-gold" style="font-size:18px;" id="mm-title">SEARCHING ONLINE...</div>
@@ -764,14 +764,14 @@
       <div style="display:flex; justify-content:center;">
         <div class="radar-circle">
           <div class="radar-sweep"></div>
-          <span style="font-size:42px; z-index:2;">🌐</span>
+          <span style="font-size:42px; z-index:2;" id="mm-center-icon">🌐</span>
         </div>
       </div>
 
       <div style="display:flex; justify-content:space-around; align-items:center; margin:10px 0;">
         <div style="text-align:center;">
           <div style="font-size:26px;">🤠</div>
-          <div style="font-size:11px; font-weight:800; color:#34d399;">You</div>
+          <div style="font-size:11px; font-weight:800; color:#34d399;" id="mm-my-name">You</div>
         </div>
         <div style="font-family:'Orbitron'; font-size:18px; font-weight:900; color:#f59e0b;">VS</div>
         <div style="text-align:center;">
@@ -781,7 +781,7 @@
       </div>
 
       <div style="display:flex; gap:8px; margin-top:10px;">
-        <button class="btn-3d btn-cyan" style="flex:1; padding:10px; font-size:11px;" onclick="forceOfflinePlay()">
+        <button id="mm-bot-btn" class="btn-3d btn-cyan" style="flex:1; padding:10px; font-size:11px;" onclick="forceOfflinePlay()">
           🤖 Play Offline (Bot)
         </button>
         <button class="btn-3d btn-ad-3d" style="background:#dc2626; flex:1; padding:10px; font-size:11px;" onclick="cancelMatchmaking()">
@@ -860,7 +860,7 @@
     <div class="main-container">
       <div class="card-modal">
         <div class="title-3d-gold" style="font-size:18px;">प्राइवेट ऑनलाइन रूम बनाएं</div>
-        <div class="text-3d-sub" style="margin-bottom:12px;">रूम बनाकर अपने दोस्त को कोड WhatsApp पर भेजें</div>
+        <div class="text-3d-sub" style="margin-bottom:12px;">रूम कोड बनाकर WhatsApp पर दोस्त को भेजें</div>
         <button class="btn-3d btn-gold" onclick="createPrivateOnlineRoom()">नया रूम कोड बनाएं</button>
       </div>
 
@@ -878,7 +878,7 @@
     </div>
   </div>
 
-  <!-- 3. EQUIPMENT SCREEN (RESTORED 4 TABS) -->
+  <!-- 3. EQUIPMENT SCREEN -->
   <div id="equipment-screen" class="screen hidden">
     <div class="top-bar">
       <div style="font-family:'Orbitron', sans-serif; font-weight:900; font-size:16px; color:#34d399; letter-spacing:1px;">इक्विपमेंट्स</div>
@@ -932,7 +932,7 @@
     </div>
   </div>
 
-  <!-- GAME SCREEN WITH LARGE PUCK INDICATORS -->
+  <!-- GAME SCREEN -->
   <div id="game-screen" class="screen hidden">
     <div class="game-top-bar">
       <button class="btn-3d btn-back-3d" onclick="quitToHome()">
@@ -1047,14 +1047,13 @@
     </div>
   </div>
 
-  <!-- ================= ADMOB FAIL-SAFE ENGINE (FIXED & FULLY INTEGRATED) ================= -->
+  <!-- ================= ADMOB NATIVE ENGINE (PROPER REWARDED VIDEO WITH TIMER & CUT BUTTON) ================= -->
   <script>
     const AdConfig = {
       interstitialId: 'ca-app-pub-6302105448775587/1791739528',
       rewardedId: 'ca-app-pub-6302105448775587/8722225362',
       isRelease: true,
-      isPreloaded: false,
-      isLoadingNow: false
+      isPreloaded: false
     };
 
     const AdService = {
@@ -1067,42 +1066,19 @@
             initializeForTesting: !AdConfig.isRelease
           });
 
-          this.setupGlobalListeners();
           this.preloadRewarded();
           this.preloadInterstitial();
 
           if (window.Capacitor.Plugins.App) {
             window.Capacitor.Plugins.App.addListener('appStateChange', (state) => {
-              if (state.isActive) {
-                window.dispatchEvent(new Event('app_resumed'));
-                if (!AdConfig.isPreloaded) {
-                  this.preloadRewarded();
-                }
+              if (state.isActive && !AdConfig.isPreloaded) {
+                this.preloadRewarded();
               }
             });
           }
         } catch (e) {
           console.warn('AdMob Init Error:', e);
         }
-      },
-
-      setupGlobalListeners() {
-        const { AdMob } = window.Capacitor.Plugins;
-
-        AdMob.addListener('onRewardedVideoAdLoaded', () => {
-          AdConfig.isPreloaded = true;
-          AdConfig.isLoadingNow = false;
-        });
-
-        AdMob.addListener('onRewardedVideoAdFailedToLoad', (err) => {
-          AdConfig.isPreloaded = false;
-          AdConfig.isLoadingNow = false;
-        });
-
-        AdMob.addListener('onRewardedVideoAdDismissed', () => {
-          AdConfig.isPreloaded = false;
-          setTimeout(() => this.preloadRewarded(), 2000);
-        });
       },
 
       async preloadInterstitial() {
@@ -1129,18 +1105,15 @@
       },
 
       async preloadRewarded() {
-        if (!window.Capacitor?.Plugins?.AdMob || AdConfig.isLoadingNow || AdConfig.isPreloaded) return;
-        AdConfig.isLoadingNow = true;
+        if (!window.Capacitor?.Plugins?.AdMob) return;
         try {
           await window.Capacitor.Plugins.AdMob.prepareRewardVideoAd({
             adId: AdConfig.rewardedId,
             isTesting: !AdConfig.isRelease
           });
           AdConfig.isPreloaded = true;
-          AdConfig.isLoadingNow = false;
         } catch (e) {
           AdConfig.isPreloaded = false;
-          AdConfig.isLoadingNow = false;
         }
       },
 
@@ -1150,71 +1123,55 @@
           return;
         }
 
-        const { AdMob } = window.Capacitor.Plugins;
-        let rewardGiven = false;
+        const { AdMob, RewardAdPluginEvents } = window.Capacitor.Plugins;
+        let isRewardEarned = false;
 
-        const grantReward = () => {
-          if (rewardGiven) return;
-          rewardGiven = true;
-          AdConfig.isPreloaded = false;
-          if (typeof onRewardCallback === 'function') {
-            onRewardCallback();
-          }
-          setTimeout(() => this.preloadRewarded(), 2000);
-        };
-
-        if (!AdConfig.isPreloaded) {
-          const loadingBanner = document.getElementById('foul-banner');
-          if (loadingBanner) {
-            loadingBanner.innerText = "लोड हो रहा है, कृपया 2 सेकंड रुकें...";
-            loadingBanner.classList.add('show');
-          }
-
-          try {
-            await window.Capacitor.Plugins.AdMob.prepareRewardVideoAd({
-              adId: AdConfig.rewardedId,
-              isTesting: !AdConfig.isRelease
-            });
-            AdConfig.isPreloaded = true;
-          } catch (err) {
-            if (loadingBanner) loadingBanner.classList.remove('show');
-            try {
-              await this.showInterstitial();
-              grantReward();
-              return;
-            } catch (fallbackErr) {
-              alert('फिलहाल कोई विज्ञापन उपलब्ध नहीं है। कृपया थोड़ी देर बाद पुनः प्रयास करें।');
-              return;
-            }
-          } finally {
-            if (loadingBanner) loadingBanner.classList.remove('show');
-          }
+        const banner = document.getElementById('foul-banner');
+        if (banner) {
+          banner.innerText = "विज्ञापन लोड हो रहा है...";
+          banner.classList.add('show');
         }
 
-        let rewardListener = null;
-        let dismissListener = null;
+        try {
+          // ensure native rewarded video is ready
+          await AdMob.prepareRewardVideoAd({
+            adId: AdConfig.rewardedId,
+            isTesting: !AdConfig.isRelease
+          });
+          AdConfig.isPreloaded = true;
+        } catch (e) {
+          // ignore if already prepared
+        } finally {
+          if (banner) banner.classList.remove('show');
+        }
+
+        const eventNameReward = RewardAdPluginEvents?.Rewarded || 'onRewardedVideoAdReward';
+        const eventNameDismiss = RewardAdPluginEvents?.Dismissed || 'onRewardedVideoAdDismissed';
+
+        const rewardListener = await AdMob.addListener(eventNameReward, () => {
+          isRewardEarned = true;
+        });
+
+        const dismissListener = await AdMob.addListener(eventNameDismiss, () => {
+          if (rewardListener) rewardListener.remove();
+          if (dismissListener) dismissListener.remove();
+          AdConfig.isPreloaded = false;
+          setTimeout(() => this.preloadRewarded(), 1500);
+
+          if (isRewardEarned && typeof onRewardCallback === 'function') {
+            onRewardCallback();
+          }
+        });
 
         try {
-          rewardListener = await AdMob.addListener('onRewardedVideoAdReward', () => {
-            grantReward();
-            if (rewardListener) rewardListener.remove();
-          });
-
-          dismissListener = await AdMob.addListener('onRewardedVideoAdDismissed', () => {
-            if (dismissListener) dismissListener.remove();
-            grantReward();
-          });
-
+          // Native rewarded ad chalega jisme Google ka real video timer aur close (X) button visible hoga
           await AdMob.showRewardVideoAd();
         } catch (showError) {
+          if (rewardListener) rewardListener.remove();
+          if (dismissListener) dismissListener.remove();
           AdConfig.isPreloaded = false;
-          try {
-            await this.showInterstitial();
-            grantReward();
-          } catch (e) {
-            alert('विज्ञापन लोड होने में समय लग रहा है, कृपया 2-3 सेकंड बाद दोबारा दबाएं।');
-            this.preloadRewarded();
-          }
+          alert("विज्ञापन लोड नहीं हो सका। कृपया 2-3 सेकंड बाद पुनः प्रयास करें।");
+          this.preloadRewarded();
         }
       }
     };
@@ -1272,7 +1229,7 @@
     }
   </script>
 
-  <!-- ================= CARROM APPLICATION ENGINE ================= -->
+  <!-- ================= REAL-TIME ONLINE ROOM & GAME ENGINE ================= -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyDDUuCe12Z2W6O3yG9uRdPjLjBsY8ZyqUc",
@@ -1681,15 +1638,18 @@
     let isGameRunning = false;
     let activeVfxPockets = [];
     let matchmakingTimer = null;
+    let isRoomHost = false;
 
     let pocketedThisTurn = [];
     let strikerFouledThisTurn = false;
 
+    // FRIEND ROOM REALTIME CREATION & WAITING SYSTEM
     function createPrivateOnlineRoom() {
       const code = 'CP-' + Math.floor(1000 + Math.random() * 9000);
       currentRoomId = code;
       myPlayerRole = 1;
       isRealFirebaseMatch = true;
+      isRoomHost = true;
 
       const roomRef = database.ref('rooms/' + currentRoomId);
       roomRef.set({
@@ -1702,35 +1662,53 @@
       });
 
       navigator.clipboard?.writeText(code);
-      alert(`🎉 आपका रूम बन गया: ${code}\n\n(कोड कॉपी हो गया है! इसे अपने दोस्त को भेजें)`);
 
+      // Show Waiting Screen with Room Code to Creator
+      const mmModal = document.getElementById('matchmaking-modal');
+      const mmTitle = document.getElementById('mm-title');
+      const mmSub = document.getElementById('mm-subtitle');
+      const oppAvatar = document.getElementById('mm-opp-avatar');
+      const oppName = document.getElementById('mm-opp-name');
+      const botBtn = document.getElementById('mm-bot-btn');
+
+      mmTitle.innerText = "ROOM: " + code;
+      mmSub.innerText = "कोड कॉपी हो गया है! दोस्त के जुड़ने का इंतजार करें...";
+      oppAvatar.innerText = "⏳";
+      oppName.innerText = "Waiting...";
+      if (botBtn) botBtn.classList.add('hidden');
+      mmModal.classList.remove('hidden');
+
+      // Listen realtime: Jaise hi dusra banda enter hoga, creator bhi game screen par transfer ho jayega
       roomRef.on('value', (snap) => {
         const data = snap.val();
         if (data && data.status === 'playing' && !isGameRunning) {
+          mmModal.classList.add('hidden');
           launchBoard(data.p2.name, data.p2.emoji, `ROOM: ${currentRoomId}`);
         }
       });
     }
 
+    // FRIEND ROOM REALTIME JOINING
     function joinPrivateOnlineRoom() {
       const code = document.getElementById('room-code-input').value.trim();
       if (!code) return alert("कृपया वैध रूम कोड दर्ज करें!");
       currentRoomId = code;
       myPlayerRole = 2;
       isRealFirebaseMatch = true;
+      isRoomHost = false;
 
       const roomRef = database.ref('rooms/' + currentRoomId);
       roomRef.once('value').then((snap) => {
         const data = snap.val();
-        if (!data) return alert("यह रूम कोड मौजूद नहीं है!");
+        if (!data) return alert("यह रूम कोड मौजूद नहीं है या समाप्त हो गया है!");
         if (data.status !== 'waiting') return alert("यह रूम पहले से भरा हुआ है!");
 
         roomRef.update({
           status: 'playing',
           p2: { name: user.name, emoji: user.emoji }
+        }).then(() => {
+          launchBoard(data.p1.name, data.p1.emoji, `ROOM: ${currentRoomId}`);
         });
-
-        launchBoard(data.p1.name, data.p1.emoji, `ROOM: ${currentRoomId}`);
       });
     }
 
@@ -1744,10 +1722,14 @@
       const oppAvatar = document.getElementById('mm-opp-avatar');
       const oppName = document.getElementById('mm-opp-name');
       const mmTitle = document.getElementById('mm-title');
+      const mmSub = document.getElementById('mm-subtitle');
+      const botBtn = document.getElementById('mm-bot-btn');
       
       mmTitle.innerText = "SEARCHING ONLINE...";
+      mmSub.innerText = "Finding a live opponent";
       oppAvatar.innerText = "❓";
       oppName.innerText = "Searching...";
+      if (botBtn) botBtn.classList.remove('hidden');
       mmModal.classList.remove('hidden');
 
       const queueRef = database.ref('match_queue');
@@ -1789,6 +1771,10 @@
 
     function cancelMatchmaking() {
       if (matchmakingTimer) clearTimeout(matchmakingTimer);
+      if (currentRoomId && isRoomHost) {
+        database.ref('rooms/' + currentRoomId).remove();
+        currentRoomId = null;
+      }
       document.getElementById('matchmaking-modal').classList.add('hidden');
     }
 
@@ -1875,6 +1861,14 @@
           cueAnimation.angle = shot.angle;
           cueAnimation.force = shot.force;
           cueAnimation.snapProgress = 0;
+        }
+      });
+
+      roomRef.child('turn').on('value', (snap) => {
+        const turn = snap.val();
+        if (turn) {
+          currentTurn = turn;
+          updateTurnHUD();
         }
       });
 
@@ -2241,6 +2235,9 @@
 
       if (!keepTurn) {
         currentTurn = currentTurn === 1 ? 2 : 1;
+        if (isRealFirebaseMatch && currentRoomId) {
+          database.ref('rooms/' + currentRoomId + '/turn').set(currentTurn);
+        }
       }
 
       resetStriker();
