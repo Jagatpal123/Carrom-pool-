@@ -6,11 +6,11 @@ on:
   workflow_dispatch:
 
 # ==========================================
-# 🚀 यहाँ से आसानी से Version बदलें:
+# 🚀 Yahan se aasani se Version badlein:
 # ==========================================
 env:
-  APP_VERSION_CODE: 4          # हर नए अपडेट पर इसे +1 करें (उदा. 4, 5, 6...)
-  APP_VERSION_NAME: "1.0.3"    # आपका मनपसंद वर्जन नाम (उदा. "1.0.3", "1.0.4"...)
+  APP_VERSION_CODE: 4          # Har naye update par ise +1 karein (jaise 4, 5, 6...)
+  APP_VERSION_NAME: "1.0.3"    # Version name (jaise "1.0.3", "1.0.4"...)
 
 jobs:
   build:
@@ -35,8 +35,9 @@ jobs:
       run: |
         npm install --legacy-peer-deps || npm install
 
-    - name: Prepare Web Assets
+    - name: Prepare Output Directory
       run: |
+        mkdir -p final_outputs
         mkdir -p www
         cp index.html www/index.html
         if [ -f "logo.png" ]; then
@@ -83,6 +84,7 @@ jobs:
     # --- STEP A: TEST AD WALI SIGNED APK BANANA ---
     - name: Prepare, Build and Sign Test-Ad APK
       run: |
+        # Test Ad IDs inject karein
         sed -i 's/ca-app-pub-6302105448775587\/1791739528/ca-app-pub-3940256099942544\/1033173712/g' android/app/src/main/assets/public/index.html || true
         sed -i 's/ca-app-pub-6302105448775587\/8722225362/ca-app-pub-3940256099942544\/5224354917/g' android/app/src/main/assets/public/index.html || true
         sed -i 's/isRelease: true/isRelease: false/g' android/app/src/main/assets/public/index.html || true
@@ -93,11 +95,12 @@ jobs:
 
         BUILD_TOOLS_DIR=$(ls -d $ANDROID_HOME/build-tools/* | tail -1)
         $BUILD_TOOLS_DIR/zipalign -v -p 4 app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/app-aligned.apk
-        $BUILD_TOOLS_DIR/apksigner sign --ks ../release.keystore --ks-key-alias bhakti --ks-pass pass:Jagatpal@2026 --key-pass pass:Jagatpal@2026 --out app/build/outputs/apk/release/CarromPool-TestAds.apk app/build/outputs/apk/release/app-aligned.apk
+        $BUILD_TOOLS_DIR/apksigner sign --ks ../release.keystore --ks-key-alias bhakti --ks-pass pass:Jagatpal@2026 --key-pass pass:Jagatpal@2026 --out ../final_outputs/CarromPool-TestAds.apk app/build/outputs/apk/release/app-aligned.apk
 
     # --- STEP B: PRODUCTION REAL AD WALI SIGNED AAB BANANA ---
     - name: Prepare, Build and Sign Production AAB
       run: |
+        # Real Ad IDs reset karein
         sed -i 's/ca-app-pub-3940256099942544\/1033173712/ca-app-pub-6302105448775587\/1791739528/g' android/app/src/main/assets/public/index.html || true
         sed -i 's/ca-app-pub-3940256099942544\/5224354917/ca-app-pub-6302105448775587\/8722225362/g' android/app/src/main/assets/public/index.html || true
         sed -i 's/isRelease: false/isRelease: true/g' android/app/src/main/assets/public/index.html || true
@@ -107,16 +110,17 @@ jobs:
         ./gradlew bundleRelease
 
         jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore ../release.keystore -storepass Jagatpal@2026 -keypass Jagatpal@2026 app/build/outputs/bundle/release/app-release.aab bhakti
+        cp app/build/outputs/bundle/release/app-release.aab ../final_outputs/CarromPool-Production-RealAds.aab
 
-    # --- UPLOAD ARTIFACTS ---
+    # --- STEP C: UPLOAD ARTIFACTS (APK AUR AAB DONO) ---
     - name: Upload Test APK
       uses: actions/upload-artifact@v4
       with:
         name: CarromPool-TestAds-APK
-        path: android/app/build/outputs/apk/release/CarromPool-TestAds.apk
+        path: final_outputs/CarromPool-TestAds.apk
 
     - name: Upload Production Real-Ad AAB
       uses: actions/upload-artifact@v4
       with:
         name: CarromPool-Production-RealAds-AAB
-        path: android/app/build/outputs/bundle/release/app-release.aab
+        path: final_outputs/CarromPool-Production-RealAds.aab
