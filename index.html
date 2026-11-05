@@ -879,9 +879,7 @@
     </div>
     <div class="welcome-text">WELCOME TO<br><span style="color:#10b981;">CARROM POOL PRO</span></div>
     <div class="text-3d-sub" style="margin-top:8px;">Ready To Strike...</div>
-    <div class="splash-loader-bar">
-      <div class="splash-loader-fill"></div>
-    </div>
+    <div class="splash-loader-bar"><div class="splash-loader-fill"></div></div>
     <div style="font-size:10px; color:#94a3b8; margin-top:14px; letter-spacing:1px;">(स्क्रीन पर टैप करके तुरंत खोलें)</div>
   </div>
 
@@ -924,7 +922,7 @@
     </div>
   </div>
 
-  <!-- ONLINE MATCHMAKING RADAR MODAL (ORIGINAL) -->
+  <!-- MATCHMAKING RADAR MODAL -->
   <div id="matchmaking-modal" class="hidden">
     <div class="card-modal" style="max-width:330px;">
       <div class="title-3d-gold" style="font-size:18px;" id="mm-title">SEARCHING ONLINE...</div>
@@ -1068,7 +1066,7 @@
     </div>
   </div>
 
-  <!-- 3. EQUIPMENT SCREEN (FULL 30 PUCKS, 30 STRIKERS, 30 POWERS, 4 VFX RESTORED) -->
+  <!-- 3. EQUIPMENT SCREEN -->
   <div id="equipment-screen" class="screen hidden">
     <div class="top-bar">
       <div style="font-family:'Orbitron', sans-serif; font-weight:900; font-size:16px; color:#34d399; letter-spacing:1px;">इक्विपमेंट्स</div>
@@ -1209,7 +1207,6 @@
     </div>
   </div>
 
-  <!-- BOTTOM NAV -->
   <div id="global-nav" class="bottom-nav">
     <button class="nav-btn active" id="btn-nav-home" onclick="navTo('home')">
       <span class="icon">🏠</span>
@@ -1397,7 +1394,7 @@
     }
   </script>
 
-  <!-- ================= NON-BLOCKING WEBRTC VOICE ENGINE ================= -->
+  <!-- ================= REAL-TIME WEBRTC AUTO VOICE ENGINE ================= -->
   <script>
     let localStream = null;
     let peerConnection = null;
@@ -1447,9 +1444,9 @@
           if (micBtn) micBtn.classList.remove('hidden');
 
         } catch (err) {
-          console.warn("Microphone not available or permission denied:", err);
+          console.warn("माइक परमिशन या ऑडियो सपोर्ट उपलब्ध नहीं है:", err);
         }
-      }, 300);
+      }, 400);
     }
 
     function listenToVoiceSignals(roomVoiceRef) {
@@ -1641,9 +1638,7 @@
     window.addEventListener('touchstart', () => AudioEngine.init(), { once: true });
     window.addEventListener('mousedown', () => AudioEngine.init(), { once: true });
 
-    /* =========================================================
-       ✨ FULL ORIGINAL 30 STRIKERS, 30 PUCKS, 30 POWERS RESTORED
-       ========================================================= */
+    /* ================= FULL ORIGINAL 30 STRIKERS, 30 PUCKS, 30 POWERS ================= */
     const STRIKER_NAMES = [
       'टाइटन गोल्ड', 'इलेक्ट्रिक सायन', 'ग्रीन लेज़र', 'रूबी फ्लेम', 'ब्लैक होल', 'आइस ग्लैशियर',
       'सन बर्न', 'डार्क मैटर', 'एमराल्ड प्रो', 'थंडर स्टॉर्म', 'वाइपर टॉक्सिक', 'प्लाज्मा कोर',
@@ -2096,54 +2091,7 @@
       }
     }
 
-    function listenToFirebaseRoomEvents() {
-      if (!isRealFirebaseMatch || !currentRoomId) return;
-      const roomRef = database.ref('rooms/' + currentRoomId);
-
-      roomRef.child('shot').on('value', (snap) => {
-        const shot = snap.val();
-        if (shot && shot.player !== myPlayerRole) {
-          striker.x = shot.sliderX;
-          cueAnimation.active = true;
-          cueAnimation.pullDistance = shot.pullDist;
-          cueAnimation.angle = shot.angle;
-          cueAnimation.force = shot.force;
-          cueAnimation.snapProgress = 0;
-        }
-      });
-
-      roomRef.child('turn').on('value', (snap) => {
-        const turn = snap.val();
-        if (turn) {
-          currentTurn = turn;
-          resetStriker();
-        }
-      });
-
-      roomRef.child('boardState').on('value', (snap) => {
-        const data = snap.val();
-        if (data && data.senderRole !== myPlayerRole) {
-          data.pucks.forEach((sp, idx) => {
-            if (pucks[idx]) {
-              pucks[idx].x = sp.x;
-              pucks[idx].y = sp.y;
-              pucks[idx].inPocket = sp.inPocket;
-              pucks[idx].vx = 0;
-              pucks[idx].vy = 0;
-            }
-          });
-          updatePuckCounts();
-        }
-      });
-
-      roomRef.child('chat').on('value', (snap) => {
-        const chat = snap.val();
-        if (chat && chat.sender !== myPlayerRole) {
-          showSpeechBubble(2, chat.text);
-        }
-      });
-    }
-
+    /* ================= AUTHORITATIVE BOARD & NETWORKING ENGINE ================= */
     const canvas = document.getElementById('carromCanvas');
     const ctx = canvas.getContext('2d');
     const overlayCanvas = document.getElementById('cueOverlayCanvas');
@@ -2177,6 +2125,10 @@
     let dragCurrent = { x: 0, y: 0 };
     let tickCount = 0;
     let cueAnimation = { active: false, pullDistance: 0, angle: 0, force: 0, snapProgress: 0 };
+    let opponentAim = { active: false, angle: 0, force: 0, pullDist: 0 };
+
+    function invertY(y) { return SIZE - y; }
+    function invertX(x) { return SIZE - x; }
 
     function initBoard() {
       pucks = [];
@@ -2209,19 +2161,21 @@
       striker.vy = 0;
       striker.inHand = true;
 
-      if (isRealFirebaseMatch) {
-        striker.y = (currentTurn === myPlayerRole) ? SIZE * 0.81 : SIZE * 0.19;
-      } else {
-        striker.y = (currentTurn === 1) ? SIZE * 0.81 : SIZE * 0.19;
-      }
+      const isMyTurn = (currentTurn === myPlayerRole);
+      // जिसकी चाल हो, उसके फोन में बॉटम पर (0.81), विरोधी के फोन में टॉप पर (0.19)
+      striker.y = isMyTurn ? SIZE * 0.81 : SIZE * 0.19;
 
       slider.value = 50;
       updateStrikerX();
       updateTurnHUD();
       cueAnimation.active = false;
+      opponentAim.active = false;
       isAiming = false;
       pocketedThisTurn = [];
       strikerFouledThisTurn = false;
+
+      // Lock controls if not my turn
+      slider.disabled = !isMyTurn;
 
       if (!isPassAndPlay && !isRealFirebaseMatch && currentTurn === 2 && isGameRunning) {
         setTimeout(playAITurn, 800);
@@ -2232,10 +2186,17 @@
       const minX = SIZE * 0.24;
       const maxX = SIZE * 0.76;
       striker.x = minX + (slider.value / 100) * (maxX - minX);
+
+      if (isRealFirebaseMatch && currentRoomId && currentTurn === myPlayerRole) {
+        database.ref('rooms/' + currentRoomId + '/sliderSync').set({
+          val: Number(slider.value),
+          player: myPlayerRole
+        });
+      }
     }
 
     slider.addEventListener('input', () => {
-      if (isRealFirebaseMatch && currentTurn !== myPlayerRole) return;
+      if (currentTurn !== myPlayerRole) return;
       if (striker.inHand && !cueAnimation.active) {
         updateStrikerX();
       }
@@ -2243,7 +2204,8 @@
 
     canvas.addEventListener('touchstart', (e) => {
       AudioEngine.init();
-      if (isRealFirebaseMatch && currentTurn !== myPlayerRole) return;
+      // HARD LOCK: अगर मेरी चाल नहीं है, तो टच कभी नहीं चलेगा
+      if (currentTurn !== myPlayerRole) return;
       if (!isPassAndPlay && !isRealFirebaseMatch && currentTurn === 2) return;
       if (!striker.inHand || !isGameRunning || cueAnimation.active) return;
 
@@ -2254,13 +2216,24 @@
     });
 
     canvas.addEventListener('touchmove', (e) => {
-      if (!isAiming) return;
+      if (!isAiming || currentTurn !== myPlayerRole) return;
       const rect = canvas.getBoundingClientRect();
       dragCurrent = { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+
+      if (isRealFirebaseMatch && currentRoomId) {
+        let dx = dragOrigin.x - dragCurrent.x;
+        let dy = dragOrigin.y - dragCurrent.y;
+        database.ref('rooms/' + currentRoomId + '/aimLive').set({
+          active: true,
+          angle: Math.atan2(dy, dx),
+          force: Math.min(Math.hypot(dx, dy) * 0.18, 18),
+          pullDist: Math.min(Math.hypot(dx, dy) * 0.85, 95)
+        });
+      }
     });
 
     canvas.addEventListener('touchend', () => {
-      if (!isAiming) return;
+      if (!isAiming || currentTurn !== myPlayerRole) return;
       isAiming = false;
       let dx = dragOrigin.x - dragCurrent.x;
       let dy = dragOrigin.y - dragCurrent.y;
@@ -2276,12 +2249,13 @@
         cueAnimation.snapProgress = 0;
 
         if (isRealFirebaseMatch && currentRoomId) {
-          database.ref('rooms/' + currentRoomId + '/shot').set({
+          database.ref('rooms/' + currentRoomId + '/aimLive').set({ active: false });
+          database.ref('rooms/' + currentRoomId + '/executeShot').set({
             player: myPlayerRole,
-            sliderX: striker.x,
-            pullDist: cueAnimation.pullDistance,
+            sliderVal: slider.value,
             angle: angle,
             force: force,
+            pullDist: cueAnimation.pullDistance,
             time: Date.now()
           });
         }
@@ -2336,8 +2310,81 @@
       puckObj.inPocket = false;
     }
 
+    function listenToFirebaseRoomEvents() {
+      if (!isRealFirebaseMatch || !currentRoomId) return;
+      const roomRef = database.ref('rooms/' + currentRoomId);
+
+      roomRef.child('sliderSync').on('value', (snap) => {
+        const d = snap.val();
+        if (d && d.player !== myPlayerRole && striker.inHand) {
+          slider.value = 100 - d.val;
+          updateStrikerX();
+        }
+      });
+
+      roomRef.child('aimLive').on('value', (snap) => {
+        const a = snap.val();
+        if (a && currentTurn !== myPlayerRole) {
+          opponentAim = { ...a, angle: a.angle + Math.PI };
+        }
+      });
+
+      roomRef.child('executeShot').on('value', (snap) => {
+        const s = snap.val();
+        if (s && s.player !== myPlayerRole) {
+          slider.value = 100 - s.sliderVal;
+          updateStrikerX();
+          cueAnimation.active = true;
+          cueAnimation.pullDistance = s.pullDist;
+          cueAnimation.angle = s.angle + Math.PI;
+          cueAnimation.force = s.force;
+          cueAnimation.snapProgress = 0;
+          opponentAim.active = false;
+        }
+      });
+
+      if (myPlayerRole === 2) {
+        roomRef.child('livePucks').on('value', (snap) => {
+          const remotePucks = snap.val();
+          if (remotePucks) {
+            remotePucks.forEach((rp, i) => {
+              if (pucks[i]) {
+                pucks[i].x = invertX(rp.x);
+                pucks[i].y = invertY(rp.y);
+                pucks[i].inPocket = rp.inPocket;
+              }
+            });
+            updatePuckCounts();
+          }
+        });
+      }
+
+      roomRef.child('turn').on('value', (snap) => {
+        const t = snap.val();
+        if (t) {
+          currentTurn = t;
+          resetStriker();
+        }
+      });
+
+      roomRef.child('matchWinner').on('value', (snap) => {
+        const winnerRole = snap.val();
+        if (winnerRole) {
+          celebrateWin(winnerRole === myPlayerRole);
+        }
+      });
+
+      roomRef.child('chat').on('value', (snap) => {
+        const chat = snap.val();
+        if (chat && chat.sender !== myPlayerRole) {
+          showSpeechBubble(2, chat.text);
+        }
+      });
+    }
+
     function updatePhysics() {
       if (!isGameRunning) return;
+
       if (cueAnimation.active) {
         cueAnimation.snapProgress += 0.28;
         if (cueAnimation.snapProgress >= 1) {
@@ -2349,6 +2396,8 @@
         }
         return;
       }
+
+      if (isRealFirebaseMatch && myPlayerRole === 2) return;
 
       let isMoving = false;
       const all = [striker, ...pucks.filter(p => !p.inPocket)];
@@ -2407,6 +2456,12 @@
         }
       }
 
+      if (isRealFirebaseMatch && myPlayerRole === 1 && (isMoving || !striker.inHand)) {
+        database.ref('rooms/' + currentRoomId + '/livePucks').set(
+          pucks.map(p => ({ x: p.x, y: p.y, inPocket: p.inPocket }))
+        );
+      }
+
       if (!isMoving && !striker.inHand) handleTurnEnd();
     }
 
@@ -2423,19 +2478,23 @@
       const p1Left = pucks.filter(p => !p.inPocket && p.type === 'white').length;
       const p2Left = pucks.filter(p => !p.inPocket && p.type === 'black').length;
 
-      if (p1Left === 0 && queenPuck.inPocket) { celebrateWin(myPlayerRole === 1); return; }
-      if (p2Left === 0 && queenPuck.inPocket) { celebrateWin(myPlayerRole === 2); return; }
+      if (p1Left === 0 && queenPuck.inPocket) {
+        if (isRealFirebaseMatch) database.ref('rooms/' + currentRoomId + '/matchWinner').set(1);
+        celebrateWin(myPlayerRole === 1);
+        return;
+      }
+      if (p2Left === 0 && queenPuck.inPocket) {
+        if (isRealFirebaseMatch) database.ref('rooms/' + currentRoomId + '/matchWinner').set(2);
+        celebrateWin(myPlayerRole === 2);
+        return;
+      }
 
       let keepTurn = pocketedThisTurn.includes(activeTurnColor) && !strikerFouledThisTurn;
       if (!keepTurn) {
         currentTurn = currentTurn === 1 ? 2 : 1;
       }
 
-      if (isRealFirebaseMatch && currentRoomId && currentTurn !== myPlayerRole) {
-        database.ref('rooms/' + currentRoomId + '/boardState').set({
-          senderRole: myPlayerRole,
-          pucks: pucks.map(p => ({ x: p.x, y: p.y, inPocket: p.inPocket }))
-        });
+      if (isRealFirebaseMatch && currentRoomId) {
         database.ref('rooms/' + currentRoomId + '/turn').set(currentTurn);
       }
 
@@ -2631,6 +2690,7 @@
       ctx.fill();
 
       ctx.shadowColor = 'transparent';
+
       ctx.strokeStyle = type === 'black' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.25)';
       ctx.lineWidth = 1.6;
       ctx.beginPath();
@@ -2656,6 +2716,7 @@
       ctx.beginPath();
       ctx.ellipse(x - r*0.3, y - r*0.35, r*0.25, r*0.14, -Math.PI/4, 0, Math.PI * 2);
       ctx.fill();
+
       ctx.restore();
     }
 
@@ -2764,6 +2825,7 @@
       ctx.beginPath();
       ctx.ellipse(x - r*0.32, y - r*0.35, r*0.3, r*0.16, -Math.PI/4, 0, Math.PI * 2);
       ctx.fill();
+
       ctx.restore();
     }
 
@@ -2809,6 +2871,7 @@
       oCtx.beginPath();
       oCtx.arc(startOffset, 0, 3.5, 0, Math.PI * 2);
       oCtx.fill();
+
       oCtx.restore();
     }
 
@@ -2818,7 +2881,8 @@
       const screenStrikerX = boardRect.left + striker.x;
       const screenStrikerY = boardRect.top + striker.y;
 
-      if (isAiming && isGameRunning) {
+      // 1. My Aiming (Active Player)
+      if (isAiming && isGameRunning && currentTurn === myPlayerRole) {
         let dx = dragOrigin.x - dragCurrent.x;
         let dy = dragOrigin.y - dragCurrent.y;
         let rawDist = Math.hypot(dx, dy);
@@ -2895,6 +2959,24 @@
         drawProCueStick(screenStrikerX, screenStrikerY, angle, visualPull);
       }
 
+      // 2. Real-Time Opponent Aiming (Laser Guideline on My Screen)
+      if (opponentAim.active && currentTurn !== myPlayerRole) {
+        ctx.save();
+        ctx.strokeStyle = '#ef4444';
+        ctx.shadowColor = '#ef4444';
+        ctx.shadowBlur = 14;
+        ctx.lineWidth = 3;
+        ctx.setLineDash([6, 6]);
+        ctx.beginPath();
+        ctx.moveTo(striker.x, striker.y);
+        ctx.lineTo(striker.x + Math.cos(opponentAim.angle) * 160, striker.y + Math.sin(opponentAim.angle) * 160);
+        ctx.stroke();
+        ctx.restore();
+
+        drawProCueStick(screenStrikerX, screenStrikerY, opponentAim.angle, opponentAim.pullDist);
+      }
+
+      // 3. Cue Stick Snap Animation
       if (cueAnimation.active) {
         let curPull = cueAnimation.pullDistance * (1 - cueAnimation.snapProgress);
         drawProCueStick(screenStrikerX, screenStrikerY, cueAnimation.angle, curPull);
