@@ -191,7 +191,6 @@
       font-size: 13px;
       text-shadow: 0 1px 3px rgba(0,0,0,0.9);
     }
-
     .coin-3d-badge {
       display: inline-block;
       width: 18px;
@@ -248,7 +247,7 @@
       align-items: center;
       justify-content: center;
       gap: 10px;
-      transition: all 0.1s ease;
+      transition: transform 0.08s ease, filter 0.08s ease;
       overflow: hidden;
     }
     .btn-3d::after {
@@ -261,7 +260,7 @@
       pointer-events: none;
     }
     .btn-3d:active {
-      transform: translateY(4px);
+      transform: translateY(3px);
       box-shadow: 0 2px 0px rgba(0,0,0,0.8) !important;
     }
     .btn-gold {
@@ -301,8 +300,6 @@
       box-shadow: 0 4px 0px #022c20, 0 6px 14px rgba(0,0,0,0.6);
       text-shadow: 0 1px 2px rgba(0,0,0,0.7);
     }
-
-    /* 3D CARROM LOGO BADGE */
     .btn-carrom-badge {
       width: 32px;
       height: 32px;
@@ -321,6 +318,81 @@
       height: 100%;
       object-fit: cover;
       display: block;
+    }
+
+    /* 3D ULTRA-VISIBLE PURPLE-GOLD LUCKY SPIN CARD */
+    .super-spin-3d-card {
+      width: 100%;
+      background: linear-gradient(135deg, #3b0764 0%, #6b21a8 40%, #c026d3 75%, #eab308 100%);
+      border: 2.5px solid #ffd700;
+      border-radius: 22px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 8px 0px #240540, 0 12px 25px rgba(192, 38, 211, 0.5), inset 0 2px 2px rgba(255,255,255,0.4);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    .super-spin-3d-card:active {
+      transform: translateY(3px);
+      box-shadow: 0 3px 0px #240540, 0 6px 12px rgba(192, 38, 211, 0.4);
+    }
+    .super-spin-3d-card::after {
+      content: '';
+      position: absolute;
+      top: -60%;
+      left: -70%;
+      width: 45%;
+      height: 220%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+      transform: rotate(25deg);
+      animation: superGleam 2.4s infinite ease-in-out;
+    }
+    @keyframes superGleam {
+      0% { left: -70%; }
+      50% { left: 150%; }
+      100% { left: 150%; }
+    }
+    .super-wheel-icon-box {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #ffffff 0%, #ffd700 45%, #b45309 85%, #3b0764 100%);
+      border: 3px solid #ffffff;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.8), 0 0 20px rgba(255, 215, 0, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      position: relative;
+      flex-shrink: 0;
+      animation: spinIconAnim 5s infinite linear;
+    }
+    @keyframes spinIconAnim {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .free-gift-tag {
+      position: absolute;
+      top: 6px;
+      right: 14px;
+      background: linear-gradient(90deg, #ef4444, #f59e0b);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 900;
+      padding: 3px 8px;
+      border-radius: 12px;
+      border: 1px solid #ffd700;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+      letter-spacing: 0.8px;
+      animation: pulseTag 1.2s infinite alternate;
+    }
+    @keyframes pulseTag {
+      0% { transform: scale(0.95); }
+      100% { transform: scale(1.05); }
     }
 
     .arena-row {
@@ -367,7 +439,7 @@
       text-shadow: 0 1px 0 rgba(255,255,255,0.4);
     }
 
-    /* CATALOG GRIDS WITH TOUCH SCROLL */
+    /* CATALOG GRIDS */
     .catalog-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -451,7 +523,7 @@
       padding: 5px 8px;
       border-radius: 16px;
       border: 1.5px solid transparent;
-      transition: all 0.3s ease;
+      transition: all 0.25s ease;
       position: relative;
     }
     .player-box.turn-active {
@@ -464,7 +536,6 @@
       background: rgba(255, 42, 95, 0.18);
       box-shadow: 0 0 18px rgba(255, 42, 95, 0.5), inset 0 1px 2px rgba(255,255,255,0.3);
     }
-
     .avatar-wrapper {
       position: relative;
       display: flex;
@@ -480,17 +551,6 @@
       position: relative;
       flex-shrink: 0;
     }
-    .large-puck-indicator::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      border: 1px solid rgba(0,0,0,0.4);
-    }
     .puck-white-large {
       background: radial-gradient(circle at 35% 30%, #ffffff 0%, #e2e8f0 45%, #94a3b8 80%, #475569 100%);
       border-color: #ffffff;
@@ -502,7 +562,6 @@
       box-shadow: 0 0 12px rgba(0,0,0,0.8), inset 0 2px 3px rgba(255,255,255,0.3);
     }
 
-    /* FLOATING CHAT SPEECH BUBBLE */
     .speech-bubble {
       position: absolute;
       bottom: -32px;
@@ -578,7 +637,7 @@
       box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
     }
 
-    /* CHAT TRAY / STICKER DRAWER */
+    /* CHAT TRAY */
     #chat-btn {
       width: 38px;
       height: 38px;
@@ -696,7 +755,7 @@
     }
     #foul-banner.show { transform: scale(1); }
 
-    /* ONLINE MATCHMAKING / ROOM WAITING MODAL */
+    /* ONLINE MATCHMAKING RADAR MODAL */
     #matchmaking-modal {
       position: fixed;
       top: 0;
@@ -736,52 +795,84 @@
       100% { transform: rotate(360deg); }
     }
 
-    /* 3D LUCKY SPIN WHEEL MODAL */
+    /* 3D CASINO ROULETTE WHEEL STAGE */
     #spin-modal {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(2, 14, 10, 0.96);
-      backdrop-filter: blur(10px);
-      z-index: 110;
+      background: radial-gradient(circle at 50% 35%, rgba(17, 24, 39, 0.98), rgba(3, 7, 18, 0.99));
+      backdrop-filter: blur(16px);
+      z-index: 120;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
     }
-    .wheel-container {
+    .wheel-stage-3d {
       position: relative;
-      width: 250px;
-      height: 250px;
+      width: 296px;
+      height: 296px;
       margin: 18px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    #wheelCanvas {
-      width: 250px;
-      height: 250px;
-      border-radius: 50%;
-      box-shadow: 0 0 30px rgba(245, 158, 11, 0.6), inset 0 0 20px rgba(0,0,0,0.8);
-      transition: transform 3.8s cubic-bezier(0.15, 0.9, 0.25, 1);
-    }
-    .wheel-pointer {
+    .wheel-brass-rim {
       position: absolute;
-      top: -12px;
+      width: 296px;
+      height: 296px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #fff7cc 0%, #ffd700 35%, #b45309 75%, #451a03 100%);
+      box-shadow: 0 0 35px rgba(245, 158, 11, 0.8), 0 20px 40px rgba(0,0,0,0.9), inset 0 3px 6px #ffffff;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    canvas#wheelCanvas {
+      width: 268px;
+      height: 268px;
+      border-radius: 50%;
+      z-index: 2;
+      box-shadow: inset 0 0 30px rgba(0,0,0,0.95), 0 0 20px rgba(0,0,0,0.8);
+      transition: transform 4.2s cubic-bezier(0.12, 0.92, 0.24, 1);
+    }
+    .wheel-pointer-3d {
+      position: absolute;
+      top: -8px;
       left: 50%;
       transform: translateX(-50%);
-      width: 0;
-      height: 0;
-      border-left: 14px solid transparent;
-      border-right: 14px solid transparent;
-      border-top: 24px solid #ef4444;
-      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.8));
+      width: 36px;
+      height: 48px;
+      z-index: 25;
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,0.95));
+    }
+    .wheel-center-cap {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #ffffff 0%, #ffd700 45%, #b45309 85%, #381200 100%);
+      border: 3.5px solid #fff59d;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.9), inset 0 2px 4px #ffffff;
       z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #78350f;
+      font-size: 20px;
+      font-weight: 900;
     }
   </style>
 </head>
 <body>
 
-  <!-- 0. 3D WELCOME SPLASH SCREEN -->
+  <!-- 0. WELCOME SPLASH -->
   <div id="welcome-screen" onclick="dismissWelcomeScreen()">
     <div class="welcome-logo-box">
       <img src="logo.png" class="welcome-logo-img" alt="Carrom Pool Logo" onerror="handleLogoFallback(this)">
@@ -797,28 +888,43 @@
   <canvas id="cueOverlayCanvas"></canvas>
   <div id="foul-banner">FOUL! ⚠️</div>
 
-  <!-- LUCKY SPIN WHEEL MODAL -->
+  <!-- 3D LUXURY SPIN WHEEL MODAL -->
   <div id="spin-modal" class="hidden">
-    <div class="card-modal" style="max-width:320px; border-color:#f59e0b;">
-      <div class="title-3d-gold" style="font-size:18px;">🎰 लकी स्पिन व्हील</div>
-      <div class="text-3d-sub">मुफ़्त सिक्के और सरप्राइज इनाम जीतें</div>
+    <div class="card-modal" style="max-width:345px; border-color:#ffd700; background: linear-gradient(180deg, #1e1b4b, #0f172a);">
+      <div class="title-3d-gold" style="font-size:20px;">🎰 3D लकी स्पिन व्हील</div>
+      <div class="text-3d-sub" style="color:#fbbf24;">स्पिन करें और मुफ़्त कॉइंस जीतें!</div>
 
-      <div class="wheel-container">
-        <div class="wheel-pointer"></div>
-        <canvas id="wheelCanvas" width="250" height="250"></canvas>
+      <div class="wheel-stage-3d">
+        <svg class="wheel-pointer-3d" viewBox="0 0 40 50">
+          <defs>
+            <linearGradient id="rubyPtrGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="25%" stop-color="#ef4444"/>
+              <stop offset="70%" stop-color="#991b1b"/>
+              <stop offset="100%" stop-color="#450a0a"/>
+            </linearGradient>
+          </defs>
+          <path d="M20 48 L3 12 A17 17 0 1 1 37 12 Z" fill="url(#rubyPtrGrad)" stroke="#ffd700" stroke-width="2.5"/>
+          <circle cx="20" cy="15" r="5" fill="#ffd700"/>
+        </svg>
+
+        <div class="wheel-brass-rim">
+          <canvas id="wheelCanvas" width="268" height="268"></canvas>
+          <div class="wheel-center-cap">★</div>
+        </div>
       </div>
 
-      <button id="btn-spin-wheel" class="btn-3d btn-gold" onclick="spinLuckyWheel()">
+      <button id="btn-spin-wheel" class="btn-3d btn-gold" style="padding:15px; font-size:14px;" onclick="spinLuckyWheel()">
         🎡 स्पिन करें (FREE)
       </button>
 
       <button class="btn-3d btn-ad-3d" style="background:#475569; width:100%; margin-top:8px;" onclick="closeSpinModal()">
-        बंद करें
+        वापस जाएं
       </button>
     </div>
   </div>
 
-  <!-- ONLINE MATCHMAKING / ROOM WAITING MODAL -->
+  <!-- ONLINE MATCHMAKING RADAR MODAL (ORIGINAL) -->
   <div id="matchmaking-modal" class="hidden">
     <div class="card-modal" style="max-width:330px;">
       <div class="title-3d-gold" style="font-size:18px;" id="mm-title">SEARCHING ONLINE...</div>
@@ -843,7 +949,6 @@
         </div>
       </div>
 
-      <!-- WHATSAPP DIRECT SHARE BUTTON (Auto Included) -->
       <button id="mm-whatsapp-btn" class="btn-3d btn-gold hidden" style="width:100%; margin-bottom:8px; background:linear-gradient(180deg, #25D366 0%, #128C7E 100%); color:#fff; font-size:12px; box-shadow:0 4px 0px #075E54;" onclick="shareRoomOnWhatsApp()">
         <span>📲 WhatsApp par Code Bhejein</span>
       </button>
@@ -877,7 +982,7 @@
         <div class="title-3d-gold">CARROM POOL PRO</div>
         <div class="text-3d-sub">Live Online & Friends Multiplayer</div>
         
-        <div style="display:flex; gap:10px; margin: 16px 0 10px;">
+        <div style="display:flex; gap:10px; margin: 16px 0 6px;">
           <button class="btn-3d btn-gold" onclick="startMatchmakingFlow('classic', 100)">
             <div class="btn-carrom-badge">
               <img src="logo.png" alt="Logo" onerror="handleLogoFallback(this)">
@@ -892,14 +997,26 @@
           </button>
         </div>
 
-        <div style="display:flex; gap:8px; width:100%;">
-          <button class="btn-3d btn-ad-3d" style="flex:1;" onclick="watchAdForFreeCoins()">
-            📺 +250 🪙 मुफ़्त
-          </button>
-          <button class="btn-3d btn-gold" style="flex:1; margin-top:0; padding:10px 12px; font-size:11px;" onclick="openSpinModal()">
-            🎡 लकी स्पिन
-          </button>
+        <!-- 3D HIGH-VISIBILITY PURPLE GOLD LUCKY SPIN BANNER -->
+        <div class="super-spin-3d-card" onclick="openSpinModal()">
+          <div class="free-gift-tag">मुफ़्त कॉइंस</div>
+          <div class="super-wheel-icon-box">🎡</div>
+          <div style="text-align:left; flex:1; margin-left:14px;">
+            <div style="font-family:'Orbitron', sans-serif; font-size:13px; font-weight:900; color:#fff; text-shadow:0 2px 4px #000;">
+              DAILY LUCKY SPIN 3D
+            </div>
+            <div style="font-size:10px; font-weight:800; color:#fde047; margin-top:2px;">
+              पहिया घुमाएं और +500 तक सिक्के जीतें!
+            </div>
+          </div>
+          <div style="width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.25); display:flex; align-items:center; justify-content:center; font-size:16px; border:1px solid #ffd700;">
+            ➔
+          </div>
         </div>
+
+        <button class="btn-3d btn-ad-3d" style="width:100%; margin-top:10px;" onclick="watchAdForFreeCoins()">
+          📺 विज्ञापन देखें और +250 🪙 मुफ़्त पाएं
+        </button>
       </div>
 
       <div class="card-modal" style="text-align:left;">
@@ -924,7 +1041,7 @@
     </div>
   </div>
 
-  <!-- 2. FRIENDS SCREEN (REAL ROOM CODES) -->
+  <!-- 2. FRIENDS SCREEN -->
   <div id="friends-screen" class="screen hidden">
     <div class="top-bar">
       <div style="font-family:'Orbitron', sans-serif; font-weight:900; font-size:16px; color:#34d399; letter-spacing:1px;">मित्र / FRIENDS</div>
@@ -933,7 +1050,7 @@
     <div class="main-container">
       <div class="card-modal">
         <div class="title-3d-gold" style="font-size:18px;">प्राइवेट ऑनलाइन रूम बनाएं</div>
-        <div class="text-3d-sub" style="margin-bottom:12px;">रूम कोड बनाकर WhatsApp पर दोस्त को भेजें</div>
+        <div class="text-3d-sub" style="margin-bottom:12px;">रूम बनाकर अपने दोस्त को कोड WhatsApp पर भेजें</div>
         <button class="btn-3d btn-gold" onclick="createPrivateOnlineRoom()">नया रूम कोड बनाएं</button>
       </div>
 
@@ -951,7 +1068,7 @@
     </div>
   </div>
 
-  <!-- 3. EQUIPMENT SCREEN -->
+  <!-- 3. EQUIPMENT SCREEN (FULL 30 PUCKS, 30 STRIKERS, 30 POWERS, 4 VFX RESTORED) -->
   <div id="equipment-screen" class="screen hidden">
     <div class="top-bar">
       <div style="font-family:'Orbitron', sans-serif; font-weight:900; font-size:16px; color:#34d399; letter-spacing:1px;">इक्विपमेंट्स</div>
@@ -1011,6 +1128,12 @@
       <button class="btn-3d btn-back-3d" onclick="quitToHome()">
         <span>◀</span> <span>होम</span>
       </button>
+
+      <!-- LIVE WEBRTC MIC BUTTON -->
+      <button id="mic-toggle-btn" class="btn-3d btn-ad-3d hidden" style="width:38px; height:38px; border-radius:50%; font-size:18px; padding:0;" onclick="toggleVoiceMic()" title="Mic On/Off">
+        🎙️
+      </button>
+
       <div id="chat-btn" onclick="toggleChatDrawer()">💬</div>
       <div class="coin-badge-box">
         <span class="coin-3d-badge"></span>
@@ -1020,12 +1143,12 @@
 
     <!-- HUD PANEL -->
     <div id="hud-panel">
-      <!-- Player 1 -->
+      <!-- Player 1 (You) -->
       <div id="p1-box" class="player-box turn-active">
         <div class="avatar-wrapper">
           <span id="p1-avatar" style="font-size:24px;">🤠</span>
         </div>
-        <div class="large-puck-indicator puck-white-large" title="आपकी गोटी: सफ़ेद"></div>
+        <div id="p1-indicator" class="large-puck-indicator puck-white-large" title="आपकी गोटी"></div>
         <div>
           <div id="p1-name" style="font-weight:900; font-size:11px;">You</div>
           <div style="font-size:10px; font-weight:800; color:#34d399;">बाकी: <span id="p1-left" style="font-family:'Orbitron';">9</span></div>
@@ -1042,13 +1165,13 @@
         </div>
       </div>
 
-      <!-- Player 2 -->
+      <!-- Player 2 (Opponent) -->
       <div id="p2-box" class="player-box">
         <div style="text-align:right;">
           <div id="p2-name" style="font-weight:900; font-size:11px;">उस्ताद बॉट</div>
           <div style="font-size:10px; font-weight:800; color:#ff2a5f;">बाकी: <span id="p2-left" style="font-family:'Orbitron';">9</span></div>
         </div>
-        <div class="large-puck-indicator puck-black-large" title="विरोधी की गोटी: काली"></div>
+        <div id="p2-indicator" class="large-puck-indicator puck-black-large" title="विरोधी की गोटी"></div>
         <div class="avatar-wrapper">
           <span id="p2-avatar" style="font-size:24px;">🤖</span>
         </div>
@@ -1086,7 +1209,7 @@
     </div>
   </div>
 
-  <!-- BOTTOM NAVIGATION DOCK -->
+  <!-- BOTTOM NAV -->
   <div id="global-nav" class="bottom-nav">
     <button class="nav-btn active" id="btn-nav-home" onclick="navTo('home')">
       <span class="icon">🏠</span>
@@ -1138,22 +1261,12 @@
             testingDevices: [],
             initializeForTesting: !AdConfig.isRelease
           });
-
           this.preloadRewarded();
           this.preloadInterstitial();
-
-          if (window.Capacitor.Plugins.App) {
-            window.Capacitor.Plugins.App.addListener('appStateChange', (state) => {
-              if (state.isActive && !AdConfig.isPreloaded) {
-                this.preloadRewarded();
-              }
-            });
-          }
         } catch (e) {
           console.warn('AdMob Init Error:', e);
         }
       },
-
       async preloadInterstitial() {
         if (!window.Capacitor?.Plugins?.AdMob) return;
         try {
@@ -1163,7 +1276,6 @@
           });
         } catch (e) {}
       },
-
       async showInterstitial() {
         if (!window.Capacitor?.Plugins?.AdMob) return;
         try {
@@ -1176,7 +1288,6 @@
           } catch (err) {}
         }
       },
-
       async preloadRewarded() {
         if (!window.Capacitor?.Plugins?.AdMob) return;
         try {
@@ -1189,13 +1300,11 @@
           AdConfig.isPreloaded = false;
         }
       },
-
       async showRewarded(onRewardCallback) {
         if (!window.Capacitor?.Plugins?.AdMob) {
           if (typeof onRewardCallback === 'function') onRewardCallback();
           return;
         }
-
         const { AdMob, RewardAdPluginEvents } = window.Capacitor.Plugins;
         let isRewardEarned = false;
 
@@ -1211,19 +1320,19 @@
             isTesting: !AdConfig.isRelease
           });
           AdConfig.isPreloaded = true;
-        } catch (e) {
-        } finally {
+        } catch (e) {}
+        finally {
           if (banner) banner.classList.remove('show');
         }
 
-        const eventNameReward = RewardAdPluginEvents?.Rewarded || 'onRewardedVideoAdReward';
-        const eventNameDismiss = RewardAdPluginEvents?.Dismissed || 'onRewardedVideoAdDismissed';
+        const evReward = RewardAdPluginEvents?.Rewarded || 'onRewardedVideoAdReward';
+        const evDismiss = RewardAdPluginEvents?.Dismissed || 'onRewardedVideoAdDismissed';
 
-        const rewardListener = await AdMob.addListener(eventNameReward, () => {
+        const rewardListener = await AdMob.addListener(evReward, () => {
           isRewardEarned = true;
         });
 
-        const dismissListener = await AdMob.addListener(eventNameDismiss, () => {
+        const dismissListener = await AdMob.addListener(evDismiss, () => {
           if (rewardListener) rewardListener.remove();
           if (dismissListener) dismissListener.remove();
           AdConfig.isPreloaded = false;
@@ -1236,11 +1345,11 @@
 
         try {
           await AdMob.showRewardVideoAd();
-        } catch (showError) {
+        } catch (err) {
           if (rewardListener) rewardListener.remove();
           if (dismissListener) dismissListener.remove();
           AdConfig.isPreloaded = false;
-          alert("विज्ञापन लोड नहीं हो सका। कृपया 2-3 सेकंड बाद पुनः प्रयास करें।");
+          alert("विज्ञापन लोड नहीं हो सका। कृपया पुनः प्रयास करें।");
           this.preloadRewarded();
         }
       }
@@ -1257,25 +1366,14 @@
 
     function watchAdToUnlock(category, itemId, itemName) {
       AdService.showRewarded(() => {
-        if (!user.inventory[category]) {
-          user.inventory[category] = [];
-        }
-        if (!user.inventory[category].includes(itemId)) {
-          user.inventory[category].push(itemId);
-        }
+        if (!user.inventory[category]) user.inventory[category] = [];
+        if (!user.inventory[category].includes(itemId)) user.inventory[category].push(itemId);
 
-        const singularMap = {
-          'pucks': 'puck',
-          'strikers': 'striker',
-          'powers': 'power',
-          'vfx': 'vfx'
-        };
+        const singularMap = { 'pucks': 'puck', 'strikers': 'striker', 'powers': 'power', 'vfx': 'vfx' };
         const eqKey = singularMap[category] || category;
-        
         user.equipped[eqKey] = itemId;
         saveUserState();
         renderEquipmentTab();
-
         alert(`🎉 बधाई! "${itemName}" मुफ़्त अनलॉक होकर उपयोग में आ गया है!`);
       });
     }
@@ -1299,7 +1397,123 @@
     }
   </script>
 
-  <!-- ================= REAL-TIME ONLINE ROOM & GAME ENGINE ================= -->
+  <!-- ================= NON-BLOCKING WEBRTC VOICE ENGINE ================= -->
+  <script>
+    let localStream = null;
+    let peerConnection = null;
+    let isMicMuted = false;
+
+    const rtcConfig = {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' }
+      ]
+    };
+
+    function initVoiceCallAsync() {
+      setTimeout(async () => {
+        try {
+          localStream = await navigator.mediaDevices.getUserMedia({
+            audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+            video: false
+          });
+
+          peerConnection = new RTCPeerConnection(rtcConfig);
+          localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+          peerConnection.ontrack = (event) => {
+            const remoteAudio = new Audio();
+            remoteAudio.srcObject = event.streams[0];
+            remoteAudio.autoplay = true;
+            remoteAudio.play().catch(e => console.warn('Audio play:', e));
+          };
+
+          const roomVoiceRef = database.ref('rooms/' + currentRoomId + '/voice');
+          peerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+              roomVoiceRef.child('candidates/' + myPlayerRole).push(event.candidate.toJSON());
+            }
+          };
+
+          if (myPlayerRole === 1) {
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            await roomVoiceRef.child('offer').set({ type: offer.type, sdp: offer.sdp });
+          }
+
+          listenToVoiceSignals(roomVoiceRef);
+
+          const micBtn = document.getElementById('mic-toggle-btn');
+          if (micBtn) micBtn.classList.remove('hidden');
+
+        } catch (err) {
+          console.warn("Microphone not available or permission denied:", err);
+        }
+      }, 300);
+    }
+
+    function listenToVoiceSignals(roomVoiceRef) {
+      if (myPlayerRole === 2) {
+        roomVoiceRef.child('offer').on('value', async (snap) => {
+          const offer = snap.val();
+          if (offer && peerConnection && !peerConnection.currentRemoteDescription) {
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+            await roomVoiceRef.child('answer').set({ type: answer.type, sdp: answer.sdp });
+          }
+        });
+      }
+
+      if (myPlayerRole === 1) {
+        roomVoiceRef.child('answer').on('value', async (snap) => {
+          const answer = snap.val();
+          if (answer && peerConnection && !peerConnection.currentRemoteDescription) {
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+          }
+        });
+      }
+
+      const oppRole = myPlayerRole === 1 ? 2 : 1;
+      roomVoiceRef.child('candidates/' + oppRole).on('child_added', async (snap) => {
+        const candidate = snap.val();
+        if (candidate && peerConnection) {
+          try {
+            await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+          } catch (e) {}
+        }
+      });
+    }
+
+    function toggleVoiceMic() {
+      if (!localStream) return;
+      const audioTrack = localStream.getAudioTracks()[0];
+      if (audioTrack) {
+        isMicMuted = !isMicMuted;
+        audioTrack.enabled = !isMicMuted;
+        const btn = document.getElementById('mic-toggle-btn');
+        if (btn) {
+          btn.innerText = isMicMuted ? '🔇' : '🎙️';
+          btn.style.background = isMicMuted ? '#ef4444' : 'linear-gradient(180deg, #06b6d4, #0e5b6e)';
+        }
+      }
+    }
+
+    function stopVoiceCall() {
+      if (localStream) {
+        localStream.getTracks().forEach(t => t.stop());
+        localStream = null;
+      }
+      if (peerConnection) {
+        peerConnection.close();
+        peerConnection = null;
+      }
+      const micBtn = document.getElementById('mic-toggle-btn');
+      if (micBtn) micBtn.classList.add('hidden');
+    }
+  </script>
+
+  <!-- ================= CARROM APPLICATION ENGINE ================= -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyDDUuCe12Z2W6O3yG9uRdPjLjBsY8ZyqUc",
@@ -1318,14 +1532,14 @@
     let currentRoomId = null;
     let myPlayerRole = 1;
     let isRealFirebaseMatch = false;
+    let isRoomHost = false;
 
-    // HAPTIC FEEDBACK HELPER (Safe Standard Device Vibration)
-    function triggerHaptic(type = 'light') {
-      if (navigator.vibrate) {
-        if (type === 'light') navigator.vibrate(20);
-        else if (type === 'medium') navigator.vibrate(40);
-        else if (type === 'pocket') navigator.vibrate([35, 30, 45]);
-      }
+    // PERSPECTIVE COLOR SELECTION
+    function getMyPuckColor() {
+      return (isRealFirebaseMatch && myPlayerRole === 2) ? 'black' : 'white';
+    }
+    function getOppPuckColor() {
+      return (isRealFirebaseMatch && myPlayerRole === 2) ? 'white' : 'black';
     }
 
     if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
@@ -1352,11 +1566,8 @@
 
     let welcomeTimer = null;
     function initWelcomeSplash() {
-      welcomeTimer = setTimeout(() => {
-        dismissWelcomeScreen();
-      }, 1800);
+      welcomeTimer = setTimeout(() => { dismissWelcomeScreen(); }, 1800);
     }
-
     function dismissWelcomeScreen() {
       if (welcomeTimer) clearTimeout(welcomeTimer);
       const splash = document.getElementById('welcome-screen');
@@ -1430,6 +1641,9 @@
     window.addEventListener('touchstart', () => AudioEngine.init(), { once: true });
     window.addEventListener('mousedown', () => AudioEngine.init(), { once: true });
 
+    /* =========================================================
+       ✨ FULL ORIGINAL 30 STRIKERS, 30 PUCKS, 30 POWERS RESTORED
+       ========================================================= */
     const STRIKER_NAMES = [
       'टाइटन गोल्ड', 'इलेक्ट्रिक सायन', 'ग्रीन लेज़र', 'रूबी फ्लेम', 'ब्लैक होल', 'आइस ग्लैशियर',
       'सन बर्न', 'डार्क मैटर', 'एमराल्ड प्रो', 'थंडर स्टॉर्म', 'वाइपर टॉक्सिक', 'प्लाज्मा कोर',
@@ -1526,15 +1740,13 @@
     ];
     const POWER_STYLES = ['pulse_ring', 'lightning_arc', 'orbital_sparks', 'vortex_spin', 'double_gear', 'wave_burst'];
 
-    const POWER_CATALOG = POWER_NAMES.map((name, i) => {
-      return {
-        id: `pow_${i + 1}`,
-        name: `${name}`,
-        color: POWER_COLORS[i % POWER_COLORS.length],
-        style: POWER_STYLES[i % POWER_STYLES.length],
-        price: i === 0 ? 0 : 350 + i * 80
-      };
-    });
+    const POWER_CATALOG = POWER_NAMES.map((name, i) => ({
+      id: `pow_${i + 1}`,
+      name: `${name}`,
+      color: POWER_COLORS[i % POWER_COLORS.length],
+      style: POWER_STYLES[i % POWER_STYLES.length],
+      price: i === 0 ? 0 : 350 + i * 80
+    }));
 
     const VFX_CATALOG = [
       { id: 'vfx_ring', name: 'ग्रीन लाइट वेव', price: 0, color: '#10b981', type: 'ring' },
@@ -1547,18 +1759,8 @@
       name: 'खिलाड़ी 1',
       emoji: '🤠',
       coins: 1200,
-      equipped: {
-        striker: 'st_1',
-        puck: 'pk_1',
-        power: 'pow_1',
-        vfx: 'vfx_ring'
-      },
-      inventory: {
-        strikers: ['st_1'],
-        pucks: ['pk_1'],
-        powers: ['pow_1'],
-        vfx: ['vfx_ring']
-      }
+      equipped: { striker: 'st_1', puck: 'pk_1', power: 'pow_1', vfx: 'vfx_ring' },
+      inventory: { strikers: ['st_1'], pucks: ['pk_1'], powers: ['pow_1'], vfx: ['vfx_ring'] }
     };
 
     function loadSavedUser() {
@@ -1580,14 +1782,10 @@
     }
 
     function navTo(screen) {
-      document.getElementById('home-screen').classList.add('hidden');
-      document.getElementById('friends-screen').classList.add('hidden');
-      document.getElementById('equipment-screen').classList.add('hidden');
-      document.getElementById('shop-screen').classList.add('hidden');
-      document.getElementById('game-screen').classList.add('hidden');
-      document.getElementById('win-screen').classList.add('hidden');
+      ['home-screen', 'friends-screen', 'equipment-screen', 'shop-screen', 'game-screen', 'win-screen'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
       document.getElementById('global-nav').classList.remove('hidden');
-
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
 
       if (screen === 'home') {
@@ -1607,41 +1805,20 @@
     }
 
     let currentEqTab = 'pucks';
-
     function switchEquipmentTab(tab) {
       currentEqTab = tab;
-      document.getElementById('tab-eq-pucks').className = 'sub-tab-btn' + (tab === 'pucks' ? ' active' : '');
-      document.getElementById('tab-eq-strikers').className = 'sub-tab-btn' + (tab === 'strikers' ? ' active' : '');
-      document.getElementById('tab-eq-powers').className = 'sub-tab-btn' + (tab === 'powers' ? ' active' : '');
-      document.getElementById('tab-eq-vfx').className = 'sub-tab-btn' + (tab === 'vfx' ? ' active' : '');
+      ['pucks', 'strikers', 'powers', 'vfx'].forEach(t => {
+        document.getElementById(`tab-eq-${t}`).className = 'sub-tab-btn' + (tab === t ? ' active' : '');
+      });
       renderEquipmentTab();
     }
 
     function renderEquipmentTab() {
       const container = document.getElementById('equipment-grid');
       container.innerHTML = '';
-
-      let catalog = [];
-      let inventoryList = [];
-      let equippedId = '';
-
-      if (currentEqTab === 'pucks') {
-        catalog = PUCK_CATALOG;
-        inventoryList = user.inventory.pucks;
-        equippedId = user.equipped.puck;
-      } else if (currentEqTab === 'strikers') {
-        catalog = STRIKER_CATALOG;
-        inventoryList = user.inventory.strikers;
-        equippedId = user.equipped.striker;
-      } else if (currentEqTab === 'powers') {
-        catalog = POWER_CATALOG;
-        inventoryList = user.inventory.powers;
-        equippedId = user.equipped.power;
-      } else {
-        catalog = VFX_CATALOG;
-        inventoryList = user.inventory.vfx;
-        equippedId = user.equipped.vfx;
-      }
+      let catalog = currentEqTab === 'pucks' ? PUCK_CATALOG : (currentEqTab === 'strikers' ? STRIKER_CATALOG : (currentEqTab === 'powers' ? POWER_CATALOG : VFX_CATALOG));
+      let inventoryList = user.inventory[currentEqTab];
+      let equippedId = user.equipped[currentEqTab === 'pucks' ? 'puck' : (currentEqTab === 'strikers' ? 'striker' : (currentEqTab === 'powers' ? 'power' : 'vfx'))];
 
       catalog.forEach(item => {
         const isOwned = inventoryList.includes(item.id);
@@ -1694,9 +1871,7 @@
 
     function equipItem(category, itemId) {
       const singularMap = { 'pucks': 'puck', 'strikers': 'striker', 'powers': 'power', 'vfx': 'vfx' };
-      const eqKey = singularMap[category] || category;
-
-      user.equipped[eqKey] = itemId;
+      user.equipped[singularMap[category] || category] = itemId;
       saveUserState();
       renderEquipmentTab();
     }
@@ -1720,12 +1895,10 @@
     let isGameRunning = false;
     let activeVfxPockets = [];
     let matchmakingTimer = null;
-    let isRoomHost = false;
-
     let pocketedThisTurn = [];
     let strikerFouledThisTurn = false;
 
-    // FRIEND ROOM REALTIME CREATION & WAITING SYSTEM
+    // FRIEND ROOM REALTIME CREATION
     function createPrivateOnlineRoom() {
       const code = 'CP-' + Math.floor(1000 + Math.random() * 9000);
       currentRoomId = code;
@@ -1746,19 +1919,12 @@
       navigator.clipboard?.writeText(code);
 
       const mmModal = document.getElementById('matchmaking-modal');
-      const mmTitle = document.getElementById('mm-title');
-      const mmSub = document.getElementById('mm-subtitle');
-      const oppAvatar = document.getElementById('mm-opp-avatar');
-      const oppName = document.getElementById('mm-opp-name');
-      const botBtn = document.getElementById('mm-bot-btn');
-      const waBtn = document.getElementById('mm-whatsapp-btn');
-
-      mmTitle.innerText = "ROOM: " + code;
-      mmSub.innerText = "कोड कॉपी हो गया है! दोस्त के जुड़ने का इंतजार करें...";
-      oppAvatar.innerText = "⏳";
-      oppName.innerText = "Waiting...";
-      if (botBtn) botBtn.classList.add('hidden');
-      if (waBtn) waBtn.classList.remove('hidden');
+      document.getElementById('mm-title').innerText = "ROOM: " + code;
+      document.getElementById('mm-subtitle').innerText = "कोड कॉपी हो गया! दोस्त के जुड़ने का इंतजार करें...";
+      document.getElementById('mm-opp-avatar').innerText = "⏳";
+      document.getElementById('mm-opp-name').innerText = "Waiting...";
+      document.getElementById('mm-bot-btn').classList.add('hidden');
+      document.getElementById('mm-whatsapp-btn').classList.remove('hidden');
       mmModal.classList.remove('hidden');
 
       roomRef.on('value', (snap) => {
@@ -1772,24 +1938,13 @@
 
     function shareRoomOnWhatsApp() {
       if (!currentRoomId) return;
-      const playStoreLink = "https://play.google.com/store/apps/details?id=com.jagatpal.carrompool";
-      const shareText = `*Carrom Pool Pro 3D* 🎯\n\nMene private room banaya hai! Mere sath live match khelne ke liye abhi juden.\n\n👉 *Room Code:* ${currentRoomId}\n\n1. App Download karein: ${playStoreLink}\n2. Friends > Code enter karein aur live match start karein!`;
-
-      if (navigator.share) {
-        navigator.share({
-          title: 'Carrom Pool Pro Invite',
-          text: shareText
-        }).catch(() => {
-          window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`, '_system');
-        });
-      } else {
-        window.open(`whatsapp://send?text=${encodeURIComponent(shareText)}`, '_system');
-      }
+      const shareText = `*Carrom Pool Pro 3D* 🎯\n\nमैंने रूम बनाया है, लाइव खेलने के लिए जुड़ें!\n👉 *Room Code:* ${currentRoomId}\n\nApp खोलें > Friends > Code डालें और जुड़ें!`;
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`, '_system');
     }
 
     function joinPrivateOnlineRoom() {
       const code = document.getElementById('room-code-input').value.trim();
-      if (!code) return alert("कृपया वैध रूम कोड दर्ज करें!");
+      if (!code) return alert("कृपया वैध कोड दर्ज करें!");
       currentRoomId = code;
       myPlayerRole = 2;
       isRealFirebaseMatch = true;
@@ -1798,8 +1953,7 @@
       const roomRef = database.ref('rooms/' + currentRoomId);
       roomRef.once('value').then((snap) => {
         const data = snap.val();
-        if (!data) return alert("यह रूम कोड मौजूद नहीं है या समाप्त हो गया है!");
-        if (data.status !== 'waiting') return alert("यह रूम पहले से भरा हुआ है!");
+        if (!data || data.status !== 'waiting') return alert("रूम अमान्य या भरा हुआ है!");
 
         roomRef.update({
           status: 'playing',
@@ -1820,16 +1974,12 @@
       const oppAvatar = document.getElementById('mm-opp-avatar');
       const oppName = document.getElementById('mm-opp-name');
       const mmTitle = document.getElementById('mm-title');
-      const mmSub = document.getElementById('mm-subtitle');
-      const botBtn = document.getElementById('mm-bot-btn');
-      const waBtn = document.getElementById('mm-whatsapp-btn');
       
       mmTitle.innerText = "SEARCHING ONLINE...";
-      mmSub.innerText = "Finding a live opponent";
       oppAvatar.innerText = "❓";
       oppName.innerText = "Searching...";
-      if (botBtn) botBtn.classList.remove('hidden');
-      if (waBtn) waBtn.classList.add('hidden');
+      document.getElementById('mm-bot-btn').classList.remove('hidden');
+      document.getElementById('mm-whatsapp-btn').classList.add('hidden');
       mmModal.classList.remove('hidden');
 
       const queueRef = database.ref('match_queue');
@@ -1854,9 +2004,9 @@
             user.coins -= currentBet;
             saveUserState();
             launchBoard(randomName, "🤖", "LIVE ONLINE");
-          }, 800);
+          }, 600);
         }
-      }, 5500);
+      }, 3500);
     }
 
     function forceOfflinePlay() {
@@ -1864,17 +2014,12 @@
       document.getElementById('matchmaking-modal').classList.add('hidden');
       isRealFirebaseMatch = false;
       myPlayerRole = 1;
-      user.coins -= currentBet;
-      saveUserState();
       launchBoard("उस्ताद बॉट (Offline)", "🤖", "OFFLINE BOT");
     }
 
     function cancelMatchmaking() {
       if (matchmakingTimer) clearTimeout(matchmakingTimer);
-      if (currentRoomId && isRoomHost) {
-        database.ref('rooms/' + currentRoomId).remove();
-        currentRoomId = null;
-      }
+      if (currentRoomId && isRoomHost) database.ref('rooms/' + currentRoomId).remove();
       document.getElementById('matchmaking-modal').classList.add('hidden');
     }
 
@@ -1888,27 +2033,42 @@
     }
 
     function launchBoard(oppName, oppAvatar, modeText) {
-      document.getElementById('home-screen').classList.add('hidden');
-      document.getElementById('friends-screen').classList.add('hidden');
-      document.getElementById('equipment-screen').classList.add('hidden');
-      document.getElementById('shop-screen').classList.add('hidden');
-      document.getElementById('global-nav').classList.add('hidden');
+      ['home-screen', 'friends-screen', 'equipment-screen', 'shop-screen', 'global-nav'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
       document.getElementById('game-screen').classList.remove('hidden');
 
-      document.getElementById('p1-avatar').innerText = myPlayerRole === 1 ? user.emoji : oppAvatar;
-      document.getElementById('p1-name').innerText = myPlayerRole === 1 ? user.name : oppName;
-      document.getElementById('p2-avatar').innerText = myPlayerRole === 1 ? oppAvatar : user.emoji;
-      document.getElementById('p2-name').innerText = myPlayerRole === 1 ? oppName : user.name;
+      document.getElementById('p1-avatar').innerText = user.emoji;
+      document.getElementById('p1-name').innerText = user.name;
+      document.getElementById('p2-avatar').innerText = oppAvatar;
+      document.getElementById('p2-name').innerText = oppName;
       document.getElementById('queen-indicator').innerText = modeText;
       document.getElementById('table-pot').innerText = `${potCoins}`;
 
+      // PERSPECTIVE COLOR SETTING
+      const p1Ind = document.getElementById('p1-indicator');
+      const p2Ind = document.getElementById('p2-indicator');
+      if (isRealFirebaseMatch && myPlayerRole === 2) {
+        p1Ind.className = 'large-puck-indicator puck-black-large';
+        p2Ind.className = 'large-puck-indicator puck-white-large';
+      } else {
+        p1Ind.className = 'large-puck-indicator puck-white-large';
+        p2Ind.className = 'large-puck-indicator puck-black-large';
+      }
+
       initBoard();
       listenToFirebaseRoomEvents();
+
+      // AUTO START VOICE CALL NON-BLOCKING
+      if (isRealFirebaseMatch && currentRoomId) {
+        initVoiceCallAsync();
+      }
     }
 
     function quitToHome() {
       isGameRunning = false;
-      if (currentRoomId) {
+      stopVoiceCall();
+      if (currentRoomId && isRoomHost) {
         database.ref('rooms/' + currentRoomId).remove();
         currentRoomId = null;
       }
@@ -1916,26 +2076,14 @@
     }
 
     function toggleChatDrawer() {
-      const drawer = document.getElementById('chat-drawer');
-      drawer.classList.toggle('hidden');
+      document.getElementById('chat-drawer').classList.toggle('hidden');
     }
 
     function sendLiveSticker(text) {
       toggleChatDrawer();
       showSpeechBubble(myPlayerRole, text);
-
       if (isRealFirebaseMatch && currentRoomId) {
-        database.ref('rooms/' + currentRoomId + '/chat').set({
-          sender: myPlayerRole,
-          text: text,
-          time: Date.now()
-        });
-      } else if (!isPassAndPlay && myPlayerRole === 1) {
-        setTimeout(() => {
-          const replies = ['😂', '🔥', 'Well Played!', 'Lucky! 😉'];
-          const botReply = replies[Math.floor(Math.random() * replies.length)];
-          showSpeechBubble(2, botReply);
-        }, 1200);
+        database.ref('rooms/' + currentRoomId + '/chat').set({ sender: myPlayerRole, text, time: Date.now() });
       }
     }
 
@@ -1968,14 +2116,30 @@
         const turn = snap.val();
         if (turn) {
           currentTurn = turn;
-          updateTurnHUD();
+          resetStriker();
+        }
+      });
+
+      roomRef.child('boardState').on('value', (snap) => {
+        const data = snap.val();
+        if (data && data.senderRole !== myPlayerRole) {
+          data.pucks.forEach((sp, idx) => {
+            if (pucks[idx]) {
+              pucks[idx].x = sp.x;
+              pucks[idx].y = sp.y;
+              pucks[idx].inPocket = sp.inPocket;
+              pucks[idx].vx = 0;
+              pucks[idx].vy = 0;
+            }
+          });
+          updatePuckCounts();
         }
       });
 
       roomRef.child('chat').on('value', (snap) => {
         const chat = snap.val();
         if (chat && chat.sender !== myPlayerRole) {
-          showSpeechBubble(chat.sender, chat.text);
+          showSpeechBubble(2, chat.text);
         }
       });
     }
@@ -2008,54 +2172,14 @@
 
     let striker = { x: SIZE/2, y: SIZE*0.81, r: SIZE*0.05, vx: 0, vy: 0, inHand: true };
     let pucks = [];
-    let particles = [];
     let isAiming = false;
     let dragOrigin = { x: 0, y: 0 };
     let dragCurrent = { x: 0, y: 0 };
     let tickCount = 0;
     let cueAnimation = { active: false, pullDistance: 0, angle: 0, force: 0, snapProgress: 0 };
 
-    // REALISTIC POWDER PARTICLES HELPER
-    function addCollisionPowder(x, y, count = 6, color = '#ffffff') {
-      for (let i = 0; i < count; i++) {
-        const ang = Math.random() * Math.PI * 2;
-        const speed = 0.8 + Math.random() * 2.2;
-        particles.push({
-          x: x,
-          y: y,
-          vx: Math.cos(ang) * speed,
-          vy: Math.sin(ang) * speed,
-          size: 1.5 + Math.random() * 2,
-          color: color,
-          alpha: 1,
-          decay: 0.04 + Math.random() * 0.03
-        });
-      }
-    }
-
-    function updateAndDrawParticles() {
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.alpha -= p.decay;
-        if (p.alpha <= 0) {
-          particles.splice(i, 1);
-          continue;
-        }
-        ctx.save();
-        ctx.globalAlpha = p.alpha;
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
-    }
-
     function initBoard() {
       pucks = [];
-      particles = [];
       currentTurn = 1;
       isGameRunning = true;
       activeVfxPockets = [];
@@ -2065,7 +2189,6 @@
       const pr = SIZE * 0.036;
 
       pucks.push({ x: center.x, y: center.y, r: pr, vx: 0, vy: 0, type: 'queen', inPocket: false });
-
       for (let i = 0; i < 6; i++) {
         let ang = (i * Math.PI * 2) / 6;
         let d = pr * 2.05;
@@ -2085,7 +2208,13 @@
       striker.vx = 0;
       striker.vy = 0;
       striker.inHand = true;
-      striker.y = currentTurn === 1 ? SIZE * 0.81 : SIZE * 0.19;
+
+      if (isRealFirebaseMatch) {
+        striker.y = (currentTurn === myPlayerRole) ? SIZE * 0.81 : SIZE * 0.19;
+      } else {
+        striker.y = (currentTurn === 1) ? SIZE * 0.81 : SIZE * 0.19;
+      }
+
       slider.value = 50;
       updateStrikerX();
       updateTurnHUD();
@@ -2104,29 +2233,30 @@
       const maxX = SIZE * 0.76;
       striker.x = minX + (slider.value / 100) * (maxX - minX);
     }
+
     slider.addEventListener('input', () => {
-      if (striker.inHand && !cueAnimation.active && (!isRealFirebaseMatch || currentTurn === myPlayerRole)) {
+      if (isRealFirebaseMatch && currentTurn !== myPlayerRole) return;
+      if (striker.inHand && !cueAnimation.active) {
         updateStrikerX();
       }
     });
 
     canvas.addEventListener('touchstart', (e) => {
       AudioEngine.init();
-      if (!striker.inHand || (isRealFirebaseMatch && currentTurn !== myPlayerRole) || (!isPassAndPlay && !isRealFirebaseMatch && currentTurn === 2) || !isGameRunning || cueAnimation.active) return;
+      if (isRealFirebaseMatch && currentTurn !== myPlayerRole) return;
+      if (!isPassAndPlay && !isRealFirebaseMatch && currentTurn === 2) return;
+      if (!striker.inHand || !isGameRunning || cueAnimation.active) return;
+
       const rect = canvas.getBoundingClientRect();
-      const tx = e.touches[0].clientX - rect.left;
-      const ty = e.touches[0].clientY - rect.top;
       isAiming = true;
-      dragOrigin = { x: tx, y: ty };
-      dragCurrent = { x: tx, y: ty };
+      dragOrigin = { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+      dragCurrent = { ...dragOrigin };
     });
 
     canvas.addEventListener('touchmove', (e) => {
       if (!isAiming) return;
       const rect = canvas.getBoundingClientRect();
-      const tx = e.touches[0].clientX - rect.left;
-      const ty = e.touches[0].clientY - rect.top;
-      dragCurrent = { x: tx, y: ty };
+      dragCurrent = { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
     });
 
     canvas.addEventListener('touchend', () => {
@@ -2160,27 +2290,14 @@
 
     function playAITurn() {
       if (!isGameRunning || currentTurn !== 2) return;
-      const botPucksLeft = pucks.filter(p => !p.inPocket && p.type === 'black').length;
-      let active = [];
-
-      if (botPucksLeft === 0) {
-        active = pucks.filter(p => !p.inPocket && p.type === 'queen');
-      } else {
-        active = pucks.filter(p => !p.inPocket && p.type === 'black');
-      }
-
-      if (active.length === 0) {
-        active = pucks.filter(p => !p.inPocket);
-      }
-      if (active.length === 0) return;
-
-      const target = active[Math.floor(Math.random() * active.length)];
+      const target = pucks.find(p => !p.inPocket && p.type === 'black') || pucks.find(p => !p.inPocket);
+      if (!target) return;
       slider.value = Math.floor(Math.random() * 60) + 20;
       updateStrikerX();
 
       let dx = target.x - striker.x;
       let dy = target.y - striker.y;
-      let angle = Math.atan2(dy, dx) + (Math.random() - 0.5) * 0.04;
+      let angle = Math.atan2(dy, dx);
 
       setTimeout(() => {
         if (!isGameRunning) return;
@@ -2212,37 +2329,11 @@
     }
 
     function placePuckNearCenter(puckObj) {
-      const cx = SIZE / 2;
-      const cy = SIZE / 2;
-      let placed = false;
-      let offset = 0;
-      let step = puckObj.r * 2.2;
-
-      while (!placed && offset < SIZE * 0.35) {
-        for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 4) {
-          let testX = cx + Math.cos(angle) * offset;
-          let testY = cy + Math.sin(angle) * offset;
-
-          let overlap = pucks.some(p => !p.inPocket && p !== puckObj && Math.hypot(p.x - testX, p.y - testY) < (p.r + puckObj.r + 2));
-          if (!overlap) {
-            puckObj.x = testX;
-            puckObj.y = testY;
-            puckObj.vx = 0;
-            puckObj.vy = 0;
-            puckObj.inPocket = false;
-            placed = true;
-            break;
-          }
-        }
-        offset += step;
-      }
-      if (!placed) {
-        puckObj.x = cx;
-        puckObj.y = cy;
-        puckObj.vx = 0;
-        puckObj.vy = 0;
-        puckObj.inPocket = false;
-      }
+      puckObj.x = SIZE / 2;
+      puckObj.y = SIZE / 2;
+      puckObj.vx = 0;
+      puckObj.vy = 0;
+      puckObj.inPocket = false;
     }
 
     function updatePhysics() {
@@ -2255,8 +2346,6 @@
           striker.vy = Math.sin(cueAnimation.angle) * cueAnimation.force;
           striker.inHand = false;
           AudioEngine.playPuckCut(0.75, 1.25);
-          triggerHaptic('medium');
-          addCollisionPowder(striker.x, striker.y, 8, '#ffffff');
         }
         return;
       }
@@ -2276,32 +2365,15 @@
 
         const minB = obj.r + 20;
         const maxB = SIZE - obj.r - 20;
-        if (obj.x < minB) { 
-          obj.x = minB; obj.vx *= -0.85; 
-          AudioEngine.playPuckCut(0.3, 0.85); 
-          addCollisionPowder(obj.x, obj.y, 4, '#fbbf24');
-        }
-        if (obj.x > maxB) { 
-          obj.x = maxB; obj.vx *= -0.85; 
-          AudioEngine.playPuckCut(0.3, 0.85); 
-          addCollisionPowder(obj.x, obj.y, 4, '#fbbf24');
-        }
-        if (obj.y < minB) { 
-          obj.y = minB; obj.vy *= -0.85; 
-          AudioEngine.playPuckCut(0.3, 0.85); 
-          addCollisionPowder(obj.x, obj.y, 4, '#fbbf24');
-        }
-        if (obj.y > maxB) { 
-          obj.y = maxB; obj.vy *= -0.85; 
-          AudioEngine.playPuckCut(0.3, 0.85); 
-          addCollisionPowder(obj.x, obj.y, 4, '#fbbf24');
-        }
+        if (obj.x < minB) { obj.x = minB; obj.vx *= -0.85; AudioEngine.playPuckCut(0.3, 0.85); }
+        if (obj.x > maxB) { obj.x = maxB; obj.vx *= -0.85; AudioEngine.playPuckCut(0.3, 0.85); }
+        if (obj.y < minB) { obj.y = minB; obj.vy *= -0.85; AudioEngine.playPuckCut(0.3, 0.85); }
+        if (obj.y > maxB) { obj.y = maxB; obj.vy *= -0.85; AudioEngine.playPuckCut(0.3, 0.85); }
 
         pockets.forEach(p => {
           if (Math.hypot(p.x - obj.x, p.y - obj.y) < POCKET_RADIUS) {
             obj.vx = 0; obj.vy = 0;
             AudioEngine.playPocketSound();
-            triggerHaptic('pocket');
             triggerPocketVfx(p);
             if (obj === striker) {
               obj.x = -200;
@@ -2316,7 +2388,6 @@
         });
       });
 
-      let collisionsThisFrame = 0;
       for (let i = 0; i < all.length; i++) {
         for (let j = i + 1; j < all.length; j++) {
           let o1 = all[i], o2 = all[j];
@@ -2324,102 +2395,67 @@
           let dist = Math.hypot(dx, dy);
 
           if (dist < o1.r + o2.r && dist > 0) {
-            collisionsThisFrame++;
             let overlap = (o1.r + o2.r) - dist;
             let nx = dx / dist, ny = dy / dist;
             o1.x -= nx * overlap * 0.5; o1.y -= ny * overlap * 0.5;
             o2.x += nx * overlap * 0.5; o2.y += ny * overlap * 0.5;
-
             let kx = o1.vx - o2.vx, ky = o1.vy - o2.vy;
             let p = 2 * (nx * kx + ny * ky) / 2;
             o1.vx -= p * nx * 0.96; o1.vy -= p * ny * 0.96;
             o2.vx += p * nx * 0.96; o2.vy += p * ny * 0.96;
-
-            const midX = (o1.x + o2.x) / 2;
-            const midY = (o1.y + o2.y) / 2;
-            addCollisionPowder(midX, midY, 3, '#f5efe6');
           }
         }
-      }
-
-      if (collisionsThisFrame >= 3) {
-        AudioEngine.playPuckClusterClatter(1.15);
-        triggerHaptic('medium');
-      } else if (collisionsThisFrame > 0) {
-        AudioEngine.playPuckCut(0.9, 1.05);
-        triggerHaptic('light');
       }
 
       if (!isMoving && !striker.inHand) handleTurnEnd();
     }
 
     function handleTurnEnd() {
-      const myColor = currentTurn === 1 ? 'white' : 'black';
-      const myPucksRemaining = pucks.filter(p => !p.inPocket && p.type === myColor).length;
+      const activeTurnColor = currentTurn === 1 ? 'white' : 'black';
+      const pucksLeft = pucks.filter(p => !p.inPocket && p.type === activeTurnColor).length;
       const queenPuck = pucks.find(p => p.type === 'queen');
-      const isQueenPocketedThisTurn = pocketedThisTurn.includes('queen');
 
-      let queenFoulOccurred = false;
-
-      if (isQueenPocketedThisTurn && myPucksRemaining > 0) {
-        queenFoulOccurred = true;
+      if (pocketedThisTurn.includes('queen') && pucksLeft > 0) {
         placePuckNearCenter(queenPuck);
-
-        const pocketedPucksOfMine = pucks.filter(p => p.inPocket && p.type === myColor);
-        if (pocketedPucksOfMine.length > 0) {
-          placePuckNearCenter(pocketedPucksOfMine[0]);
-        }
-
         showBannerMessage("रानी फाउल! (PENALTY)", 1800);
-        updatePuckCounts();
       }
 
       const p1Left = pucks.filter(p => !p.inPocket && p.type === 'white').length;
       const p2Left = pucks.filter(p => !p.inPocket && p.type === 'black').length;
-      const queenIsPocketed = queenPuck && queenPuck.inPocket;
 
-      if (p1Left === 0 && queenIsPocketed) {
-        celebrateWin(true);
-        return;
-      }
-      if (p2Left === 0 && queenIsPocketed) {
-        celebrateWin(false);
-        return;
-      }
+      if (p1Left === 0 && queenPuck.inPocket) { celebrateWin(myPlayerRole === 1); return; }
+      if (p2Left === 0 && queenPuck.inPocket) { celebrateWin(myPlayerRole === 2); return; }
 
-      let keepTurn = false;
-      if (strikerFouledThisTurn || queenFoulOccurred) {
-        keepTurn = false;
-      } else {
-        const hitOwnPuck = pocketedThisTurn.includes(myColor);
-        const validQueen = isQueenPocketedThisTurn && (myPucksRemaining === 0);
-        if (hitOwnPuck || validQueen) {
-          keepTurn = true;
-        }
-      }
-
+      let keepTurn = pocketedThisTurn.includes(activeTurnColor) && !strikerFouledThisTurn;
       if (!keepTurn) {
         currentTurn = currentTurn === 1 ? 2 : 1;
-        if (isRealFirebaseMatch && currentRoomId) {
-          database.ref('rooms/' + currentRoomId + '/turn').set(currentTurn);
-        }
+      }
+
+      if (isRealFirebaseMatch && currentRoomId && currentTurn !== myPlayerRole) {
+        database.ref('rooms/' + currentRoomId + '/boardState').set({
+          senderRole: myPlayerRole,
+          pucks: pucks.map(p => ({ x: p.x, y: p.y, inPocket: p.inPocket }))
+        });
+        database.ref('rooms/' + currentRoomId + '/turn').set(currentTurn);
       }
 
       resetStriker();
     }
 
     function updatePuckCounts() {
-      const p1Count = pucks.filter(p => !p.inPocket && p.type === 'white').length;
-      const p2Count = pucks.filter(p => !p.inPocket && p.type === 'black').length;
-      const queenLeft = pucks.filter(p => !p.inPocket && p.type === 'queen').length;
+      const myColor = getMyPuckColor();
+      const oppColor = getOppPuckColor();
+      const myLeft = pucks.filter(p => !p.inPocket && p.type === myColor).length;
+      const oppLeft = pucks.filter(p => !p.inPocket && p.type === oppColor).length;
 
-      document.getElementById('p1-left').innerText = p1Count === 0 ? (queenLeft ? 'रानी लें!' : '0') : p1Count;
-      document.getElementById('p2-left').innerText = p2Count === 0 ? (queenLeft ? 'रानी लें!' : '0') : p2Count;
+      document.getElementById('p1-left').innerText = myLeft;
+      document.getElementById('p2-left').innerText = oppLeft;
     }
 
     function updateTurnHUD() {
-      document.getElementById('p1-box').className = 'player-box' + (currentTurn === 1 ? ' turn-active' : '');
-      document.getElementById('p2-box').className = 'player-box' + (currentTurn === 2 ? ' bot-turn-active' : '');
+      const isMyTurn = (currentTurn === myPlayerRole);
+      document.getElementById('p1-box').className = 'player-box' + (isMyTurn ? ' turn-active' : '');
+      document.getElementById('p2-box').className = 'player-box' + (!isMyTurn ? ' bot-turn-active' : '');
     }
 
     function drawCarromBoard() {
@@ -2571,8 +2607,6 @@
 
         if (v.progress >= 1) activeVfxPockets.splice(i, 1);
       }
-
-      updateAndDrawParticles();
     }
 
     function drawUltraRealisticPuck(x, y, r, type) {
@@ -2597,7 +2631,6 @@
       ctx.fill();
 
       ctx.shadowColor = 'transparent';
-
       ctx.strokeStyle = type === 'black' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.25)';
       ctx.lineWidth = 1.6;
       ctx.beginPath();
@@ -2623,7 +2656,6 @@
       ctx.beginPath();
       ctx.ellipse(x - r*0.3, y - r*0.35, r*0.25, r*0.14, -Math.PI/4, 0, Math.PI * 2);
       ctx.fill();
-
       ctx.restore();
     }
 
@@ -2643,12 +2675,6 @@
         ctx.setLineDash([8, 6]);
         ctx.beginPath();
         ctx.arc(x, y, wave, tickCount, tickCount + Math.PI * 2);
-        ctx.stroke();
-
-        ctx.lineWidth = 1.2;
-        ctx.setLineDash([]);
-        ctx.beginPath();
-        ctx.arc(x, y, r * 1.7, 0, Math.PI * 2);
         ctx.stroke();
       } else if (pow.style === 'lightning_arc') {
         ctx.strokeStyle = color;
@@ -2682,9 +2708,6 @@
         ctx.beginPath();
         ctx.arc(x, y, r * 1.4, -tickCount * 2, -tickCount * 2 + Math.PI * 2);
         ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(x, y, r * 1.7, tickCount * 2, tickCount * 2 + Math.PI * 2);
-        ctx.stroke();
       } else {
         let wave = r * (1.3 + (Math.sin(tickCount * 4) + 1) * 0.25);
         ctx.strokeStyle = color;
@@ -2693,7 +2716,6 @@
         ctx.arc(x, y, wave, 0, Math.PI * 2);
         ctx.stroke();
       }
-
       ctx.restore();
     }
 
@@ -2742,7 +2764,6 @@
       ctx.beginPath();
       ctx.ellipse(x - r*0.32, y - r*0.35, r*0.3, r*0.16, -Math.PI/4, 0, Math.PI * 2);
       ctx.fill();
-
       ctx.restore();
     }
 
@@ -2788,13 +2809,11 @@
       oCtx.beginPath();
       oCtx.arc(startOffset, 0, 3.5, 0, Math.PI * 2);
       oCtx.fill();
-
       oCtx.restore();
     }
 
     function renderAimAndCueOverlay() {
       oCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
-
       const boardRect = canvas.getBoundingClientRect();
       const screenStrikerX = boardRect.left + striker.x;
       const screenStrikerY = boardRect.top + striker.y;
@@ -2877,8 +2896,8 @@
       }
 
       if (cueAnimation.active) {
-        let currentPull = cueAnimation.pullDistance * (1 - cueAnimation.snapProgress);
-        drawProCueStick(screenStrikerX, screenStrikerY, cueAnimation.angle, currentPull);
+        let curPull = cueAnimation.pullDistance * (1 - cueAnimation.snapProgress);
+        drawProCueStick(screenStrikerX, screenStrikerY, cueAnimation.angle, curPull);
       }
     }
 
@@ -2893,80 +2912,89 @@
       requestAnimationFrame(renderLoop);
     }
 
-    function celebrateWin(isP1Winner) {
+    function celebrateWin(isWinner) {
       isGameRunning = false;
+      stopVoiceCall();
       document.getElementById('win-screen').classList.remove('hidden');
-      if (isP1Winner) {
+      document.getElementById('win-title').innerText = isWinner ? "🎉 आप जीत गए! 🎉" : "😔 मैच समाप्त!";
+      document.getElementById('win-reward').innerText = isWinner ? `+ ${potCoins}` : `+ 0`;
+      if (isWinner) {
         user.coins += potCoins;
         saveUserState();
-        document.getElementById('win-title').innerText = "🎉 आप जीत गए! 🎉";
-        document.getElementById('win-reward').innerText = `+ ${potCoins}`;
-      } else {
-        document.getElementById('win-title').innerText = "😔 मैच समाप्त!";
-        document.getElementById('win-reward').innerText = `+ 0`;
       }
-
-      setTimeout(() => {
-        AdService.showInterstitial();
-      }, 700);
+      setTimeout(() => AdService.showInterstitial(), 700);
     }
 
-    // ================= LUCKY SPIN WHEEL SYSTEM =================
+    // ================= 3D REALISTIC CASINO ROULETTE WHEEL ENGINE =================
     const WHEEL_REWARDS = [
-      { text: '+100 🪙', val: 100, color: '#f59e0b' },
-      { text: '+250 🪙', val: 250, color: '#10b981' },
-      { text: '+50 🪙', val: 50, color: '#06b6d4' },
-      { text: '+500 🪙', val: 500, color: '#ef4444' },
-      { text: '+150 🪙', val: 150, color: '#8b5cf6' },
-      { text: '+300 🪙', val: 300, color: '#ec4899' }
+      { text: '+50 🪙', val: 50, c1: '#0284c7', c2: '#082f49' },
+      { text: '+250 🪙', val: 250, c1: '#10b981', c2: '#064e3b' },
+      { text: '+100 🪙', val: 100, c1: '#f59e0b', c2: '#78350f' },
+      { text: 'JACKPOT 500!', val: 500, c1: '#dc2626', c2: '#450a0a' },
+      { text: '+150 🪙', val: 150, c1: '#8b5cf6', c2: '#3b0764' },
+      { text: '+300 🪙', val: 300, c1: '#ec4899', c2: '#500724' }
     ];
-    let wheelAngle = 0;
     let isSpinning = false;
     let hasFreeSpinToday = true;
 
-    function drawLuckyWheel() {
+    function drawUltra3DWheel() {
       const wCanvas = document.getElementById('wheelCanvas');
       if (!wCanvas) return;
       const wCtx = wCanvas.getContext('2d');
-      const cx = 125, cy = 125, r = 120;
+      const cx = 134, cy = 134, r = 130;
       const arc = (Math.PI * 2) / WHEEL_REWARDS.length;
 
-      wCtx.clearRect(0, 0, 250, 250);
+      wCtx.clearRect(0, 0, 268, 268);
 
       WHEEL_REWARDS.forEach((rew, i) => {
         const start = i * arc;
         const end = start + arc;
-        wCtx.fillStyle = rew.color;
+
+        const grad = wCtx.createRadialGradient(cx, cy, 25, cx, cy, r);
+        grad.addColorStop(0, '#ffffff');
+        grad.addColorStop(0.35, rew.c1);
+        grad.addColorStop(0.85, rew.c2);
+        grad.addColorStop(1, '#050505');
+
+        wCtx.fillStyle = grad;
         wCtx.beginPath();
         wCtx.moveTo(cx, cy);
         wCtx.arc(cx, cy, r, start, end);
         wCtx.fill();
-        wCtx.strokeStyle = '#ffffff';
-        wCtx.lineWidth = 2.5;
+
+        wCtx.strokeStyle = 'rgba(255, 215, 0, 0.75)';
+        wCtx.lineWidth = 3;
         wCtx.stroke();
+
+        const bulbAng = start;
+        const bx = cx + Math.cos(bulbAng) * (r - 10);
+        const by = cy + Math.sin(bulbAng) * (r - 10);
+        const bulbGrad = wCtx.createRadialGradient(bx, by, 1, bx, by, 5);
+        bulbGrad.addColorStop(0, '#ffffff');
+        bulbGrad.addColorStop(0.5, '#ffd700');
+        bulbGrad.addColorStop(1, '#78350f');
+        wCtx.fillStyle = bulbGrad;
+        wCtx.beginPath();
+        wCtx.arc(bx, by, 5, 0, Math.PI * 2);
+        wCtx.fill();
 
         wCtx.save();
         wCtx.translate(cx, cy);
         wCtx.rotate(start + arc / 2);
         wCtx.textAlign = 'right';
+        wCtx.font = '900 13px Orbitron, Montserrat';
+        wCtx.shadowColor = 'rgba(0,0,0,0.95)';
+        wCtx.shadowBlur = 6;
+        wCtx.shadowOffsetY = 2;
         wCtx.fillStyle = '#ffffff';
-        wCtx.font = 'bold 12px Orbitron, Montserrat';
-        wCtx.fillText(rew.text, r - 15, 4);
+        wCtx.fillText(rew.text, r - 22, 5);
         wCtx.restore();
       });
-
-      wCtx.beginPath();
-      wCtx.arc(cx, cy, 22, 0, Math.PI * 2);
-      wCtx.fillStyle = '#ffd700';
-      wCtx.fill();
-      wCtx.strokeStyle = '#78350f';
-      wCtx.lineWidth = 3;
-      wCtx.stroke();
     }
 
     function openSpinModal() {
       document.getElementById('spin-modal').classList.remove('hidden');
-      drawLuckyWheel();
+      drawUltra3DWheel();
       const btn = document.getElementById('btn-spin-wheel');
       btn.innerText = hasFreeSpinToday ? "🎡 स्पिन करें (FREE)" : "📺 विज्ञापन देखकर स्पिन करें";
     }
@@ -2978,11 +3006,8 @@
 
     function spinLuckyWheel() {
       if (isSpinning) return;
-
       if (!hasFreeSpinToday) {
-        AdService.showRewarded(() => {
-          executeWheelSpin();
-        });
+        AdService.showRewarded(() => { executeWheelSpin(); });
       } else {
         hasFreeSpinToday = false;
         executeWheelSpin();
@@ -3013,9 +3038,8 @@
         user.coins = Number(user.coins || 0) + won.val;
         saveUserState();
         syncCoinDisplays();
-        triggerHaptic('pocket');
         alert(`🎉 बधाई! आपने लकी स्पिन से ${won.text} सिक्के जीते!`);
-      }, 4000);
+      }, 4300);
     }
 
     loadSavedUser();
