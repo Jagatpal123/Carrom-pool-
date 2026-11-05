@@ -2035,7 +2035,7 @@
       initBoard();
       listenToFirebaseRoomEvents();
 
-      // AUTO START VOICE CALL DIRECTLY
+      // AUTO START VOICE CALL
       if (isRealFirebaseMatch && currentRoomId) {
         initVoiceCallDirect();
       }
@@ -2143,7 +2143,7 @@
       striker.inHand = true;
 
       const isMyTurn = (currentTurn === myPlayerRole);
-      // जिसकी चाल होगी, उसके फोन में नीचे (0.81), दूसरे के फोन में ऊपर (0.19)
+      // जिसकी चाल होगी, उसके फोन में नीचे (0.81), विरोधी के फोन में ऊपर (0.19)
       striker.y = isMyTurn ? SIZE * 0.81 : SIZE * 0.19;
 
       slider.value = 50;
@@ -2342,10 +2342,14 @@
         });
       }
 
+      // ================= 🎯 TURN SYNC (NO FREEZE FIX) =================
       roomRef.child('turn').on('value', (snap) => {
         const t = snap.val();
-        if (t) {
+        if (t !== null && t !== undefined) {
           currentTurn = t;
+          striker.vx = 0;
+          striker.vy = 0;
+          striker.inHand = true;
           resetStriker();
         }
       });
@@ -2365,6 +2369,7 @@
       });
     }
 
+    // ================= 🚀 SMOOTH UPDATE PHYSICS (NO FREEZE FIX) =================
     function updatePhysics() {
       if (!isGameRunning) return;
 
@@ -2380,6 +2385,7 @@
         return;
       }
 
+      // Client (Player 2) फिजिक्स कैलकुलेट नहीं करेगा, सिर्फ Host का लाइव डेटा रेंडर करेगा
       if (isRealFirebaseMatch && myPlayerRole === 2) return;
 
       let isMoving = false;
@@ -2391,8 +2397,9 @@
         obj.vx *= FRICTION;
         obj.vy *= FRICTION;
 
-        if (Math.abs(obj.vx) < 0.04) obj.vx = 0;
-        if (Math.abs(obj.vy) < 0.04) obj.vy = 0;
+        // यदि गति बहुत धीमी हो तो उसे सीधे 0 करें ताकि गेम अटके नहीं
+        if (Math.abs(obj.vx) < 0.08) obj.vx = 0;
+        if (Math.abs(obj.vy) < 0.08) obj.vy = 0;
         if (obj.vx !== 0 || obj.vy !== 0) isMoving = true;
 
         const minB = obj.r + 20;
@@ -2408,7 +2415,8 @@
             AudioEngine.playPocketSound();
             triggerPocketVfx(p);
             if (obj === striker) {
-              obj.x = -200;
+              obj.x = -500;
+              obj.y = -500;
               strikerFouledThisTurn = true;
               showBannerMessage('FOUL! ⚠️');
             } else {
@@ -2439,16 +2447,22 @@
         }
       }
 
-      if (isRealFirebaseMatch && myPlayerRole === 1 && (isMoving || !striker.inHand)) {
+      // Host लगातार गोटियों की पोजीशन भेजेगा जब तक कि सब कुछ रुक न जाए
+      if (isRealFirebaseMatch && myPlayerRole === 1 && (!striker.inHand || isMoving)) {
         database.ref('rooms/' + currentRoomId + '/livePucks').set(
           pucks.map(p => ({ x: p.x, y: p.y, inPocket: p.inPocket }))
         );
       }
 
-      if (!isMoving && !striker.inHand) handleTurnEnd();
+      // जब स्ट्राइकर और गोटियाँ दोनों पूरी तरह रुक जाएँ तो टर्न का फैसला करें
+      if (!isMoving && !striker.inHand) {
+        handleTurnEnd();
+      }
     }
 
     function handleTurnEnd() {
+      if (cueAnimation.active) return;
+
       const activeTurnColor = currentTurn === 1 ? 'white' : 'black';
       const pucksLeft = pucks.filter(p => !p.inPocket && p.type === activeTurnColor).length;
       const queenPuck = pucks.find(p => p.type === 'queen');
@@ -2462,26 +2476,32 @@
       const p2Left = pucks.filter(p => !p.inPocket && p.type === 'black').length;
 
       if (p1Left === 0 && queenPuck.inPocket) {
-        if (isRealFirebaseMatch) database.ref('rooms/' + currentRoomId + '/matchWinner').set(1);
+        if (isRealFirebaseMatch && myPlayerRole === 1) database.ref('rooms/' + currentRoomId + '/matchWinner').set(1);
         celebrateWin(myPlayerRole === 1);
         return;
       }
       if (p2Left === 0 && queenPuck.inPocket) {
-        if (isRealFirebaseMatch) database.ref('rooms/' + currentRoomId + '/matchWinner').set(2);
+        if (isRealFirebaseMatch && myPlayerRole === 1) database.ref('rooms/' + currentRoomId + '/matchWinner').set(2);
         celebrateWin(myPlayerRole === 2);
         return;
       }
 
       let keepTurn = pocketedThisTurn.includes(activeTurnColor) && !strikerFouledThisTurn;
+      let nextTurn = currentTurn;
       if (!keepTurn) {
-        currentTurn = currentTurn === 1 ? 2 : 1;
+        nextTurn = currentTurn === 1 ? 2 : 1;
       }
 
-      if (isRealFirebaseMatch && currentRoomId) {
-        database.ref('rooms/' + currentRoomId + '/turn').set(currentTurn);
+      // केवल Host टर्न का फैसला करके Firebase में लिखेगा
+      if (isRealFirebaseMatch) {
+        if (myPlayerRole === 1) {
+          database.ref('rooms/' + currentRoomId + '/turn').set(nextTurn);
+          database.ref('rooms/' + currentRoomId + '/aimLive').set({ active: false });
+        }
+      } else {
+        currentTurn = nextTurn;
+        resetStriker();
       }
-
-      resetStriker();
     }
 
     function updatePuckCounts() {
@@ -2808,6 +2828,7 @@
       ctx.beginPath();
       ctx.ellipse(x - r*0.32, y - r*0.35, r*0.3, r*0.16, -Math.PI/4, 0, Math.PI * 2);
       ctx.fill();
+
       ctx.restore();
     }
 
