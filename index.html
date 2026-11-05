@@ -91,12 +91,7 @@
       0% { transform: scale(0.96); box-shadow: 0 0 20px rgba(245, 158, 11, 0.5); }
       100% { transform: scale(1.04); box-shadow: 0 0 40px rgba(245, 158, 11, 0.9); }
     }
-    .welcome-logo-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
+    .welcome-logo-img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .welcome-text {
       font-family: 'Orbitron', sans-serif;
       font-size: 20px;
@@ -125,11 +120,7 @@
       border-radius: 10px;
       animation: fillBar 1.6s forwards ease-in-out;
     }
-    @keyframes fillBar {
-      0% { width: 0%; }
-      60% { width: 75%; }
-      100% { width: 100%; }
-    }
+    @keyframes fillBar { 0% { width: 0%; } 60% { width: 75%; } 100% { width: 100%; } }
 
     /* 3D TYPOGRAPHY */
     .title-3d-gold {
@@ -313,14 +304,9 @@
       justify-content: center;
       background: radial-gradient(circle at 35% 30%, #ffd700, #b45309, #381200);
     }
-    .btn-carrom-badge img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
+    .btn-carrom-badge img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-    /* 3D ULTRA-VISIBLE PURPLE-GOLD LUCKY SPIN CARD */
+    /* 3D SUPER-VISIBLE LUCKY SPIN BANNER BUTTON */
     .super-spin-3d-card {
       width: 100%;
       background: linear-gradient(135deg, #3b0764 0%, #6b21a8 40%, #c026d3 75%, #eab308 100%);
@@ -351,11 +337,7 @@
       transform: rotate(25deg);
       animation: superGleam 2.4s infinite ease-in-out;
     }
-    @keyframes superGleam {
-      0% { left: -70%; }
-      50% { left: 150%; }
-      100% { left: 150%; }
-    }
+    @keyframes superGleam { 0% { left: -70%; } 50% { left: 150%; } 100% { left: 150%; } }
     .super-wheel-icon-box {
       width: 56px;
       height: 56px;
@@ -371,10 +353,7 @@
       flex-shrink: 0;
       animation: spinIconAnim 5s infinite linear;
     }
-    @keyframes spinIconAnim {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
+    @keyframes spinIconAnim { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     .free-gift-tag {
       position: absolute;
       top: 6px;
@@ -390,10 +369,7 @@
       letter-spacing: 0.8px;
       animation: pulseTag 1.2s infinite alternate;
     }
-    @keyframes pulseTag {
-      0% { transform: scale(0.95); }
-      100% { transform: scale(1.05); }
-    }
+    @keyframes pulseTag { 0% { transform: scale(0.95); } 100% { transform: scale(1.05); } }
 
     .arena-row {
       display: flex;
@@ -637,7 +613,6 @@
       box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
     }
 
-    /* CHAT TRAY */
     #chat-btn {
       width: 38px;
       height: 38px;
@@ -692,7 +667,6 @@
       cursor: pointer;
     }
 
-    /* BOTTOM NAV */
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -755,7 +729,7 @@
     }
     #foul-banner.show { transform: scale(1); }
 
-    /* ONLINE MATCHMAKING RADAR MODAL */
+    /* ================= 3D ONLINE MATCHMAKING RADAR MODAL ================= */
     #matchmaking-modal {
       position: fixed;
       top: 0;
@@ -922,7 +896,7 @@
     </div>
   </div>
 
-  <!-- MATCHMAKING RADAR MODAL -->
+  <!-- ================= 3D ONLINE MATCHMAKING RADAR MODAL ================= -->
   <div id="matchmaking-modal" class="hidden">
     <div class="card-modal" style="max-width:330px;">
       <div class="title-3d-gold" style="font-size:18px;" id="mm-title">SEARCHING ONLINE...</div>
@@ -971,7 +945,7 @@
       </div>
       <div class="coin-badge-box">
         <span class="coin-3d-badge"></span>
-        <span id="home-coins">1200</span>
+        <span id="home-coins">100</span>
       </div>
     </div>
 
@@ -1043,7 +1017,7 @@
   <div id="friends-screen" class="screen hidden">
     <div class="top-bar">
       <div style="font-family:'Orbitron', sans-serif; font-weight:900; font-size:16px; color:#34d399; letter-spacing:1px;">मित्र / FRIENDS</div>
-      <div class="coin-badge-box"><span class="coin-3d-badge"></span><span class="sync-coins">1200</span></div>
+      <div class="coin-badge-box"><span class="coin-3d-badge"></span><span class="sync-coins">100</span></div>
     </div>
     <div class="main-container">
       <div class="card-modal">
@@ -1066,11 +1040,11 @@
     </div>
   </div>
 
-  <!-- 3. EQUIPMENT SCREEN -->
+  <!-- 3. EQUIPMENT SCREEN (FULL 30 PUCKS, 30 STRIKERS, 30 POWERS, 4 VFX RESTORED) -->
   <div id="equipment-screen" class="screen hidden">
     <div class="top-bar">
       <div style="font-family:'Orbitron', sans-serif; font-weight:900; font-size:16px; color:#34d399; letter-spacing:1px;">इक्विपमेंट्स</div>
-      <div class="coin-badge-box"><span class="coin-3d-badge"></span><span class="sync-coins">1200</span></div>
+      <div class="coin-badge-box"><span class="coin-3d-badge"></span><span class="sync-coins">100</span></div>
     </div>
     <div class="main-container">
       <div class="sub-tabs">
@@ -1087,7 +1061,7 @@
   <div id="shop-screen" class="screen hidden">
     <div class="top-bar">
       <div style="font-family:'Orbitron', sans-serif; font-weight:900; font-size:16px; color:#fbbf24; letter-spacing:1px;">शॉप (मुफ़्त रिवॉर्ड्स)</div>
-      <div class="coin-badge-box"><span class="coin-3d-badge"></span><span class="sync-coins">1200</span></div>
+      <div class="coin-badge-box"><span class="coin-3d-badge"></span><span class="sync-coins">100</span></div>
     </div>
     <div class="main-container">
       <div class="card-modal">
@@ -1128,14 +1102,14 @@
       </button>
 
       <!-- LIVE WEBRTC MIC BUTTON -->
-      <button id="mic-toggle-btn" class="btn-3d btn-ad-3d hidden" style="width:38px; height:38px; border-radius:50%; font-size:18px; padding:0;" onclick="toggleVoiceMic()" title="Mic On/Off">
+      <button id="mic-toggle-btn" class="btn-3d btn-ad-3d hidden" style="width:38px; height:38px; border-radius:50%; font-size:18px; padding:0; display:none;" onclick="toggleVoiceMic()" title="Mic On/Off">
         🎙️
       </button>
 
       <div id="chat-btn" onclick="toggleChatDrawer()">💬</div>
       <div class="coin-badge-box">
         <span class="coin-3d-badge"></span>
-        <span class="sync-coins">1200</span>
+        <span class="sync-coins">100</span>
       </div>
     </div>
 
@@ -1394,7 +1368,7 @@
     }
   </script>
 
-  <!-- ================= REAL-TIME WEBRTC AUTO VOICE ENGINE ================= -->
+  <!-- ================= ROBUST WEBRTC LIVE VOICE CALL ENGINE ================= -->
   <script>
     let localStream = null;
     let peerConnection = null;
@@ -1407,22 +1381,24 @@
       ]
     };
 
-    function initVoiceCallAsync() {
-      setTimeout(async () => {
-        try {
-          localStream = await navigator.mediaDevices.getUserMedia({
-            audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-            video: false
-          });
+    function initVoiceCallDirect() {
+      const micBtn = document.getElementById('mic-toggle-btn');
+      if (micBtn) {
+        micBtn.classList.remove('hidden');
+        micBtn.style.display = 'flex';
+      }
 
+      navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+        .then((stream) => {
+          localStream = stream;
           peerConnection = new RTCPeerConnection(rtcConfig);
           localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
 
           peerConnection.ontrack = (event) => {
-            const remoteAudio = new Audio();
-            remoteAudio.srcObject = event.streams[0];
-            remoteAudio.autoplay = true;
-            remoteAudio.play().catch(e => console.warn('Audio play:', e));
+            const audio = new Audio();
+            audio.srcObject = event.streams[0];
+            audio.autoplay = true;
+            audio.play().catch(e => console.log('Audio Play Error:', e));
           };
 
           const roomVoiceRef = database.ref('rooms/' + currentRoomId + '/voice');
@@ -1433,20 +1409,17 @@
           };
 
           if (myPlayerRole === 1) {
-            const offer = await peerConnection.createOffer();
-            await peerConnection.setLocalDescription(offer);
-            await roomVoiceRef.child('offer').set({ type: offer.type, sdp: offer.sdp });
+            peerConnection.createOffer().then(offer => {
+              peerConnection.setLocalDescription(offer);
+              roomVoiceRef.child('offer').set({ type: offer.type, sdp: offer.sdp });
+            });
           }
 
           listenToVoiceSignals(roomVoiceRef);
-
-          const micBtn = document.getElementById('mic-toggle-btn');
-          if (micBtn) micBtn.classList.remove('hidden');
-
-        } catch (err) {
-          console.warn("माइक परमिशन या ऑडियो सपोर्ट उपलब्ध नहीं है:", err);
-        }
-      }, 400);
+        })
+        .catch((err) => {
+          console.warn("माइक्रोफोन शुरू नहीं हो सका:", err);
+        });
     }
 
     function listenToVoiceSignals(roomVoiceRef) {
@@ -1506,7 +1479,10 @@
         peerConnection = null;
       }
       const micBtn = document.getElementById('mic-toggle-btn');
-      if (micBtn) micBtn.classList.add('hidden');
+      if (micBtn) {
+        micBtn.classList.add('hidden');
+        micBtn.style.display = 'none';
+      }
     }
   </script>
 
@@ -1750,17 +1726,22 @@
       { id: 'vfx_vortex', name: 'ब्लैक होल वॉर्टेक्स', price: 1500, color: '#c084fc', type: 'vortex' }
     ];
 
+    // ================= 🚀 DEFAULT 100 COINS SETUP =================
     let user = {
       name: 'खिलाड़ी 1',
       emoji: '🤠',
-      coins: 1200,
+      coins: 100,
       equipped: { striker: 'st_1', puck: 'pk_1', power: 'pow_1', vfx: 'vfx_ring' },
       inventory: { strikers: ['st_1'], pucks: ['pk_1'], powers: ['pow_1'], vfx: ['vfx_ring'] }
     };
 
     function loadSavedUser() {
       const data = localStorage.getItem('carrom_pro_state_v12');
-      if (data) user = JSON.parse(data);
+      if (data) {
+        user = JSON.parse(data);
+      } else {
+        user.coins = 100;
+      }
       if (!user.inventory.powers) user.inventory.powers = ['pow_1'];
       if (!user.equipped.power) user.equipped.power = 'pow_1';
       syncCoinDisplays();
@@ -2054,9 +2035,9 @@
       initBoard();
       listenToFirebaseRoomEvents();
 
-      // AUTO START VOICE CALL NON-BLOCKING
+      // AUTO START VOICE CALL DIRECTLY
       if (isRealFirebaseMatch && currentRoomId) {
-        initVoiceCallAsync();
+        initVoiceCallDirect();
       }
     }
 
@@ -2162,7 +2143,7 @@
       striker.inHand = true;
 
       const isMyTurn = (currentTurn === myPlayerRole);
-      // जिसकी चाल हो, उसके फोन में बॉटम पर (0.81), विरोधी के फोन में टॉप पर (0.19)
+      // जिसकी चाल होगी, उसके फोन में नीचे (0.81), दूसरे के फोन में ऊपर (0.19)
       striker.y = isMyTurn ? SIZE * 0.81 : SIZE * 0.19;
 
       slider.value = 50;
@@ -2174,8 +2155,10 @@
       pocketedThisTurn = [];
       strikerFouledThisTurn = false;
 
-      // Lock controls if not my turn
+      // जिसकी बारी है उसका स्लाइडर एक्टिव, दूसरे का लॉक
       slider.disabled = !isMyTurn;
+      slider.style.pointerEvents = isMyTurn ? 'auto' : 'none';
+      slider.style.opacity = isMyTurn ? '1' : '0.5';
 
       if (!isPassAndPlay && !isRealFirebaseMatch && currentTurn === 2 && isGameRunning) {
         setTimeout(playAITurn, 800);
@@ -2825,7 +2808,6 @@
       ctx.beginPath();
       ctx.ellipse(x - r*0.32, y - r*0.35, r*0.3, r*0.16, -Math.PI/4, 0, Math.PI * 2);
       ctx.fill();
-
       ctx.restore();
     }
 
