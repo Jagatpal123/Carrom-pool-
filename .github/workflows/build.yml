@@ -6,11 +6,11 @@ on:
   workflow_dispatch:
 
 # ==========================================
-# 🚀 Yahan se aasani se Version badlein:
+# 🚀 यहाँ से आसानी से Version बदलें:
 # ==========================================
 env:
-  APP_VERSION_CODE: 4          # Har naye update par ise +1 karein (jaise 4, 5, 6...)
-  APP_VERSION_NAME: "1.0.3"    # Version name (jaise "1.0.3", "1.0.4"...)
+  APP_VERSION_CODE: 4          # हर नए अपडेट पर इसे +1 करें (उदा. 4, 5, 6...)
+  APP_VERSION_NAME: "1.0.3"    # आपका मनपसंद वर्जन नाम (उदा. "1.0.3", "1.0.4"...)
 
 jobs:
   build:
@@ -76,7 +76,7 @@ jobs:
         # 4. Manifest Permissions (Internet, State, Voice Audio Recording)
         sed -i '/<manifest/a \    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' android/app/src/main/AndroidManifest.xml
 
-        # 5. Inject WebChromeClient in MainActivity (Clean overwrite)
+        # 5. MainActivity में WebView को Audio Permission Auto-Grant करना (Clean Override)
         MAIN_ACT="android/app/src/main/java/com/jagatpal/carrompool/MainActivity.java"
         if [ -f "$MAIN_ACT" ]; then
           printf '%s\n' \
@@ -84,16 +84,19 @@ jobs:
             'import android.os.Bundle;' \
             'import android.webkit.PermissionRequest;' \
             'import android.webkit.WebChromeClient;' \
+            'import androidx.core.app.ActivityCompat;' \
+            'import android.Manifest;' \
             'import com.getcapacitor.BridgeActivity;' \
             'public class MainActivity extends BridgeActivity {' \
             '    @Override' \
             '    public void onCreate(Bundle savedInstanceState) {' \
             '        super.onCreate(savedInstanceState);' \
+            '        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 101);' \
             '        if (this.bridge != null && this.bridge.getWebView() != null) {' \
             '            this.bridge.getWebView().setWebChromeClient(new WebChromeClient() {' \
             '                @Override' \
             '                public void onPermissionRequest(final PermissionRequest request) {' \
-            '                    request.grant(request.getResources());' \
+            '                    runOnUiThread(() -> request.grant(request.getResources()));' \
             '                }' \
             '            });' \
             '        }' \
