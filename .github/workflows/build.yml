@@ -73,35 +73,32 @@ jobs:
           done
         fi
 
-        # 4. Manifest Permissions (Internet, Network State, Voice Audio Recording)
+        # 4. Manifest Permissions (Internet, State, Voice Audio Recording)
         sed -i '/<manifest/a \    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' android/app/src/main/AndroidManifest.xml
 
-        # 5. Inject WebChromeClient in MainActivity so WebView allows Microphone Hardware
-        MAIN_ACTIVITY="android/app/src/main/java/com/jagatpal/carrompool/MainActivity.java"
-        if [ -f "$MAIN_ACTIVITY" ]; then
-          cat << 'EOF' > "$MAIN_ACTIVITY"
-package com.jagatpal.carrompool;
-
-import android.os.Bundle;
-import android.webkit.PermissionRequest;
-import android.webkit.WebChromeClient;
-import com.getcapacitor.BridgeActivity;
-
-public class MainActivity extends BridgeActivity {
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (this.bridge != null && this.bridge.getWebView() != null) {
-            this.bridge.getWebView().setWebChromeClient(new WebChromeClient() {
-                @Override
-                public void onPermissionRequest(final PermissionRequest request) {
-                    request.grant(request.getResources());
-                }
-            });
-        }
-    }
-}
-EOF
+        # 5. Inject WebChromeClient in MainActivity (Clean overwrite)
+        MAIN_ACT="android/app/src/main/java/com/jagatpal/carrompool/MainActivity.java"
+        if [ -f "$MAIN_ACT" ]; then
+          printf '%s\n' \
+            'package com.jagatpal.carrompool;' \
+            'import android.os.Bundle;' \
+            'import android.webkit.PermissionRequest;' \
+            'import android.webkit.WebChromeClient;' \
+            'import com.getcapacitor.BridgeActivity;' \
+            'public class MainActivity extends BridgeActivity {' \
+            '    @Override' \
+            '    public void onCreate(Bundle savedInstanceState) {' \
+            '        super.onCreate(savedInstanceState);' \
+            '        if (this.bridge != null && this.bridge.getWebView() != null) {' \
+            '            this.bridge.getWebView().setWebChromeClient(new WebChromeClient() {' \
+            '                @Override' \
+            '                public void onPermissionRequest(final PermissionRequest request) {' \
+            '                    request.grant(request.getResources());' \
+            '                }' \
+            '            });' \
+            '        }' \
+            '    }' \
+            '}' > "$MAIN_ACT"
         fi
 
         # 6. AdMob App ID Setup
