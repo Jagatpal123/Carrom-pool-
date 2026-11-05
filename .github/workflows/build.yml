@@ -49,7 +49,7 @@ jobs:
         npx cap add android || true
         npx cap sync android
 
-    - name: Configure Target SDK 36, Dynamic Version, AdMob & Icons
+    - name: Configure Target SDK 36, Dynamic Version, AdMob, Audio Permissions & Icons
       run: |
         # 1. Force Package Name & Dynamic Version Setup
         sed -i 's/applicationId .*/applicationId "com.jagatpal.carrompool"/' android/app/build.gradle
@@ -73,10 +73,38 @@ jobs:
           done
         fi
 
-        # 4. Permissions in Manifest
-        sed -i '/<manifest/a \    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />' android/app/src/main/AndroidManifest.xml
+        # 4. Manifest Permissions (Internet, Network State, Voice Audio Recording)
+        sed -i '/<manifest/a \    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' android/app/src/main/AndroidManifest.xml
 
-        # 5. AdMob App ID
+        # 5. Inject WebChromeClient in MainActivity so WebView allows Microphone Hardware
+        MAIN_ACTIVITY="android/app/src/main/java/com/jagatpal/carrompool/MainActivity.java"
+        if [ -f "$MAIN_ACTIVITY" ]; then
+          cat << 'EOF' > "$MAIN_ACTIVITY"
+package com.jagatpal.carrompool;
+
+import android.os.Bundle;
+import android.webkit.PermissionRequest;
+import android.webkit.WebChromeClient;
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (this.bridge != null && this.bridge.getWebView() != null) {
+            this.bridge.getWebView().setWebChromeClient(new WebChromeClient() {
+                @Override
+                public void onPermissionRequest(final PermissionRequest request) {
+                    request.grant(request.getResources());
+                }
+            });
+        }
+    }
+}
+EOF
+        fi
+
+        # 6. AdMob App ID Setup
         if ! grep -q "ca-app-pub-6302105448775587~3166646352" android/app/src/main/AndroidManifest.xml; then
           sed -i '/<\/application>/i \        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6302105448775587~3166646352"\/>' android/app/src/main/AndroidManifest.xml
         fi
@@ -84,7 +112,6 @@ jobs:
     # --- STEP A: TEST AD WALI SIGNED APK BANANA ---
     - name: Prepare, Build and Sign Test-Ad APK
       run: |
-        # Test Ad IDs inject karein
         sed -i 's/ca-app-pub-6302105448775587\/1791739528/ca-app-pub-3940256099942544\/1033173712/g' android/app/src/main/assets/public/index.html || true
         sed -i 's/ca-app-pub-6302105448775587\/8722225362/ca-app-pub-3940256099942544\/5224354917/g' android/app/src/main/assets/public/index.html || true
         sed -i 's/isRelease: true/isRelease: false/g' android/app/src/main/assets/public/index.html || true
@@ -100,7 +127,6 @@ jobs:
     # --- STEP B: PRODUCTION REAL AD WALI SIGNED AAB BANANA ---
     - name: Prepare, Build and Sign Production AAB
       run: |
-        # Real Ad IDs reset karein
         sed -i 's/ca-app-pub-3940256099942544\/1033173712/ca-app-pub-6302105448775587\/1791739528/g' android/app/src/main/assets/public/index.html || true
         sed -i 's/ca-app-pub-3940256099942544\/5224354917/ca-app-pub-6302105448775587\/8722225362/g' android/app/src/main/assets/public/index.html || true
         sed -i 's/isRelease: false/isRelease: true/g' android/app/src/main/assets/public/index.html || true
