@@ -1873,6 +1873,8 @@
     let matchmakingTimer = null;
     let pocketedThisTurn = [];
     let strikerFouledThisTurn = false;
+    let shotSafetyTimer = null;
+    let lastBroadcastTime = 0;
 
     // FRIEND ROOM REALTIME CREATION
     function createPrivateOnlineRoom() {
@@ -1888,8 +1890,7 @@
         p1: { name: user.name, emoji: user.emoji },
         p2: null,
         turn: 1,
-        chat: null,
-        shot: null
+        chat: null
       });
 
       navigator.clipboard?.writeText(code);
@@ -2035,7 +2036,7 @@
       initBoard();
       listenToFirebaseRoomEvents();
 
-      // AUTO START VOICE CALL
+      // AUTO START VOICE CALL DIRECTLY
       if (isRealFirebaseMatch && currentRoomId) {
         initVoiceCallDirect();
       }
@@ -2111,6 +2112,11 @@
     function invertY(y) { return SIZE - y; }
     function invertX(x) { return SIZE - x; }
 
+    function forceStopAllPucks() {
+      striker.vx = 0; striker.vy = 0;
+      pucks.forEach(p => { p.vx = 0; p.vy = 0; });
+    }
+
     function initBoard() {
       pucks = [];
       currentTurn = 1;
@@ -2143,7 +2149,7 @@
       striker.inHand = true;
 
       const isMyTurn = (currentTurn === myPlayerRole);
-      // जिसकी चाल होगी, उसके फोन में नीचे (0.81), विरोधी के फोन में ऊपर (0.19)
+      // जिसकी चाल होगी, उसके फोन में नीचे (0.81), दूसरे के फोन में ऊपर (0.19)
       striker.y = isMyTurn ? SIZE * 0.81 : SIZE * 0.19;
 
       slider.value = 50;
@@ -2231,9 +2237,21 @@
         cueAnimation.force = force;
         cueAnimation.snapProgress = 0;
 
+        // 7-Second Safety Timer (शॉट अटकने से बचाव)
+        if (shotSafetyTimer) clearTimeout(shotSafetyTimer);
+        shotSafetyTimer = setTimeout(() => {
+          if (!striker.inHand && isGameRunning) {
+            forceStopAllPucks();
+            handleTurnEnd();
+          }
+        }, 7000);
+
         if (isRealFirebaseMatch && currentRoomId) {
-          database.ref('rooms/' + currentRoomId + '/aimLive').set({ active: false });
-          database.ref('rooms/' + currentRoomId + '/executeShot').set({
+          const roomRef = database.ref('rooms/' + currentRoomId);
+          // पुराना ऐमिंग डेटा तुरंत साफ़ करें
+          roomRef.child('aimLive').remove();
+
+          roomRef.child('executeShot').set({
             player: myPlayerRole,
             sliderVal: slider.value,
             angle: angle,
@@ -2342,13 +2360,13 @@
         });
       }
 
-      // ================= 🎯 TURN SYNC (NO FREEZE FIX) =================
+      // ================= 🎯 TURN SYNC (NO FREEZE & INSTANT UNLOCK) =================
       roomRef.child('turn').on('value', (snap) => {
         const t = snap.val();
         if (t !== null && t !== undefined) {
+          if (shotSafetyTimer) clearTimeout(shotSafetyTimer);
           currentTurn = t;
-          striker.vx = 0;
-          striker.vy = 0;
+          forceStopAllPucks();
           striker.inHand = true;
           resetStriker();
         }
@@ -2369,7 +2387,7 @@
       });
     }
 
-    // ================= 🚀 SMOOTH UPDATE PHYSICS (NO FREEZE FIX) =================
+    // ================= 🚀 SMOOTH UPDATE PHYSICS (THROTTLED & AUTO-CLEANUP) =================
     function updatePhysics() {
       if (!isGameRunning) return;
 
@@ -2397,9 +2415,9 @@
         obj.vx *= FRICTION;
         obj.vy *= FRICTION;
 
-        // यदि गति बहुत धीमी हो तो उसे सीधे 0 करें ताकि गेम अटके नहीं
-        if (Math.abs(obj.vx) < 0.08) obj.vx = 0;
-        if (Math.abs(obj.vy) < 0.08) obj.vy = 0;
+        // यदि गति बहुत धीमी हो तो उसे सीधे 0 करें ताकि गेम कभी न अटके
+        if (Math.abs(obj.vx) < 0.15) obj.vx = 0;
+        if (Math.abs(obj.vy) < 0.15) obj.vy = 0;
         if (obj.vx !== 0 || obj.vy !== 0) isMoving = true;
 
         const minB = obj.r + 20;
@@ -2447,11 +2465,15 @@
         }
       }
 
-      // Host लगातार गोटियों की पोजीशन भेजेगा जब तक कि सब कुछ रुक न जाए
+      // Host लगातार 30 FPS पर गोटियों की पोजीशन भेजेगा (थ्रॉटल्ड फॉर नेटवर्क स्मूथनेस)
       if (isRealFirebaseMatch && myPlayerRole === 1 && (!striker.inHand || isMoving)) {
-        database.ref('rooms/' + currentRoomId + '/livePucks').set(
-          pucks.map(p => ({ x: p.x, y: p.y, inPocket: p.inPocket }))
-        );
+        const now = Date.now();
+        if (now - lastBroadcastTime > 33) {
+          lastBroadcastTime = now;
+          database.ref('rooms/' + currentRoomId + '/livePucks').set(
+            pucks.map(p => ({ x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10, inPocket: p.inPocket }))
+          );
+        }
       }
 
       // जब स्ट्राइकर और गोटियाँ दोनों पूरी तरह रुक जाएँ तो टर्न का फैसला करें
@@ -2460,8 +2482,10 @@
       }
     }
 
+    // ================= 🧹 AUTO-DATA CLEANUP & TURN END =================
     function handleTurnEnd() {
       if (cueAnimation.active) return;
+      if (shotSafetyTimer) clearTimeout(shotSafetyTimer);
 
       const activeTurnColor = currentTurn === 1 ? 'white' : 'black';
       const pucksLeft = pucks.filter(p => !p.inPocket && p.type === activeTurnColor).length;
@@ -2492,11 +2516,19 @@
         nextTurn = currentTurn === 1 ? 2 : 1;
       }
 
-      // केवल Host टर्न का फैसला करके Firebase में लिखेगा
+      // केवल Host टर्न का फैसला करके Firebase में लिखेगा और पुराना भारी डेटा डिलीट करेगा
       if (isRealFirebaseMatch) {
         if (myPlayerRole === 1) {
-          database.ref('rooms/' + currentRoomId + '/turn').set(nextTurn);
-          database.ref('rooms/' + currentRoomId + '/aimLive').set({ active: false });
+          const roomRef = database.ref('rooms/' + currentRoomId);
+          // 🚀 पुराना भारी डेटा तुरंत डिलीट करें (नाम p1, p2 और status बिल्कुल सुरक्षित रहेंगे)
+          roomRef.child('aimLive').remove();
+          roomRef.child('executeShot').remove();
+          roomRef.child('sliderSync').remove();
+
+          roomRef.update({
+            turn: nextTurn,
+            boardState: pucks.map(p => ({ x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10, inPocket: p.inPocket }))
+          });
         }
       } else {
         currentTurn = nextTurn;
