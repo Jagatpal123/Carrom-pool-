@@ -224,7 +224,7 @@
       position: relative;
     }
 
-    /* 3D PUSH BUTTONS */
+    /* BUTTONS */
     .btn-3d {
       position: relative;
       border: none;
@@ -306,7 +306,7 @@
     }
     .btn-carrom-badge img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-    /* LUCKY SPIN BANNER BUTTON */
+    /* LUCKY SPIN CARD */
     .super-spin-3d-card {
       width: 100%;
       background: linear-gradient(135deg, #3b0764 0%, #6b21a8 40%, #c026d3 75%, #eab308 100%);
@@ -1012,7 +1012,7 @@
     </div>
   </div>
 
-  <!-- FRIENDS SCREEN -->
+  <!-- FRIENDS SCREEN (CUSTOM NAME RESTORED) -->
   <div id="friends-screen" class="screen hidden">
     <div class="top-bar">
       <div style="font-family:'Orbitron', sans-serif; font-weight:900; font-size:16px; color:#34d399; letter-spacing:1px;">मित्र / FRIENDS</div>
@@ -1102,7 +1102,7 @@
         <span>◀</span> <span>होम</span>
       </button>
 
-      <!-- LIVE WEBRTC MIC BUTTON -->
+      <!-- WEBRTC MIC BUTTON -->
       <button id="mic-toggle-btn" class="btn-3d btn-ad-3d hidden" style="width:38px; height:38px; border-radius:50%; font-size:18px; padding:0; display:none;" onclick="toggleVoiceMic()" title="Mic On/Off">
         🎙️
       </button>
@@ -1726,6 +1726,7 @@
       { id: 'vfx_vortex', name: 'ब्लैक होल वॉर्टेक्स', price: 1500, color: '#c084fc', type: 'vortex' }
     ];
 
+    // DEFAULT COINS
     let user = {
       name: 'खिलाड़ी 1',
       emoji: '🤠',
@@ -1879,8 +1880,9 @@
     let strikerFouledThisTurn = false;
     let shotSafetyTimer = null;
     let lastBroadcastTime = 0;
-    let lastProcessedShotId = null; // डुप्लिकेट शॉट रोकने के लिए यूनिक ट्रैकर
+    let lastProcessedShotId = null;
 
+    // FRIEND ROOM REALTIME CREATION
     function createPrivateOnlineRoom() {
       const nameInput = document.getElementById('host-name-input');
       const customName = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : user.name;
@@ -2167,6 +2169,7 @@
       striker.inHand = true;
 
       const isMyTurn = (Number(currentTurn) === Number(myPlayerRole));
+      // जिसकी चाल होगी, उसके फोन में नीचे (0.81), दूसरे के फोन में ऊपर (0.19)
       striker.y = isMyTurn ? SIZE * 0.81 : SIZE * 0.19;
 
       slider.value = 50;
@@ -2248,23 +2251,21 @@
         const shotId = 'shot_' + Date.now();
         lastProcessedShotId = shotId;
 
-        // Player 1 (Host) सीधे फ़िज़िक्स चलाएगा
-        if (!isRealFirebaseMatch || myPlayerRole === 1) {
-          cueAnimation.active = true;
-          cueAnimation.pullDistance = Math.min(dist * 0.85, 95);
-          cueAnimation.angle = angle;
-          cueAnimation.force = force;
-          cueAnimation.snapProgress = 0;
-        }
+        // अपने फोन पर तुरंत शॉट चलाएं
+        cueAnimation.active = true;
+        cueAnimation.pullDistance = Math.min(dist * 0.85, 95);
+        cueAnimation.angle = angle;
+        cueAnimation.force = force;
+        cueAnimation.snapProgress = 0;
 
-        // Failsafe Timer
+        // Failsafe Timer: 3.8 सेकंड
         if (shotSafetyTimer) clearTimeout(shotSafetyTimer);
         shotSafetyTimer = setTimeout(() => {
           if (!striker.inHand && isGameRunning) {
             forceStopAllPucks();
             handleTurnEnd();
           }
-        }, 4500);
+        }, 3800);
 
         if (isRealFirebaseMatch && currentRoomId) {
           const roomRef = database.ref('rooms/' + currentRoomId);
@@ -2331,7 +2332,7 @@
       puckObj.inPocket = false;
     }
 
-    /* ================= 🚀 RELIABLE NETWORK SYNC ================= */
+    /* NETWORK EVENT HANDLER */
     function listenToFirebaseRoomEvents() {
       if (!isRealFirebaseMatch || !currentRoomId) return;
       const roomRef = database.ref('rooms/' + currentRoomId);
@@ -2353,34 +2354,27 @@
         }
       });
 
-      // Shot Execution (With Unique ID Check to Prevent Deadlocks)
+      // Shot Execution (Opponent Shot Mirror)
       roomRef.child('executeShot').on('value', (snap) => {
         const s = snap.val();
         if (s && s.shotId !== lastProcessedShotId) {
           lastProcessedShotId = s.shotId;
 
-          // अगर शॉट विरोधी का है, तो स्ट्राइकर की पोज़िशन विरोधी के हिसाब से सेट करें
           if (Number(s.player) !== Number(myPlayerRole)) {
             slider.value = 100 - s.sliderVal;
             updateStrikerX();
+            striker.y = SIZE * 0.19; // विरोधी का स्ट्राइकर हमेशा ऊपर
             cueAnimation.active = true;
             cueAnimation.pullDistance = s.pullDist;
-            cueAnimation.angle = s.angle + Math.PI;
+            cueAnimation.angle = s.angle + Math.PI; // 180° Inverted for accurate impact
             cueAnimation.force = s.force;
             cueAnimation.snapProgress = 0;
             opponentAim.active = false;
-          } else if (myPlayerRole === 2) {
-            // Player 2 के अपने शॉट का एनीमेशन
-            cueAnimation.active = true;
-            cueAnimation.pullDistance = s.pullDist;
-            cueAnimation.angle = s.angle;
-            cueAnimation.force = s.force;
-            cueAnimation.snapProgress = 0;
           }
         }
       });
 
-      // Pucks State Mirror for Player 2
+      // Pucks State Sync from Host to Client
       if (myPlayerRole === 2) {
         roomRef.child('livePucks').on('value', (snap) => {
           const remotePucks = snap.val();
@@ -2426,7 +2420,7 @@
       });
     }
 
-    // ================= ⚙️ MASTER AUTHORITATIVE PHYSICS =================
+    /* SOLID IMPACT LOCAL PHYSICS (ACTIVE ON BOTH PHONES) */
     function updatePhysics() {
       if (!isGameRunning) return;
 
@@ -2442,9 +2436,6 @@
         return;
       }
 
-      // केवल Host (Player 1) फ़िज़िक्स कैलकुलेट करेगा
-      if (isRealFirebaseMatch && myPlayerRole === 2) return;
-
       let isMoving = false;
       const all = [striker, ...pucks.filter(p => !p.inPocket)];
 
@@ -2454,9 +2445,8 @@
         obj.vx *= FRICTION;
         obj.vy *= FRICTION;
 
-        // जब स्पीड कम हो, तुरंत 0 करें ताकि गेम अटके नहीं
-        if (Math.abs(obj.vx) < 0.2) obj.vx = 0;
-        if (Math.abs(obj.vy) < 0.2) obj.vy = 0;
+        if (Math.abs(obj.vx) < 0.18) obj.vx = 0;
+        if (Math.abs(obj.vy) < 0.18) obj.vy = 0;
         if (obj.vx !== 0 || obj.vy !== 0) isMoving = true;
 
         const minB = obj.r + 20;
@@ -2485,6 +2475,7 @@
         });
       });
 
+      // स्ट्राइकर और गोटियों की ठोस टक्कर (SOLID COLLISION)
       for (let i = 0; i < all.length; i++) {
         for (let j = i + 1; j < all.length; j++) {
           let o1 = all[i], o2 = all[j];
@@ -2500,11 +2491,12 @@
             let p = 2 * (nx * kx + ny * ky) / 2;
             o1.vx -= p * nx * 0.96; o1.vy -= p * ny * 0.96;
             o2.vx += p * nx * 0.96; o2.vy += p * ny * 0.96;
+            AudioEngine.playPuckCut(0.55, 1.15);
           }
         }
       }
 
-      // Host लगातार 30 FPS पर गोटियों का लाइव डेटा भेजेगा
+      // Host द्वारा 30 FPS पर डेटा स्ट्रीम
       if (isRealFirebaseMatch && myPlayerRole === 1 && (!striker.inHand || isMoving)) {
         const now = Date.now();
         if (now - lastBroadcastTime > 33) {
@@ -2515,9 +2507,11 @@
         }
       }
 
-      // जब स्ट्राइकर और गोटियाँ पूरी तरह रुक जाएँ, तो टर्न खत्म करें
+      // टर्न पूरा होने का फैसला (केवल Host करेगा)
       if (!isMoving && !striker.inHand) {
-        handleTurnEnd();
+        if (!isRealFirebaseMatch || myPlayerRole === 1) {
+          handleTurnEnd();
+        }
       }
     }
 
