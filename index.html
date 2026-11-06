@@ -1229,23 +1229,15 @@
         if (!window.Capacitor?.Plugins?.AdMob) return;
         try {
           const { AdMob } = window.Capacitor.Plugins;
-          await AdMob.initialize({
-            testingDevices: [],
-            initializeForTesting: !AdConfig.isRelease
-          });
+          await AdMob.initialize({ testingDevices: [], initializeForTesting: !AdConfig.isRelease });
           this.preloadRewarded();
           this.preloadInterstitial();
-        } catch (e) {
-          console.warn('AdMob Init Error:', e);
-        }
+        } catch (e) { console.warn('AdMob Init Error:', e); }
       },
       async preloadInterstitial() {
         if (!window.Capacitor?.Plugins?.AdMob) return;
         try {
-          await window.Capacitor.Plugins.AdMob.prepareInterstitial({
-            adId: AdConfig.interstitialId,
-            isTesting: !AdConfig.isRelease
-          });
+          await window.Capacitor.Plugins.AdMob.prepareInterstitial({ adId: AdConfig.interstitialId, isTesting: !AdConfig.isRelease });
         } catch (e) {}
       },
       async showInterstitial() {
@@ -1263,14 +1255,9 @@
       async preloadRewarded() {
         if (!window.Capacitor?.Plugins?.AdMob) return;
         try {
-          await window.Capacitor.Plugins.AdMob.prepareRewardVideoAd({
-            adId: AdConfig.rewardedId,
-            isTesting: !AdConfig.isRelease
-          });
+          await window.Capacitor.Plugins.AdMob.prepareRewardVideoAd({ adId: AdConfig.rewardedId, isTesting: !AdConfig.isRelease });
           AdConfig.isPreloaded = true;
-        } catch (e) {
-          AdConfig.isPreloaded = false;
-        }
+        } catch (e) { AdConfig.isPreloaded = false; }
       },
       async showRewarded(onRewardCallback) {
         if (!window.Capacitor?.Plugins?.AdMob) {
@@ -1287,10 +1274,7 @@
         }
 
         try {
-          await AdMob.prepareRewardVideoAd({
-            adId: AdConfig.rewardedId,
-            isTesting: !AdConfig.isRelease
-          });
+          await AdMob.prepareRewardVideoAd({ adId: AdConfig.rewardedId, isTesting: !AdConfig.isRelease });
           AdConfig.isPreloaded = true;
         } catch (e) {}
         finally {
@@ -1300,19 +1284,13 @@
         const evReward = RewardAdPluginEvents?.Rewarded || 'onRewardedVideoAdReward';
         const evDismiss = RewardAdPluginEvents?.Dismissed || 'onRewardedVideoAdDismissed';
 
-        const rewardListener = await AdMob.addListener(evReward, () => {
-          isRewardEarned = true;
-        });
-
+        const rewardListener = await AdMob.addListener(evReward, () => { isRewardEarned = true; });
         const dismissListener = await AdMob.addListener(evDismiss, () => {
           if (rewardListener) rewardListener.remove();
           if (dismissListener) dismissListener.remove();
           AdConfig.isPreloaded = false;
           setTimeout(() => this.preloadRewarded(), 1500);
-
-          if (isRewardEarned && typeof onRewardCallback === 'function') {
-            onRewardCallback();
-          }
+          if (isRewardEarned && typeof onRewardCallback === 'function') onRewardCallback();
         });
 
         try {
@@ -1321,7 +1299,7 @@
           if (rewardListener) rewardListener.remove();
           if (dismissListener) dismissListener.remove();
           AdConfig.isPreloaded = false;
-          alert("विज्ञापन लोड नहीं हो सका। कृपया पुनः प्रयास करें।");
+          alert("विज्ञापन लोड नहीं हो सका। पुनः प्रयास करें।");
           this.preloadRewarded();
         }
       }
@@ -1332,7 +1310,7 @@
         user.coins = Number(user.coins || 0) + 250;
         saveUserState();
         syncCoinDisplays();
-        alert("🎉 बधाई! +250 सिक्के आपके खाते में जुड़ गए हैं।");
+        alert("🎉 बधाई! +250 सिक्के जुड़ गए हैं।");
       });
     }
 
@@ -1340,13 +1318,11 @@
       AdService.showRewarded(() => {
         if (!user.inventory[category]) user.inventory[category] = [];
         if (!user.inventory[category].includes(itemId)) user.inventory[category].push(itemId);
-
         const singularMap = { 'pucks': 'puck', 'strikers': 'striker', 'powers': 'power', 'vfx': 'vfx' };
-        const eqKey = singularMap[category] || category;
-        user.equipped[eqKey] = itemId;
+        user.equipped[singularMap[category] || category] = itemId;
         saveUserState();
         renderEquipmentTab();
-        alert(`🎉 बधाई! "${itemName}" मुफ़्त अनलॉक होकर उपयोग में आ गया है!`);
+        alert(`🎉 बधाई! "${itemName}" मुफ़्त अनलॉक हो गया!`);
       });
     }
 
@@ -1355,7 +1331,7 @@
         user.coins = Number(user.coins || 0) + 500;
         saveUserState();
         syncCoinDisplays();
-        alert("🎉 शानदार! आपका डेली बोनस +500 सिक्के खाते में जोड़ दिए गए हैं।");
+        alert("🎉 बधाई! डेली बोनस +500 सिक्के जुड़ गए हैं।");
       });
     }
 
@@ -1364,7 +1340,7 @@
         user.coins = Number(user.coins || 0) + 150;
         saveUserState();
         syncCoinDisplays();
-        alert("⚡ बधाई! +150 सिक्के मुफ़्त जोड़ दिए गए हैं।");
+        alert("⚡ बधाई! +150 सिक्के जुड़ गए हैं।");
       });
     }
   </script>
@@ -1374,53 +1350,35 @@
     let localStream = null;
     let peerConnection = null;
     let isMicMuted = false;
-
-    const rtcConfig = {
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' }
-      ]
-    };
+    const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] };
 
     function initVoiceCallDirect() {
       const micBtn = document.getElementById('mic-toggle-btn');
-      if (micBtn) {
-        micBtn.classList.remove('hidden');
-        micBtn.style.display = 'flex';
-      }
-
+      if (micBtn) { micBtn.classList.remove('hidden'); micBtn.style.display = 'flex'; }
       navigator.mediaDevices.getUserMedia({ audio: true, video: false })
         .then((stream) => {
           localStream = stream;
           peerConnection = new RTCPeerConnection(rtcConfig);
           localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-
           peerConnection.ontrack = (event) => {
             const audio = new Audio();
             audio.srcObject = event.streams[0];
             audio.autoplay = true;
             audio.play().catch(e => console.log('Audio Play Error:', e));
           };
-
           const roomVoiceRef = database.ref('rooms/' + currentRoomId + '/voice');
           peerConnection.onicecandidate = (event) => {
-            if (event.candidate) {
-              roomVoiceRef.child('candidates/' + myPlayerRole).push(event.candidate.toJSON());
-            }
+            if (event.candidate) { roomVoiceRef.child('candidates/' + myPlayerRole).push(event.candidate.toJSON()); }
           };
-
           if (myPlayerRole === 1) {
             peerConnection.createOffer().then(offer => {
               peerConnection.setLocalDescription(offer);
               roomVoiceRef.child('offer').set({ type: offer.type, sdp: offer.sdp });
             });
           }
-
           listenToVoiceSignals(roomVoiceRef);
         })
-        .catch((err) => {
-          console.warn("माइक्रोफोन शुरू नहीं हो सका:", err);
-        });
+        .catch((err) => console.warn("Mic Start Error:", err));
     }
 
     function listenToVoiceSignals(roomVoiceRef) {
@@ -1435,7 +1393,6 @@
           }
         });
       }
-
       if (myPlayerRole === 1) {
         roomVoiceRef.child('answer').on('value', async (snap) => {
           const answer = snap.val();
@@ -1444,14 +1401,11 @@
           }
         });
       }
-
       const oppRole = myPlayerRole === 1 ? 2 : 1;
       roomVoiceRef.child('candidates/' + oppRole).on('child_added', async (snap) => {
         const candidate = snap.val();
         if (candidate && peerConnection) {
-          try {
-            await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-          } catch (e) {}
+          try { await peerConnection.addIceCandidate(new RTCIceCandidate(candidate)); } catch (e) {}
         }
       });
     }
@@ -1471,19 +1425,10 @@
     }
 
     function stopVoiceCall() {
-      if (localStream) {
-        localStream.getTracks().forEach(t => t.stop());
-        localStream = null;
-      }
-      if (peerConnection) {
-        peerConnection.close();
-        peerConnection = null;
-      }
+      if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+      if (peerConnection) { peerConnection.close(); peerConnection = null; }
       const micBtn = document.getElementById('mic-toggle-btn');
-      if (micBtn) {
-        micBtn.classList.add('hidden');
-        micBtn.style.display = 'none';
-      }
+      if (micBtn) { micBtn.classList.add('hidden'); micBtn.style.display = 'none'; }
     }
   </script>
 
@@ -1520,21 +1465,16 @@
         const winScreen = document.getElementById('win-screen');
         const matchmakingModal = document.getElementById('matchmaking-modal');
         const spinModal = document.getElementById('spin-modal');
-        if (spinModal && !spinModal.classList.contains('hidden')) {
-          closeSpinModal();
-        } else if (matchmakingModal && !matchmakingModal.classList.contains('hidden')) {
-          cancelMatchmaking();
-        } else if (winScreen && !winScreen.classList.contains('hidden')) {
-          navTo('home');
-        } else if (!document.getElementById('game-screen').classList.contains('hidden')) {
-          quitToHome();
-        }
+        if (spinModal && !spinModal.classList.contains('hidden')) { closeSpinModal(); }
+        else if (matchmakingModal && !matchmakingModal.classList.contains('hidden')) { cancelMatchmaking(); }
+        else if (winScreen && !winScreen.classList.contains('hidden')) { navTo('home'); }
+        else if (!document.getElementById('game-screen').classList.contains('hidden')) { quitToHome(); }
       });
     }
 
     function handleLogoFallback(imgElement) {
       imgElement.onerror = null;
-      imgElement.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23381608'/><rect x='8' y='8' width='84' height='84' rx='14' fill='%23f4dcbc'/><circle cx='50' cy='50' r='18' fill='%23dc2626' stroke='%23ffd700' stroke-width='4'/><circle cx='50' cy='50' r='7' fill='%23ffd700'/><circle cx='18' cy='18' r='6' fill='%23111'/><circle cx='82' cy='18' r='6' fill='%23111'/><circle cx='18' cy='82' r='6' fill='%23111'/><circle cx='82' cy='82' r='6' fill='%23111'/></svg>";
+      imgElement.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23381608'/><rect x='8' y='8' width='84' height='84' rx='14' fill='%23f4dcbc'/><circle cx='50' cy='50' r='18' fill='%23dc2626'/></svg>";
     }
 
     let welcomeTimer = null;
@@ -1558,63 +1498,48 @@
           const AudioContext = window.AudioContext || window.webkitAudioContext;
           this.ctx = new AudioContext();
         }
-        if (this.ctx.state === 'suspended') this.ctx.resume();
+        if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
       },
       playPuckCut(vol = 1, pitch = 1) {
         if (!this.ctx) return;
-        const now = this.ctx.currentTime;
-        const osc1 = this.ctx.createOscillator();
-        const gain1 = this.ctx.createGain();
-        osc1.type = 'triangle';
-        osc1.frequency.setValueAtTime(3200 * pitch, now);
-        osc1.frequency.exponentialRampToValueAtTime(1400 * pitch, now + 0.012);
-        gain1.gain.setValueAtTime(1.0 * vol, now);
-        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.015);
-        osc1.connect(gain1);
-        gain1.connect(this.ctx.destination);
-        osc1.start(now);
-        osc1.stop(now + 0.016);
-
-        const osc2 = this.ctx.createOscillator();
-        const gain2 = this.ctx.createGain();
-        osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(950 * pitch, now);
-        osc2.frequency.exponentialRampToValueAtTime(380 * pitch, now + 0.025);
-        gain2.gain.setValueAtTime(0.85 * vol, now);
-        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.028);
-        osc2.connect(gain2);
-        gain2.connect(this.ctx.destination);
-        osc2.start(now);
-        osc2.stop(now + 0.03);
-      },
-      playPuckClusterClatter(intensity = 1) {
-        if (!this.ctx) return;
-        for (let i = 0; i < 4; i++) {
-          const delay = i * 0.016 + (Math.random() * 0.01);
-          setTimeout(() => this.playPuckCut(0.7 * intensity, 1 + i * 0.1), delay * 1000);
-        }
+        try {
+          const now = this.ctx.currentTime;
+          const osc1 = this.ctx.createOscillator();
+          const gain1 = this.ctx.createGain();
+          osc1.type = 'triangle';
+          osc1.frequency.setValueAtTime(3200 * pitch, now);
+          osc1.frequency.exponentialRampToValueAtTime(1400 * pitch, now + 0.012);
+          gain1.gain.setValueAtTime(1.0 * vol, now);
+          gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.015);
+          osc1.connect(gain1);
+          gain1.connect(this.ctx.destination);
+          osc1.start(now);
+          osc1.stop(now + 0.016);
+        } catch(e) {}
       },
       playPocketSound() {
         if (!this.ctx) return;
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(260, now);
-        osc.frequency.exponentialRampToValueAtTime(80, now + 0.14);
-        gain.gain.setValueAtTime(0.75, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.15);
+        try {
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(260, now);
+          osc.frequency.exponentialRampToValueAtTime(80, now + 0.14);
+          gain.gain.setValueAtTime(0.75, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.15);
+        } catch(e) {}
       }
     };
 
     window.addEventListener('touchstart', () => AudioEngine.init(), { once: true });
     window.addEventListener('mousedown', () => AudioEngine.init(), { once: true });
 
-    /* CATALOG DATA */
+    /* ================= 30 STRIKERS CATALOG ================= */
     const STRIKER_NAMES = [
       'टाइटन गोल्ड', 'इलेक्ट्रिक सायन', 'ग्रीन लेज़र', 'रूबी फ्लेम', 'ब्लैक होल', 'आइस ग्लैशियर',
       'सन बर्न', 'डार्क मैटर', 'एमराल्ड प्रो', 'थंडर स्टॉर्म', 'वाइपर टॉक्सिक', 'प्लाज्मा कोर',
@@ -1667,6 +1592,7 @@
       };
     });
 
+    /* ================= 30 PUCKS CATALOG ================= */
     const PUCK_NAMES = [
       'क्लासिक एक्रिलिक', 'ग्रीन लाइट नियॉन', 'ब्लू स्पार्क', 'रॉयल गोल्डन', 'क्रिस्टल डायमंड', 'एमराल्ड प्राइड',
       'रूबी शाइन', 'ऑब्सीडियन नाइट', 'मूनस्टोन वाइट', 'सनबर्स्ट ऑरेंज', 'साइबर पर्पल', 'आइस मिंट',
@@ -1695,6 +1621,7 @@
       };
     });
 
+    /* ================= 30 POWERS CATALOG ================= */
     const POWER_NAMES = [
       'एमराल्ड पल्स', 'इलेक्ट्रिक थंडर', 'सुपरनोवा गोल्ड', 'वॉयड ब्लैकहोल', 'ड्रैगन फ्लेम', 'प्लाज्मा स्टॉर्म',
       'साइबर ग्रिड', 'क्रायो फ्रीज', 'सोलारिस फ्लेयर', 'टॉक्सिक वेव', 'क्वांटम फील्ड', 'गैलेक्टिक वॉर्टेक्स',
@@ -1719,6 +1646,7 @@
       price: i === 0 ? 0 : 350 + i * 80
     }));
 
+    /* ================= 4 VFX CATALOG ================= */
     const VFX_CATALOG = [
       { id: 'vfx_ring', name: 'ग्रीन लाइट वेव', price: 0, color: '#10b981', type: 'ring' },
       { id: 'vfx_electric', name: 'बिजली थंडर रिंग्स', price: 600, color: '#00f7ff', type: 'electric' },
@@ -1735,25 +1663,20 @@
     };
 
     function loadSavedUser() {
-      const data = localStorage.getItem('carrom_pro_state_v12');
-      if (data) {
-        user = JSON.parse(data);
-      } else {
-        user.coins = 100;
-      }
+      const data = localStorage.getItem('carrom_pro_state_v17');
+      if (data) { user = JSON.parse(data); }
       if (!user.inventory.powers) user.inventory.powers = ['pow_1'];
       if (!user.equipped.power) user.equipped.power = 'pow_1';
       syncCoinDisplays();
       document.getElementById('nav-name').innerText = user.name;
       document.getElementById('nav-avatar').innerText = user.emoji;
-      
       const hostNameInput = document.getElementById('host-name-input');
       const joinerNameInput = document.getElementById('joiner-name-input');
       if (hostNameInput) hostNameInput.value = user.name;
       if (joinerNameInput) joinerNameInput.value = user.name;
     }
     function saveUserState() {
-      localStorage.setItem('carrom_pro_state_v12', JSON.stringify(user));
+      localStorage.setItem('carrom_pro_state_v17', JSON.stringify(user));
       syncCoinDisplays();
     }
     function syncCoinDisplays() {
@@ -1797,7 +1720,7 @@
       const container = document.getElementById('equipment-grid');
       container.innerHTML = '';
       let catalog = currentEqTab === 'pucks' ? PUCK_CATALOG : (currentEqTab === 'strikers' ? STRIKER_CATALOG : (currentEqTab === 'powers' ? POWER_CATALOG : VFX_CATALOG));
-      let inventoryList = user.inventory[currentEqTab];
+      let inventoryList = user.inventory[currentEqTab] || [];
       let equippedId = user.equipped[currentEqTab === 'pucks' ? 'puck' : (currentEqTab === 'strikers' ? 'striker' : (currentEqTab === 'powers' ? 'power' : 'vfx'))];
 
       catalog.forEach(item => {
@@ -1878,10 +1801,8 @@
     let pocketedThisTurn = [];
     let strikerFouledThisTurn = false;
     let shotSafetyTimer = null;
-    let lastBroadcastTime = 0;
     let lastProcessedShotId = null;
 
-    // FRIEND ROOM REALTIME CREATION
     function createPrivateOnlineRoom() {
       const nameInput = document.getElementById('host-name-input');
       const customName = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : user.name;
@@ -1927,7 +1848,7 @@
 
     function shareRoomOnWhatsApp() {
       if (!currentRoomId) return;
-      const shareText = `*Carrom Pool Pro 3D* 🎯\n\n*${user.name}* ने आपको लाइव खेलने के लिए बुलाया है!\n👉 *Room Code:* ${currentRoomId}\n\nApp खोलें > Friends > Code डालें और जुड़ें!`;
+      const shareText = `*Carrom Pool Pro 3D* 🎯\n*${user.name}* ने आपको लाइव खेलने के लिए बुलाया है!\n👉 *Room Code:* ${currentRoomId}\n\nApp खोलें > Friends > Code डालें और जुड़ें!`;
       window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`, '_system');
     }
 
@@ -2065,8 +1986,8 @@
       stopVoiceCall();
       if (currentRoomId && isRoomHost) {
         database.ref('rooms/' + currentRoomId).remove();
-        currentRoomId = null;
       }
+      currentRoomId = null;
       navTo('home');
     }
 
@@ -2127,8 +2048,7 @@
     let cueAnimation = { active: false, pullDistance: 0, angle: 0, force: 0, snapProgress: 0 };
     let opponentAim = { active: false, angle: 0, force: 0, pullDist: 0 };
 
-    function invertY(y) { return SIZE - y; }
-    function invertX(x) { return SIZE - x; }
+    function invertCoord(val) { return SIZE - val; }
 
     function forceStopAllPucks() {
       striker.vx = 0; striker.vy = 0;
@@ -2146,38 +2066,42 @@
       const center = { x: SIZE/2, y: SIZE/2 };
       const pr = SIZE * 0.036;
 
-      pucks.push({ x: center.x, y: center.y, r: pr, vx: 0, vy: 0, targetX: center.x, targetY: center.y, type: 'queen', inPocket: false });
+      pucks.push({ x: center.x, y: center.y, r: pr, vx: 0, vy: 0, type: 'queen', inPocket: false });
       for (let i = 0; i < 6; i++) {
         let ang = (i * Math.PI * 2) / 6;
         let d = pr * 2.05;
         let px = center.x + Math.cos(ang) * d;
         let py = center.y + Math.sin(ang) * d;
-        pucks.push({ x: px, y: py, r: pr, vx: 0, vy: 0, targetX: px, targetY: py, type: i % 2 === 0 ? 'white' : 'black', inPocket: false });
+        pucks.push({ x: px, y: py, r: pr, vx: 0, vy: 0, type: i % 2 === 0 ? 'white' : 'black', inPocket: false });
       }
       for (let i = 0; i < 12; i++) {
         let ang = (i * Math.PI * 2) / 12 + Math.PI / 12;
         let d = pr * 4.08;
         let px = center.x + Math.cos(ang) * d;
         let py = center.y + Math.sin(ang) * d;
-        pucks.push({ x: px, y: py, r: pr, vx: 0, vy: 0, targetX: px, targetY: py, type: i % 2 === 0 ? 'black' : 'white', inPocket: false });
+        pucks.push({ x: px, y: py, r: pr, vx: 0, vy: 0, type: i % 2 === 0 ? 'black' : 'white', inPocket: false });
       }
 
       resetStriker();
       updatePuckCounts();
     }
 
-    // ================= 🎯 STRIKER BASELINE RESET (100% RELIABLE) =================
+    // ================= 🎯 100% RELIABLE BASELINE & POWER RESET =================
     function resetStriker() {
       striker.vx = 0;
       striker.vy = 0;
       striker.inHand = true;
 
       const isMyTurn = (Number(currentTurn) === Number(myPlayerRole));
-      // जिसकी चाल हो, उसके फोन में बिल्कुल नीचे बेसलाइन पर (0.81), विरोधी के फोन में ऊपर (0.19)
-      striker.y = isMyTurn ? SIZE * 0.81 : SIZE * 0.19;
+      
+      // जिसकी चाल होगी, उसके फ़ोन में स्ट्राइकर नीचे (0.81) होगा, दूसरे फोन में ऊपर (0.19)
+      striker.y = isMyTurn ? (SIZE * 0.81) : (SIZE * 0.19);
 
       slider.value = 50;
-      updateStrikerX();
+      const minX = SIZE * 0.24;
+      const maxX = SIZE * 0.76;
+      striker.x = minX + 0.5 * (maxX - minX);
+
       updateTurnHUD();
       cueAnimation.active = false;
       opponentAim.active = false;
@@ -2185,10 +2109,9 @@
       pocketedThisTurn = [];
       strikerFouledThisTurn = false;
 
-      // स्लाइडर चालू/बंद
       slider.disabled = !isMyTurn;
       slider.style.pointerEvents = isMyTurn ? 'auto' : 'none';
-      slider.style.opacity = isMyTurn ? '1' : '0.5';
+      slider.style.opacity = isMyTurn ? '1' : '0.4';
 
       if (!isPassAndPlay && !isRealFirebaseMatch && currentTurn === 2 && isGameRunning) {
         setTimeout(playAITurn, 800);
@@ -2200,7 +2123,6 @@
       const maxX = SIZE * 0.76;
       striker.x = minX + (Number(slider.value) / 100) * (maxX - minX);
 
-      // लाइव स्लाइडर सिंक विरोधी के फोन पर
       if (isRealFirebaseMatch && currentRoomId && Number(currentTurn) === Number(myPlayerRole)) {
         database.ref('rooms/' + currentRoomId + '/sliderSync').set({
           val: Number(slider.value),
@@ -2257,21 +2179,22 @@
         const shotId = 'shot_' + Date.now();
         lastProcessedShotId = shotId;
 
-        // अपने फोन पर तुरंत शॉट ट्रिगर करें
+        pocketedThisTurn = [];
+        strikerFouledThisTurn = false;
+
         cueAnimation.active = true;
         cueAnimation.pullDistance = Math.min(dist * 0.85, 95);
         cueAnimation.angle = angle;
         cueAnimation.force = force;
         cueAnimation.snapProgress = 0;
 
-        // Failsafe Timer: 4 सेकंड के अंदर हर हाल में टर्न रिसेट होगा
         if (shotSafetyTimer) clearTimeout(shotSafetyTimer);
         shotSafetyTimer = setTimeout(() => {
           if (!striker.inHand && isGameRunning) {
             forceStopAllPucks();
             handleTurnEnd();
           }
-        }, 4000);
+        }, 4500);
 
         if (isRealFirebaseMatch && currentRoomId) {
           const roomRef = database.ref('rooms/' + currentRoomId);
@@ -2303,6 +2226,9 @@
 
       setTimeout(() => {
         if (!isGameRunning) return;
+        pocketedThisTurn = [];
+        strikerFouledThisTurn = false;
+
         cueAnimation.active = true;
         cueAnimation.pullDistance = 65;
         cueAnimation.angle = angle;
@@ -2338,12 +2264,11 @@
       puckObj.inPocket = false;
     }
 
-    /* ================= 🚀 ZERO-JITTER NETWORK SYNC ================= */
+    /* ================= 🚀 FULL DUAL-DEVICE NETWORK ENGINE ================= */
     function listenToFirebaseRoomEvents() {
       if (!isRealFirebaseMatch || !currentRoomId) return;
       const roomRef = database.ref('rooms/' + currentRoomId);
 
-      // विरोधी का स्लाइडर मूवमेंट तुरंत दिखाना
       roomRef.child('sliderSync').on('value', (snap) => {
         const d = snap.val();
         if (d && Number(d.player) !== Number(myPlayerRole)) {
@@ -2351,30 +2276,34 @@
           const minX = SIZE * 0.24;
           const maxX = SIZE * 0.76;
           striker.x = minX + ((100 - d.val) / 100) * (maxX - minX);
-          striker.y = SIZE * 0.19; // विरोधी हमेशा ऊपर बेसलाइन पर दिखेगा
+          striker.y = SIZE * 0.19;
         }
       });
 
-      // विरोधी की लाइव ऐमिंग लाइन दिखाना
       roomRef.child('aimLive').on('value', (snap) => {
         const a = snap.val();
         if (a && Number(currentTurn) !== Number(myPlayerRole)) {
           opponentAim = { ...a, angle: a.angle + Math.PI };
+        } else if (!a) {
+          opponentAim.active = false;
         }
       });
 
-      // विरोधी का शॉट चलना
       roomRef.child('executeShot').on('value', (snap) => {
         const s = snap.val();
         if (s && s.shotId !== lastProcessedShotId) {
           lastProcessedShotId = s.shotId;
 
           if (Number(s.player) !== Number(myPlayerRole)) {
+            pocketedThisTurn = [];
+            strikerFouledThisTurn = false;
+
             slider.value = 100 - s.sliderVal;
             const minX = SIZE * 0.24;
             const maxX = SIZE * 0.76;
             striker.x = minX + ((100 - s.sliderVal) / 100) * (maxX - minX);
             striker.y = SIZE * 0.19;
+
             cueAnimation.active = true;
             cueAnimation.pullDistance = s.pullDist;
             cueAnimation.angle = s.angle + Math.PI;
@@ -2385,44 +2314,35 @@
         }
       });
 
-      // Client के लिए स्मूथ पोजीशंस (No Jitter Lerp Target)
-      if (myPlayerRole === 2) {
-        roomRef.child('livePucks').on('value', (snap) => {
-          const remotePucks = snap.val();
-          if (remotePucks) {
-            remotePucks.forEach((rp, i) => {
-              if (pucks[i]) {
-                pucks[i].targetX = invertX(rp.x);
-                pucks[i].targetY = invertY(rp.y);
-                pucks[i].inPocket = rp.inPocket;
-              }
-            });
-            updatePuckCounts();
-          }
-        });
-      }
+      roomRef.child('boardSync').on('value', (snap) => {
+        const data = snap.val();
+        if (data && Number(data.byPlayer) !== Number(myPlayerRole)) {
+          data.pucks.forEach((rp, i) => {
+            if (pucks[i]) {
+              pucks[i].x = invertCoord(rp.x);
+              pucks[i].y = invertCoord(rp.y);
+              pucks[i].inPocket = rp.inPocket;
+            }
+          });
+          updatePuckCounts();
+        }
+      });
 
-      // टर्न बदलने का लिसनर
       roomRef.child('turn').on('value', (snap) => {
         const t = snap.val();
         if (t !== null && t !== undefined) {
           if (shotSafetyTimer) clearTimeout(shotSafetyTimer);
           currentTurn = Number(t);
           forceStopAllPucks();
-          striker.inHand = true;
           resetStriker();
         }
       });
 
-      // विजेता लिसनर
       roomRef.child('matchWinner').on('value', (snap) => {
         const winnerRole = snap.val();
-        if (winnerRole) {
-          celebrateWin(Number(winnerRole) === Number(myPlayerRole));
-        }
+        if (winnerRole) celebrateWin(Number(winnerRole) === Number(myPlayerRole));
       });
 
-      // चैट लिसनर
       roomRef.child('chat').on('value', (snap) => {
         const chat = snap.val();
         if (chat && Number(chat.sender) !== Number(myPlayerRole)) {
@@ -2431,7 +2351,7 @@
       });
     }
 
-    // ================= ⚙️ SMOOTH MASTER PHYSICS & ZERO-JITTER LERP =================
+    // ================= ⚙️ P2P INDEPENDENT SMOOTH PHYSICS =================
     function updatePhysics() {
       if (!isGameRunning) return;
 
@@ -2447,18 +2367,6 @@
         return;
       }
 
-      // Client (Player 2) पर सिर्फ स्मूथ इंटरपोलेशन होगा (कम्पन 100% बंद)
-      if (isRealFirebaseMatch && myPlayerRole === 2) {
-        pucks.forEach(p => {
-          if (!p.inPocket) {
-            p.x += (p.targetX - p.x) * 0.45;
-            p.y += (p.targetY - p.y) * 0.45;
-          }
-        });
-        return;
-      }
-
-      // केवल Host (Player 1) फ़िज़िक्स चलाएगा
       let isMoving = false;
       const all = [striker, ...pucks.filter(p => !p.inPocket)];
 
@@ -2497,7 +2405,6 @@
         });
       });
 
-      // सॉलिड टक्कर
       for (let i = 0; i < all.length; i++) {
         for (let j = i + 1; j < all.length; j++) {
           let o1 = all[i], o2 = all[j];
@@ -2518,73 +2425,78 @@
         }
       }
 
-      // Host द्वारा 30 FPS पर डेटा स्ट्रीम
-      if (isRealFirebaseMatch && myPlayerRole === 1 && (!striker.inHand || isMoving)) {
-        const now = Date.now();
-        if (now - lastBroadcastTime > 33) {
-          lastBroadcastTime = now;
-          database.ref('rooms/' + currentRoomId + '/livePucks').set(
-            pucks.map(p => ({ x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10, inPocket: p.inPocket }))
-          );
-        }
-      }
-
-      // जब सब कुछ रुक जाए, तो केवल Host टर्न बदलेगा
+      // जब स्ट्राइकर और सभी गोटियाँ पूरी तरह रुक जाएं
       if (!isMoving && !striker.inHand) {
-        if (!isRealFirebaseMatch || myPlayerRole === 1) {
+        if (!isRealFirebaseMatch || Number(currentTurn) === Number(myPlayerRole)) {
           handleTurnEnd();
         }
       }
     }
 
+    // ================= 🎯 100% STRICT CARROM TURN & RULES =================
     function handleTurnEnd() {
       if (cueAnimation.active) return;
       if (shotSafetyTimer) clearTimeout(shotSafetyTimer);
 
-      const activeTurnColor = currentTurn === 1 ? 'white' : 'black';
-      const pucksLeft = pucks.filter(p => !p.inPocket && p.type === activeTurnColor).length;
+      const activePlayerColor = (currentTurn === 1) ? 'white' : 'black';
       const queenPuck = pucks.find(p => p.type === 'queen');
+      const activePucksLeft = pucks.filter(p => !p.inPocket && p.type === activePlayerColor).length;
 
-      if (pocketedThisTurn.includes('queen') && pucksLeft > 0) {
+      let penaltyOccurred = false;
+
+      // 1. रानी फाउल
+      if (pocketedThisTurn.includes('queen') && activePucksLeft > 0) {
         placePuckNearCenter(queenPuck);
         showBannerMessage("रानी फाउल! (PENALTY)", 1800);
+        penaltyOccurred = true;
       }
 
+      // 2. स्ट्राइकर फाउल पेनल्टी
+      if (strikerFouledThisTurn) {
+        const pocketedMine = pucks.find(p => p.inPocket && p.type === activePlayerColor);
+        if (pocketedMine) placePuckNearCenter(pocketedMine);
+        penaltyOccurred = true;
+      }
+
+      // 3. जीत की जाँच
       const p1Left = pucks.filter(p => !p.inPocket && p.type === 'white').length;
       const p2Left = pucks.filter(p => !p.inPocket && p.type === 'black').length;
 
       if (p1Left === 0 && queenPuck.inPocket) {
-        if (isRealFirebaseMatch && myPlayerRole === 1) database.ref('rooms/' + currentRoomId + '/matchWinner').set(1);
+        if (isRealFirebaseMatch) database.ref('rooms/' + currentRoomId + '/matchWinner').set(1);
         celebrateWin(myPlayerRole === 1);
         return;
       }
       if (p2Left === 0 && queenPuck.inPocket) {
-        if (isRealFirebaseMatch && myPlayerRole === 1) database.ref('rooms/' + currentRoomId + '/matchWinner').set(2);
+        if (isRealFirebaseMatch) database.ref('rooms/' + currentRoomId + '/matchWinner').set(2);
         celebrateWin(myPlayerRole === 2);
         return;
       }
 
-      let keepTurn = pocketedThisTurn.includes(activeTurnColor) && !strikerFouledThisTurn;
-      let nextTurn = currentTurn;
-      if (!keepTurn) {
-        nextTurn = currentTurn === 1 ? 2 : 1;
-      }
+      // 4. पक्का और अचूक नियम:
+      const myColorKitPocketed = pocketedThisTurn.filter(t => t === activePlayerColor).length;
+      const keepTurn = (myColorKitPocketed > 0) && !strikerFouledThisTurn && !penaltyOccurred;
 
-      if (isRealFirebaseMatch) {
-        if (myPlayerRole === 1) {
-          const roomRef = database.ref('rooms/' + currentRoomId);
-          roomRef.child('aimLive').remove();
-          roomRef.child('executeShot').remove();
-          roomRef.child('sliderSync').remove();
+      const nextTurn = keepTurn ? currentTurn : (currentTurn === 1 ? 2 : 1);
 
-          roomRef.update({
-            turn: nextTurn,
-            boardState: pucks.map(p => ({ x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10, inPocket: p.inPocket }))
-          });
-        }
-      } else {
-        currentTurn = nextTurn;
-        resetStriker();
+      // स्ट्राइकर को तुरंत अपनी बेसलाइन पर फ़ोर्स रिसेट करें
+      forceStopAllPucks();
+      currentTurn = nextTurn;
+      resetStriker();
+
+      if (isRealFirebaseMatch && currentRoomId) {
+        const roomRef = database.ref('rooms/' + currentRoomId);
+        roomRef.child('aimLive').remove();
+        roomRef.child('executeShot').remove();
+        roomRef.child('sliderSync').remove();
+
+        roomRef.update({
+          turn: nextTurn,
+          boardSync: {
+            byPlayer: myPlayerRole,
+            pucks: pucks.map(p => ({ x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10, inPocket: p.inPocket }))
+          }
+        });
       }
     }
 
@@ -2807,7 +2719,6 @@
       ctx.restore();
     }
 
-    // ================= 🔮 POWER AURA RING ALWAYS VISIBLE ON BASELINE =================
     function drawStrikerPowerAura(x, y, r) {
       const pow = POWER_CATALOG.find(p => p.id === user.equipped.power) || POWER_CATALOG[0];
       const color = pow.color;
@@ -2870,9 +2781,10 @@
 
     function drawUltraRealisticStriker() {
       const { x, y, r } = striker;
+      if (x < 0 || y < 0) return;
+
       const sSkin = STRIKER_CATALOG.find(s => s.id === user.equipped.striker) || STRIKER_CATALOG[0];
 
-      // ऑरा हमेशा बेसलाइन पर दिखेगा
       if (striker.inHand && isGameRunning && !cueAnimation.active) {
         drawStrikerPowerAura(x, y, r);
       }
@@ -2970,7 +2882,6 @@
       const screenStrikerX = boardRect.left + striker.x;
       const screenStrikerY = boardRect.top + striker.y;
 
-      // My Aiming
       if (isAiming && isGameRunning && Number(currentTurn) === Number(myPlayerRole)) {
         let dx = dragOrigin.x - dragCurrent.x;
         let dy = dragOrigin.y - dragCurrent.y;
@@ -3048,7 +2959,6 @@
         drawProCueStick(screenStrikerX, screenStrikerY, angle, visualPull);
       }
 
-      // Opponent Aiming Live Mirror
       if (opponentAim.active && Number(currentTurn) !== Number(myPlayerRole)) {
         ctx.save();
         ctx.strokeStyle = '#ef4444';
@@ -3065,7 +2975,6 @@
         drawProCueStick(screenStrikerX, screenStrikerY, opponentAim.angle, opponentAim.pullDist);
       }
 
-      // Cue Animation
       if (cueAnimation.active) {
         let curPull = cueAnimation.pullDistance * (1 - cueAnimation.snapProgress);
         drawProCueStick(screenStrikerX, screenStrikerY, cueAnimation.angle, curPull);
