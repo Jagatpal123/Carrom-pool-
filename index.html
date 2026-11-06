@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Carrom Pool Pro 3D - Ultimate Edition</title>
   
-  <!-- Firebase Compatibility Scripts -->
+  <!-- Firebase Scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
@@ -58,7 +58,7 @@
     }
     .hidden { display: none !important; }
 
-    /* 0. 3D WELCOME SPLASH SCREEN */
+    /* SPLASH */
     #welcome-screen {
       position: fixed;
       top: 0;
@@ -122,7 +122,7 @@
     }
     @keyframes fillBar { 0% { width: 0%; } 60% { width: 75%; } 100% { width: 100%; } }
 
-    /* 3D TYPOGRAPHY */
+    /* TYPOGRAPHY */
     .title-3d-gold {
       font-family: 'Orbitron', sans-serif;
       font-size: 24px;
@@ -306,7 +306,7 @@
     }
     .btn-carrom-badge img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-    /* 3D SUPER-VISIBLE LUCKY SPIN BANNER BUTTON */
+    /* LUCKY SPIN BANNER BUTTON */
     .super-spin-3d-card {
       width: 100%;
       background: linear-gradient(135deg, #3b0764 0%, #6b21a8 40%, #c026d3 75%, #eab308 100%);
@@ -729,7 +729,7 @@
     }
     #foul-banner.show { transform: scale(1); }
 
-    /* ================= 3D ONLINE MATCHMAKING RADAR MODAL ================= */
+    /* RADAR MODAL */
     #matchmaking-modal {
       position: fixed;
       top: 0;
@@ -769,7 +769,7 @@
       100% { transform: rotate(360deg); }
     }
 
-    /* 3D CASINO ROULETTE WHEEL STAGE */
+    /* WHEEL MODAL */
     #spin-modal {
       position: fixed;
       top: 0;
@@ -846,7 +846,7 @@
 </head>
 <body>
 
-  <!-- 0. WELCOME SPLASH -->
+  <!-- WELCOME -->
   <div id="welcome-screen" onclick="dismissWelcomeScreen()">
     <div class="welcome-logo-box">
       <img src="logo.png" class="welcome-logo-img" alt="Carrom Pool Logo" onerror="handleLogoFallback(this)">
@@ -860,7 +860,7 @@
   <canvas id="cueOverlayCanvas"></canvas>
   <div id="foul-banner">FOUL! ⚠️</div>
 
-  <!-- 3D LUXURY SPIN WHEEL MODAL -->
+  <!-- SPIN MODAL -->
   <div id="spin-modal" class="hidden">
     <div class="card-modal" style="max-width:345px; border-color:#ffd700; background: linear-gradient(180deg, #1e1b4b, #0f172a);">
       <div class="title-3d-gold" style="font-size:20px;">🎰 3D लकी स्पिन व्हील</div>
@@ -896,7 +896,7 @@
     </div>
   </div>
 
-  <!-- ================= 3D ONLINE MATCHMAKING RADAR MODAL ================= -->
+  <!-- MATCHMAKING MODAL -->
   <div id="matchmaking-modal" class="hidden">
     <div class="card-modal" style="max-width:330px;">
       <div class="title-3d-gold" style="font-size:18px;" id="mm-title">SEARCHING ONLINE...</div>
@@ -936,7 +936,7 @@
     </div>
   </div>
 
-  <!-- 1. HOME SCREEN -->
+  <!-- HOME SCREEN -->
   <div id="home-screen" class="screen">
     <div class="top-bar">
       <div class="user-pill">
@@ -969,7 +969,6 @@
           </button>
         </div>
 
-        <!-- 3D HIGH-VISIBILITY PURPLE GOLD LUCKY SPIN BANNER -->
         <div class="super-spin-3d-card" onclick="openSpinModal()">
           <div class="free-gift-tag">मुफ़्त कॉइंस</div>
           <div class="super-wheel-icon-box">🎡</div>
@@ -1013,7 +1012,7 @@
     </div>
   </div>
 
-  <!-- 2. FRIENDS SCREEN -->
+  <!-- FRIENDS SCREEN -->
   <div id="friends-screen" class="screen hidden">
     <div class="top-bar">
       <div style="font-family:'Orbitron', sans-serif; font-weight:900; font-size:16px; color:#34d399; letter-spacing:1px;">मित्र / FRIENDS</div>
@@ -1022,13 +1021,15 @@
     <div class="main-container">
       <div class="card-modal">
         <div class="title-3d-gold" style="font-size:18px;">प्राइवेट ऑनलाइन रूम बनाएं</div>
-        <div class="text-3d-sub" style="margin-bottom:12px;">रूम बनाकर अपने दोस्त को कोड WhatsApp पर भेजें</div>
+        <div class="text-3d-sub" style="margin-bottom:12px;">विरोधी को दिखाने के लिए अपना नाम लिखें</div>
+        <input type="text" id="host-name-input" placeholder="अपना नाम लिखें (उदा. राहुल)" style="width:100%; padding:12px; margin-bottom:10px; border-radius:12px; background:rgba(0,0,0,0.6); border:2px solid #10b981; color:#fff; font-family:'Montserrat', sans-serif; font-size:14px; text-align:center; font-weight:bold; outline:none;">
         <button class="btn-3d btn-gold" onclick="createPrivateOnlineRoom()">नया रूम कोड बनाएं</button>
       </div>
 
       <div class="card-modal">
         <div class="title-3d-gold" style="font-size:18px;">दोस्त के रूम में जुड़ें</div>
-        <input type="text" id="room-code-input" placeholder="कोड दर्ज करें (उदा. CP-1234)" style="width:100%; padding:12px; margin:10px 0; border-radius:12px; background:rgba(0,0,0,0.6); border:2px solid #10b981; color:#fff; font-family:'Orbitron', sans-serif; font-size:15px; text-align:center; font-weight:bold; outline:none;">
+        <input type="text" id="joiner-name-input" placeholder="अपना नाम लिखें (उदा. अमित)" style="width:100%; padding:12px; margin-top:8px; margin-bottom:8px; border-radius:12px; background:rgba(0,0,0,0.6); border:2px solid #38bdf8; color:#fff; font-family:'Montserrat', sans-serif; font-size:14px; text-align:center; font-weight:bold; outline:none;">
+        <input type="text" id="room-code-input" placeholder="कोड दर्ज करें (उदा. CP-1234)" style="width:100%; padding:12px; margin-bottom:10px; border-radius:12px; background:rgba(0,0,0,0.6); border:2px solid #10b981; color:#fff; font-family:'Orbitron', sans-serif; font-size:15px; text-align:center; font-weight:bold; outline:none;">
         <button class="btn-3d btn-cyan" onclick="joinPrivateOnlineRoom()">रूम में प्रवेश करें</button>
       </div>
 
@@ -1040,7 +1041,7 @@
     </div>
   </div>
 
-  <!-- 3. EQUIPMENT SCREEN (FULL 30 PUCKS, 30 STRIKERS, 30 POWERS, 4 VFX RESTORED) -->
+  <!-- EQUIPMENT SCREEN -->
   <div id="equipment-screen" class="screen hidden">
     <div class="top-bar">
       <div style="font-family:'Orbitron', sans-serif; font-weight:900; font-size:16px; color:#34d399; letter-spacing:1px;">इक्विपमेंट्स</div>
@@ -1057,7 +1058,7 @@
     </div>
   </div>
 
-  <!-- 4. SHOP SCREEN -->
+  <!-- SHOP SCREEN -->
   <div id="shop-screen" class="screen hidden">
     <div class="top-bar">
       <div style="font-family:'Orbitron', sans-serif; font-weight:900; font-size:16px; color:#fbbf24; letter-spacing:1px;">शॉप (मुफ़्त रिवॉर्ड्स)</div>
@@ -1115,7 +1116,7 @@
 
     <!-- HUD PANEL -->
     <div id="hud-panel">
-      <!-- Player 1 (You) -->
+      <!-- Player 1 -->
       <div id="p1-box" class="player-box turn-active">
         <div class="avatar-wrapper">
           <span id="p1-avatar" style="font-size:24px;">🤠</span>
@@ -1137,7 +1138,7 @@
         </div>
       </div>
 
-      <!-- Player 2 (Opponent) -->
+      <!-- Player 2 -->
       <div id="p2-box" class="player-box">
         <div style="text-align:right;">
           <div id="p2-name" style="font-weight:900; font-size:11px;">उस्ताद बॉट</div>
@@ -1214,7 +1215,7 @@
     </div>
   </div>
 
-  <!-- ================= ADMOB NATIVE ENGINE ================= -->
+  <!-- ADMOB ENGINE -->
   <script>
     const AdConfig = {
       interstitialId: 'ca-app-pub-6302105448775587/1791739528',
@@ -1368,7 +1369,7 @@
     }
   </script>
 
-  <!-- ================= ROBUST WEBRTC LIVE VOICE CALL ENGINE ================= -->
+  <!-- WEBRTC VOICE ENGINE -->
   <script>
     let localStream = null;
     let peerConnection = null;
@@ -1507,7 +1508,6 @@
     let isRealFirebaseMatch = false;
     let isRoomHost = false;
 
-    // PERSPECTIVE COLOR SELECTION
     function getMyPuckColor() {
       return (isRealFirebaseMatch && myPlayerRole === 2) ? 'black' : 'white';
     }
@@ -1614,7 +1614,7 @@
     window.addEventListener('touchstart', () => AudioEngine.init(), { once: true });
     window.addEventListener('mousedown', () => AudioEngine.init(), { once: true });
 
-    /* ================= FULL ORIGINAL 30 STRIKERS, 30 PUCKS, 30 POWERS ================= */
+    /* CATALOG DATA */
     const STRIKER_NAMES = [
       'टाइटन गोल्ड', 'इलेक्ट्रिक सायन', 'ग्रीन लेज़र', 'रूबी फ्लेम', 'ब्लैक होल', 'आइस ग्लैशियर',
       'सन बर्न', 'डार्क मैटर', 'एमराल्ड प्रो', 'थंडर स्टॉर्म', 'वाइपर टॉक्सिक', 'प्लाज्मा कोर',
@@ -1726,7 +1726,6 @@
       { id: 'vfx_vortex', name: 'ब्लैक होल वॉर्टेक्स', price: 1500, color: '#c084fc', type: 'vortex' }
     ];
 
-    // ================= 🚀 DEFAULT 100 COINS SETUP =================
     let user = {
       name: 'खिलाड़ी 1',
       emoji: '🤠',
@@ -1747,6 +1746,11 @@
       syncCoinDisplays();
       document.getElementById('nav-name').innerText = user.name;
       document.getElementById('nav-avatar').innerText = user.emoji;
+      
+      const hostNameInput = document.getElementById('host-name-input');
+      const joinerNameInput = document.getElementById('joiner-name-input');
+      if (hostNameInput) hostNameInput.value = user.name;
+      if (joinerNameInput) joinerNameInput.value = user.name;
     }
     function saveUserState() {
       localStorage.setItem('carrom_pro_state_v12', JSON.stringify(user));
@@ -1875,9 +1879,15 @@
     let strikerFouledThisTurn = false;
     let shotSafetyTimer = null;
     let lastBroadcastTime = 0;
+    let lastProcessedShotId = null; // डुप्लिकेट शॉट रोकने के लिए यूनिक ट्रैकर
 
-    // FRIEND ROOM REALTIME CREATION
     function createPrivateOnlineRoom() {
+      const nameInput = document.getElementById('host-name-input');
+      const customName = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : user.name;
+      user.name = customName;
+      saveUserState();
+      document.getElementById('nav-name').innerText = user.name;
+
       const code = 'CP-' + Math.floor(1000 + Math.random() * 9000);
       currentRoomId = code;
       myPlayerRole = 1;
@@ -1898,6 +1908,7 @@
       const mmModal = document.getElementById('matchmaking-modal');
       document.getElementById('mm-title').innerText = "ROOM: " + code;
       document.getElementById('mm-subtitle').innerText = "कोड कॉपी हो गया! दोस्त के जुड़ने का इंतजार करें...";
+      document.getElementById('mm-my-name').innerText = user.name;
       document.getElementById('mm-opp-avatar').innerText = "⏳";
       document.getElementById('mm-opp-name').innerText = "Waiting...";
       document.getElementById('mm-bot-btn').classList.add('hidden');
@@ -1915,13 +1926,20 @@
 
     function shareRoomOnWhatsApp() {
       if (!currentRoomId) return;
-      const shareText = `*Carrom Pool Pro 3D* 🎯\n\nमैंने रूम बनाया है, लाइव खेलने के लिए जुड़ें!\n👉 *Room Code:* ${currentRoomId}\n\nApp खोलें > Friends > Code डालें और जुड़ें!`;
+      const shareText = `*Carrom Pool Pro 3D* 🎯\n\n*${user.name}* ने आपको लाइव खेलने के लिए बुलाया है!\n👉 *Room Code:* ${currentRoomId}\n\nApp खोलें > Friends > Code डालें और जुड़ें!`;
       window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`, '_system');
     }
 
     function joinPrivateOnlineRoom() {
       const code = document.getElementById('room-code-input').value.trim();
       if (!code) return alert("कृपया वैध कोड दर्ज करें!");
+      
+      const nameInput = document.getElementById('joiner-name-input');
+      const customName = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : user.name;
+      user.name = customName;
+      saveUserState();
+      document.getElementById('nav-name').innerText = user.name;
+
       currentRoomId = code;
       myPlayerRole = 2;
       isRealFirebaseMatch = true;
@@ -1953,6 +1971,7 @@
       const mmTitle = document.getElementById('mm-title');
       
       mmTitle.innerText = "SEARCHING ONLINE...";
+      document.getElementById('mm-my-name').innerText = user.name;
       oppAvatar.innerText = "❓";
       oppName.innerText = "Searching...";
       document.getElementById('mm-bot-btn').classList.remove('hidden');
@@ -2022,7 +2041,6 @@
       document.getElementById('queen-indicator').innerText = modeText;
       document.getElementById('table-pot').innerText = `${potCoins}`;
 
-      // PERSPECTIVE COLOR SETTING
       const p1Ind = document.getElementById('p1-indicator');
       const p2Ind = document.getElementById('p2-indicator');
       if (isRealFirebaseMatch && myPlayerRole === 2) {
@@ -2036,7 +2054,6 @@
       initBoard();
       listenToFirebaseRoomEvents();
 
-      // AUTO START VOICE CALL DIRECTLY
       if (isRealFirebaseMatch && currentRoomId) {
         initVoiceCallDirect();
       }
@@ -2073,7 +2090,7 @@
       }
     }
 
-    /* ================= AUTHORITATIVE BOARD & NETWORKING ENGINE ================= */
+    /* CANVAS & GRAPHICS ENGINE */
     const canvas = document.getElementById('carromCanvas');
     const ctx = canvas.getContext('2d');
     const overlayCanvas = document.getElementById('cueOverlayCanvas');
@@ -2124,6 +2141,7 @@
       activeVfxPockets = [];
       pocketedThisTurn = [];
       strikerFouledThisTurn = false;
+      lastProcessedShotId = null;
       const center = { x: SIZE/2, y: SIZE/2 };
       const pr = SIZE * 0.036;
 
@@ -2148,8 +2166,7 @@
       striker.vy = 0;
       striker.inHand = true;
 
-      const isMyTurn = (currentTurn === myPlayerRole);
-      // जिसकी चाल होगी, उसके फोन में नीचे (0.81), दूसरे के फोन में ऊपर (0.19)
+      const isMyTurn = (Number(currentTurn) === Number(myPlayerRole));
       striker.y = isMyTurn ? SIZE * 0.81 : SIZE * 0.19;
 
       slider.value = 50;
@@ -2161,7 +2178,6 @@
       pocketedThisTurn = [];
       strikerFouledThisTurn = false;
 
-      // जिसकी बारी है उसका स्लाइडर एक्टिव, दूसरे का लॉक
       slider.disabled = !isMyTurn;
       slider.style.pointerEvents = isMyTurn ? 'auto' : 'none';
       slider.style.opacity = isMyTurn ? '1' : '0.5';
@@ -2174,9 +2190,9 @@
     function updateStrikerX() {
       const minX = SIZE * 0.24;
       const maxX = SIZE * 0.76;
-      striker.x = minX + (slider.value / 100) * (maxX - minX);
+      striker.x = minX + (Number(slider.value) / 100) * (maxX - minX);
 
-      if (isRealFirebaseMatch && currentRoomId && currentTurn === myPlayerRole) {
+      if (isRealFirebaseMatch && currentRoomId && Number(currentTurn) === Number(myPlayerRole)) {
         database.ref('rooms/' + currentRoomId + '/sliderSync').set({
           val: Number(slider.value),
           player: myPlayerRole
@@ -2184,19 +2200,17 @@
       }
     }
 
-    slider.addEventListener('input', () => {
-      if (currentTurn !== myPlayerRole) return;
-      if (striker.inHand && !cueAnimation.active) {
-        updateStrikerX();
-      }
-    });
+    slider.oninput = function() {
+      if (Number(currentTurn) !== Number(myPlayerRole)) return;
+      striker.inHand = true;
+      updateStrikerX();
+    };
 
     canvas.addEventListener('touchstart', (e) => {
       AudioEngine.init();
-      // HARD LOCK: अगर मेरी चाल नहीं है, तो टच कभी नहीं चलेगा
-      if (currentTurn !== myPlayerRole) return;
+      if (Number(currentTurn) !== Number(myPlayerRole)) return;
       if (!isPassAndPlay && !isRealFirebaseMatch && currentTurn === 2) return;
-      if (!striker.inHand || !isGameRunning || cueAnimation.active) return;
+      if (cueAnimation.active || !striker.inHand) return;
 
       const rect = canvas.getBoundingClientRect();
       isAiming = true;
@@ -2205,7 +2219,7 @@
     });
 
     canvas.addEventListener('touchmove', (e) => {
-      if (!isAiming || currentTurn !== myPlayerRole) return;
+      if (!isAiming || Number(currentTurn) !== Number(myPlayerRole)) return;
       const rect = canvas.getBoundingClientRect();
       dragCurrent = { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
 
@@ -2222,7 +2236,7 @@
     });
 
     canvas.addEventListener('touchend', () => {
-      if (!isAiming || currentTurn !== myPlayerRole) return;
+      if (!isAiming || Number(currentTurn) !== Number(myPlayerRole)) return;
       isAiming = false;
       let dx = dragOrigin.x - dragCurrent.x;
       let dy = dragOrigin.y - dragCurrent.y;
@@ -2231,32 +2245,38 @@
       let angle = Math.atan2(dy, dx);
 
       if (force > 1.8) {
-        cueAnimation.active = true;
-        cueAnimation.pullDistance = Math.min(dist * 0.85, 95);
-        cueAnimation.angle = angle;
-        cueAnimation.force = force;
-        cueAnimation.snapProgress = 0;
+        const shotId = 'shot_' + Date.now();
+        lastProcessedShotId = shotId;
 
-        // 7-Second Safety Timer (शॉट अटकने से बचाव)
+        // Player 1 (Host) सीधे फ़िज़िक्स चलाएगा
+        if (!isRealFirebaseMatch || myPlayerRole === 1) {
+          cueAnimation.active = true;
+          cueAnimation.pullDistance = Math.min(dist * 0.85, 95);
+          cueAnimation.angle = angle;
+          cueAnimation.force = force;
+          cueAnimation.snapProgress = 0;
+        }
+
+        // Failsafe Timer
         if (shotSafetyTimer) clearTimeout(shotSafetyTimer);
         shotSafetyTimer = setTimeout(() => {
           if (!striker.inHand && isGameRunning) {
             forceStopAllPucks();
             handleTurnEnd();
           }
-        }, 7000);
+        }, 4500);
 
         if (isRealFirebaseMatch && currentRoomId) {
           const roomRef = database.ref('rooms/' + currentRoomId);
-          // पुराना ऐमिंग डेटा तुरंत साफ़ करें
           roomRef.child('aimLive').remove();
 
           roomRef.child('executeShot').set({
+            shotId: shotId,
             player: myPlayerRole,
-            sliderVal: slider.value,
+            sliderVal: Number(slider.value),
             angle: angle,
             force: force,
-            pullDist: cueAnimation.pullDistance,
+            pullDist: Math.min(dist * 0.85, 95),
             time: Date.now()
           });
         }
@@ -2311,39 +2331,56 @@
       puckObj.inPocket = false;
     }
 
+    /* ================= 🚀 RELIABLE NETWORK SYNC ================= */
     function listenToFirebaseRoomEvents() {
       if (!isRealFirebaseMatch || !currentRoomId) return;
       const roomRef = database.ref('rooms/' + currentRoomId);
 
+      // Slider Mirror
       roomRef.child('sliderSync').on('value', (snap) => {
         const d = snap.val();
-        if (d && d.player !== myPlayerRole && striker.inHand) {
+        if (d && Number(d.player) !== Number(myPlayerRole) && striker.inHand) {
           slider.value = 100 - d.val;
           updateStrikerX();
         }
       });
 
+      // Live Aim Line Mirror
       roomRef.child('aimLive').on('value', (snap) => {
         const a = snap.val();
-        if (a && currentTurn !== myPlayerRole) {
+        if (a && Number(currentTurn) !== Number(myPlayerRole)) {
           opponentAim = { ...a, angle: a.angle + Math.PI };
         }
       });
 
+      // Shot Execution (With Unique ID Check to Prevent Deadlocks)
       roomRef.child('executeShot').on('value', (snap) => {
         const s = snap.val();
-        if (s && s.player !== myPlayerRole) {
-          slider.value = 100 - s.sliderVal;
-          updateStrikerX();
-          cueAnimation.active = true;
-          cueAnimation.pullDistance = s.pullDist;
-          cueAnimation.angle = s.angle + Math.PI;
-          cueAnimation.force = s.force;
-          cueAnimation.snapProgress = 0;
-          opponentAim.active = false;
+        if (s && s.shotId !== lastProcessedShotId) {
+          lastProcessedShotId = s.shotId;
+
+          // अगर शॉट विरोधी का है, तो स्ट्राइकर की पोज़िशन विरोधी के हिसाब से सेट करें
+          if (Number(s.player) !== Number(myPlayerRole)) {
+            slider.value = 100 - s.sliderVal;
+            updateStrikerX();
+            cueAnimation.active = true;
+            cueAnimation.pullDistance = s.pullDist;
+            cueAnimation.angle = s.angle + Math.PI;
+            cueAnimation.force = s.force;
+            cueAnimation.snapProgress = 0;
+            opponentAim.active = false;
+          } else if (myPlayerRole === 2) {
+            // Player 2 के अपने शॉट का एनीमेशन
+            cueAnimation.active = true;
+            cueAnimation.pullDistance = s.pullDist;
+            cueAnimation.angle = s.angle;
+            cueAnimation.force = s.force;
+            cueAnimation.snapProgress = 0;
+          }
         }
       });
 
+      // Pucks State Mirror for Player 2
       if (myPlayerRole === 2) {
         roomRef.child('livePucks').on('value', (snap) => {
           const remotePucks = snap.val();
@@ -2360,34 +2397,36 @@
         });
       }
 
-      // ================= 🎯 TURN SYNC (NO FREEZE & INSTANT UNLOCK) =================
+      // Turn Switch Listener
       roomRef.child('turn').on('value', (snap) => {
         const t = snap.val();
         if (t !== null && t !== undefined) {
           if (shotSafetyTimer) clearTimeout(shotSafetyTimer);
-          currentTurn = t;
+          currentTurn = Number(t);
           forceStopAllPucks();
           striker.inHand = true;
           resetStriker();
         }
       });
 
+      // Winner Listener
       roomRef.child('matchWinner').on('value', (snap) => {
         const winnerRole = snap.val();
         if (winnerRole) {
-          celebrateWin(winnerRole === myPlayerRole);
+          celebrateWin(Number(winnerRole) === Number(myPlayerRole));
         }
       });
 
+      // Chat Listener
       roomRef.child('chat').on('value', (snap) => {
         const chat = snap.val();
-        if (chat && chat.sender !== myPlayerRole) {
+        if (chat && Number(chat.sender) !== Number(myPlayerRole)) {
           showSpeechBubble(2, chat.text);
         }
       });
     }
 
-    // ================= 🚀 SMOOTH UPDATE PHYSICS (THROTTLED & AUTO-CLEANUP) =================
+    // ================= ⚙️ MASTER AUTHORITATIVE PHYSICS =================
     function updatePhysics() {
       if (!isGameRunning) return;
 
@@ -2403,7 +2442,7 @@
         return;
       }
 
-      // Client (Player 2) फिजिक्स कैलकुलेट नहीं करेगा, सिर्फ Host का लाइव डेटा रेंडर करेगा
+      // केवल Host (Player 1) फ़िज़िक्स कैलकुलेट करेगा
       if (isRealFirebaseMatch && myPlayerRole === 2) return;
 
       let isMoving = false;
@@ -2415,9 +2454,9 @@
         obj.vx *= FRICTION;
         obj.vy *= FRICTION;
 
-        // यदि गति बहुत धीमी हो तो उसे सीधे 0 करें ताकि गेम कभी न अटके
-        if (Math.abs(obj.vx) < 0.15) obj.vx = 0;
-        if (Math.abs(obj.vy) < 0.15) obj.vy = 0;
+        // जब स्पीड कम हो, तुरंत 0 करें ताकि गेम अटके नहीं
+        if (Math.abs(obj.vx) < 0.2) obj.vx = 0;
+        if (Math.abs(obj.vy) < 0.2) obj.vy = 0;
         if (obj.vx !== 0 || obj.vy !== 0) isMoving = true;
 
         const minB = obj.r + 20;
@@ -2465,7 +2504,7 @@
         }
       }
 
-      // Host लगातार 30 FPS पर गोटियों की पोजीशन भेजेगा (थ्रॉटल्ड फॉर नेटवर्क स्मूथनेस)
+      // Host लगातार 30 FPS पर गोटियों का लाइव डेटा भेजेगा
       if (isRealFirebaseMatch && myPlayerRole === 1 && (!striker.inHand || isMoving)) {
         const now = Date.now();
         if (now - lastBroadcastTime > 33) {
@@ -2476,13 +2515,12 @@
         }
       }
 
-      // जब स्ट्राइकर और गोटियाँ दोनों पूरी तरह रुक जाएँ तो टर्न का फैसला करें
+      // जब स्ट्राइकर और गोटियाँ पूरी तरह रुक जाएँ, तो टर्न खत्म करें
       if (!isMoving && !striker.inHand) {
         handleTurnEnd();
       }
     }
 
-    // ================= 🧹 AUTO-DATA CLEANUP & TURN END =================
     function handleTurnEnd() {
       if (cueAnimation.active) return;
       if (shotSafetyTimer) clearTimeout(shotSafetyTimer);
@@ -2516,11 +2554,9 @@
         nextTurn = currentTurn === 1 ? 2 : 1;
       }
 
-      // केवल Host टर्न का फैसला करके Firebase में लिखेगा और पुराना भारी डेटा डिलीट करेगा
       if (isRealFirebaseMatch) {
         if (myPlayerRole === 1) {
           const roomRef = database.ref('rooms/' + currentRoomId);
-          // 🚀 पुराना भारी डेटा तुरंत डिलीट करें (नाम p1, p2 और status बिल्कुल सुरक्षित रहेंगे)
           roomRef.child('aimLive').remove();
           roomRef.child('executeShot').remove();
           roomRef.child('sliderSync').remove();
@@ -2547,7 +2583,7 @@
     }
 
     function updateTurnHUD() {
-      const isMyTurn = (currentTurn === myPlayerRole);
+      const isMyTurn = (Number(currentTurn) === Number(myPlayerRole));
       document.getElementById('p1-box').className = 'player-box' + (isMyTurn ? ' turn-active' : '');
       document.getElementById('p2-box').className = 'player-box' + (!isMyTurn ? ' bot-turn-active' : '');
     }
@@ -2916,8 +2952,8 @@
       const screenStrikerX = boardRect.left + striker.x;
       const screenStrikerY = boardRect.top + striker.y;
 
-      // 1. My Aiming (Active Player)
-      if (isAiming && isGameRunning && currentTurn === myPlayerRole) {
+      // My Aiming
+      if (isAiming && isGameRunning && Number(currentTurn) === Number(myPlayerRole)) {
         let dx = dragOrigin.x - dragCurrent.x;
         let dy = dragOrigin.y - dragCurrent.y;
         let rawDist = Math.hypot(dx, dy);
@@ -2994,8 +3030,8 @@
         drawProCueStick(screenStrikerX, screenStrikerY, angle, visualPull);
       }
 
-      // 2. Real-Time Opponent Aiming (Laser Guideline on My Screen)
-      if (opponentAim.active && currentTurn !== myPlayerRole) {
+      // Opponent Aiming
+      if (opponentAim.active && Number(currentTurn) !== Number(myPlayerRole)) {
         ctx.save();
         ctx.strokeStyle = '#ef4444';
         ctx.shadowColor = '#ef4444';
@@ -3011,7 +3047,7 @@
         drawProCueStick(screenStrikerX, screenStrikerY, opponentAim.angle, opponentAim.pullDist);
       }
 
-      // 3. Cue Stick Snap Animation
+      // Cue Animation
       if (cueAnimation.active) {
         let curPull = cueAnimation.pullDistance * (1 - cueAnimation.snapProgress);
         drawProCueStick(screenStrikerX, screenStrikerY, cueAnimation.angle, curPull);
@@ -3042,7 +3078,7 @@
       setTimeout(() => AdService.showInterstitial(), 700);
     }
 
-    // ================= 3D REALISTIC CASINO ROULETTE WHEEL ENGINE =================
+    // 3D WHEEL
     const WHEEL_REWARDS = [
       { text: '+50 🪙', val: 50, c1: '#0284c7', c2: '#082f49' },
       { text: '+250 🪙', val: 250, c1: '#10b981', c2: '#064e3b' },
