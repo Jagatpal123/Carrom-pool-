@@ -1012,7 +1012,7 @@
     </div>
   </div>
 
-  <!-- FRIENDS SCREEN (CUSTOM NAME RESTORED) -->
+  <!-- FRIENDS SCREEN -->
   <div id="friends-screen" class="screen hidden">
     <div class="top-bar">
       <div style="font-family:'Orbitron', sans-serif; font-weight:900; font-size:16px; color:#34d399; letter-spacing:1px;">मित्र / FRIENDS</div>
@@ -1726,7 +1726,6 @@
       { id: 'vfx_vortex', name: 'ब्लैक होल वॉर्टेक्स', price: 1500, color: '#c084fc', type: 'vortex' }
     ];
 
-    // DEFAULT COINS
     let user = {
       name: 'खिलाड़ी 1',
       emoji: '🤠',
@@ -2147,29 +2146,34 @@
       const center = { x: SIZE/2, y: SIZE/2 };
       const pr = SIZE * 0.036;
 
-      pucks.push({ x: center.x, y: center.y, r: pr, vx: 0, vy: 0, type: 'queen', inPocket: false });
+      pucks.push({ x: center.x, y: center.y, r: pr, vx: 0, vy: 0, targetX: center.x, targetY: center.y, type: 'queen', inPocket: false });
       for (let i = 0; i < 6; i++) {
         let ang = (i * Math.PI * 2) / 6;
         let d = pr * 2.05;
-        pucks.push({ x: center.x + Math.cos(ang) * d, y: center.y + Math.sin(ang) * d, r: pr, vx: 0, vy: 0, type: i % 2 === 0 ? 'white' : 'black', inPocket: false });
+        let px = center.x + Math.cos(ang) * d;
+        let py = center.y + Math.sin(ang) * d;
+        pucks.push({ x: px, y: py, r: pr, vx: 0, vy: 0, targetX: px, targetY: py, type: i % 2 === 0 ? 'white' : 'black', inPocket: false });
       }
       for (let i = 0; i < 12; i++) {
         let ang = (i * Math.PI * 2) / 12 + Math.PI / 12;
         let d = pr * 4.08;
-        pucks.push({ x: center.x + Math.cos(ang) * d, y: center.y + Math.sin(ang) * d, r: pr, vx: 0, vy: 0, type: i % 2 === 0 ? 'black' : 'white', inPocket: false });
+        let px = center.x + Math.cos(ang) * d;
+        let py = center.y + Math.sin(ang) * d;
+        pucks.push({ x: px, y: py, r: pr, vx: 0, vy: 0, targetX: px, targetY: py, type: i % 2 === 0 ? 'black' : 'white', inPocket: false });
       }
 
       resetStriker();
       updatePuckCounts();
     }
 
+    // ================= 🎯 STRIKER BASELINE RESET (100% RELIABLE) =================
     function resetStriker() {
       striker.vx = 0;
       striker.vy = 0;
       striker.inHand = true;
 
       const isMyTurn = (Number(currentTurn) === Number(myPlayerRole));
-      // जिसकी चाल होगी, उसके फोन में नीचे (0.81), दूसरे के फोन में ऊपर (0.19)
+      // जिसकी चाल हो, उसके फोन में बिल्कुल नीचे बेसलाइन पर (0.81), विरोधी के फोन में ऊपर (0.19)
       striker.y = isMyTurn ? SIZE * 0.81 : SIZE * 0.19;
 
       slider.value = 50;
@@ -2181,6 +2185,7 @@
       pocketedThisTurn = [];
       strikerFouledThisTurn = false;
 
+      // स्लाइडर चालू/बंद
       slider.disabled = !isMyTurn;
       slider.style.pointerEvents = isMyTurn ? 'auto' : 'none';
       slider.style.opacity = isMyTurn ? '1' : '0.5';
@@ -2195,6 +2200,7 @@
       const maxX = SIZE * 0.76;
       striker.x = minX + (Number(slider.value) / 100) * (maxX - minX);
 
+      // लाइव स्लाइडर सिंक विरोधी के फोन पर
       if (isRealFirebaseMatch && currentRoomId && Number(currentTurn) === Number(myPlayerRole)) {
         database.ref('rooms/' + currentRoomId + '/sliderSync').set({
           val: Number(slider.value),
@@ -2251,21 +2257,21 @@
         const shotId = 'shot_' + Date.now();
         lastProcessedShotId = shotId;
 
-        // अपने फोन पर तुरंत शॉट चलाएं
+        // अपने फोन पर तुरंत शॉट ट्रिगर करें
         cueAnimation.active = true;
         cueAnimation.pullDistance = Math.min(dist * 0.85, 95);
         cueAnimation.angle = angle;
         cueAnimation.force = force;
         cueAnimation.snapProgress = 0;
 
-        // Failsafe Timer: 3.8 सेकंड
+        // Failsafe Timer: 4 सेकंड के अंदर हर हाल में टर्न रिसेट होगा
         if (shotSafetyTimer) clearTimeout(shotSafetyTimer);
         shotSafetyTimer = setTimeout(() => {
           if (!striker.inHand && isGameRunning) {
             forceStopAllPucks();
             handleTurnEnd();
           }
-        }, 3800);
+        }, 4000);
 
         if (isRealFirebaseMatch && currentRoomId) {
           const roomRef = database.ref('rooms/' + currentRoomId);
@@ -2332,21 +2338,24 @@
       puckObj.inPocket = false;
     }
 
-    /* NETWORK EVENT HANDLER */
+    /* ================= 🚀 ZERO-JITTER NETWORK SYNC ================= */
     function listenToFirebaseRoomEvents() {
       if (!isRealFirebaseMatch || !currentRoomId) return;
       const roomRef = database.ref('rooms/' + currentRoomId);
 
-      // Slider Mirror
+      // विरोधी का स्लाइडर मूवमेंट तुरंत दिखाना
       roomRef.child('sliderSync').on('value', (snap) => {
         const d = snap.val();
-        if (d && Number(d.player) !== Number(myPlayerRole) && striker.inHand) {
+        if (d && Number(d.player) !== Number(myPlayerRole)) {
           slider.value = 100 - d.val;
-          updateStrikerX();
+          const minX = SIZE * 0.24;
+          const maxX = SIZE * 0.76;
+          striker.x = minX + ((100 - d.val) / 100) * (maxX - minX);
+          striker.y = SIZE * 0.19; // विरोधी हमेशा ऊपर बेसलाइन पर दिखेगा
         }
       });
 
-      // Live Aim Line Mirror
+      // विरोधी की लाइव ऐमिंग लाइन दिखाना
       roomRef.child('aimLive').on('value', (snap) => {
         const a = snap.val();
         if (a && Number(currentTurn) !== Number(myPlayerRole)) {
@@ -2354,7 +2363,7 @@
         }
       });
 
-      // Shot Execution (Opponent Shot Mirror)
+      // विरोधी का शॉट चलना
       roomRef.child('executeShot').on('value', (snap) => {
         const s = snap.val();
         if (s && s.shotId !== lastProcessedShotId) {
@@ -2362,11 +2371,13 @@
 
           if (Number(s.player) !== Number(myPlayerRole)) {
             slider.value = 100 - s.sliderVal;
-            updateStrikerX();
-            striker.y = SIZE * 0.19; // विरोधी का स्ट्राइकर हमेशा ऊपर
+            const minX = SIZE * 0.24;
+            const maxX = SIZE * 0.76;
+            striker.x = minX + ((100 - s.sliderVal) / 100) * (maxX - minX);
+            striker.y = SIZE * 0.19;
             cueAnimation.active = true;
             cueAnimation.pullDistance = s.pullDist;
-            cueAnimation.angle = s.angle + Math.PI; // 180° Inverted for accurate impact
+            cueAnimation.angle = s.angle + Math.PI;
             cueAnimation.force = s.force;
             cueAnimation.snapProgress = 0;
             opponentAim.active = false;
@@ -2374,15 +2385,15 @@
         }
       });
 
-      // Pucks State Sync from Host to Client
+      // Client के लिए स्मूथ पोजीशंस (No Jitter Lerp Target)
       if (myPlayerRole === 2) {
         roomRef.child('livePucks').on('value', (snap) => {
           const remotePucks = snap.val();
           if (remotePucks) {
             remotePucks.forEach((rp, i) => {
               if (pucks[i]) {
-                pucks[i].x = invertX(rp.x);
-                pucks[i].y = invertY(rp.y);
+                pucks[i].targetX = invertX(rp.x);
+                pucks[i].targetY = invertY(rp.y);
                 pucks[i].inPocket = rp.inPocket;
               }
             });
@@ -2391,7 +2402,7 @@
         });
       }
 
-      // Turn Switch Listener
+      // टर्न बदलने का लिसनर
       roomRef.child('turn').on('value', (snap) => {
         const t = snap.val();
         if (t !== null && t !== undefined) {
@@ -2403,7 +2414,7 @@
         }
       });
 
-      // Winner Listener
+      // विजेता लिसनर
       roomRef.child('matchWinner').on('value', (snap) => {
         const winnerRole = snap.val();
         if (winnerRole) {
@@ -2411,7 +2422,7 @@
         }
       });
 
-      // Chat Listener
+      // चैट लिसनर
       roomRef.child('chat').on('value', (snap) => {
         const chat = snap.val();
         if (chat && Number(chat.sender) !== Number(myPlayerRole)) {
@@ -2420,7 +2431,7 @@
       });
     }
 
-    /* SOLID IMPACT LOCAL PHYSICS (ACTIVE ON BOTH PHONES) */
+    // ================= ⚙️ SMOOTH MASTER PHYSICS & ZERO-JITTER LERP =================
     function updatePhysics() {
       if (!isGameRunning) return;
 
@@ -2436,6 +2447,18 @@
         return;
       }
 
+      // Client (Player 2) पर सिर्फ स्मूथ इंटरपोलेशन होगा (कम्पन 100% बंद)
+      if (isRealFirebaseMatch && myPlayerRole === 2) {
+        pucks.forEach(p => {
+          if (!p.inPocket) {
+            p.x += (p.targetX - p.x) * 0.45;
+            p.y += (p.targetY - p.y) * 0.45;
+          }
+        });
+        return;
+      }
+
+      // केवल Host (Player 1) फ़िज़िक्स चलाएगा
       let isMoving = false;
       const all = [striker, ...pucks.filter(p => !p.inPocket)];
 
@@ -2462,8 +2485,7 @@
             AudioEngine.playPocketSound();
             triggerPocketVfx(p);
             if (obj === striker) {
-              obj.x = -500;
-              obj.y = -500;
+              obj.x = -500; obj.y = -500;
               strikerFouledThisTurn = true;
               showBannerMessage('FOUL! ⚠️');
             } else {
@@ -2475,7 +2497,7 @@
         });
       });
 
-      // स्ट्राइकर और गोटियों की ठोस टक्कर (SOLID COLLISION)
+      // सॉलिड टक्कर
       for (let i = 0; i < all.length; i++) {
         for (let j = i + 1; j < all.length; j++) {
           let o1 = all[i], o2 = all[j];
@@ -2507,7 +2529,7 @@
         }
       }
 
-      // टर्न पूरा होने का फैसला (केवल Host करेगा)
+      // जब सब कुछ रुक जाए, तो केवल Host टर्न बदलेगा
       if (!isMoving && !striker.inHand) {
         if (!isRealFirebaseMatch || myPlayerRole === 1) {
           handleTurnEnd();
@@ -2785,6 +2807,7 @@
       ctx.restore();
     }
 
+    // ================= 🔮 POWER AURA RING ALWAYS VISIBLE ON BASELINE =================
     function drawStrikerPowerAura(x, y, r) {
       const pow = POWER_CATALOG.find(p => p.id === user.equipped.power) || POWER_CATALOG[0];
       const color = pow.color;
@@ -2849,6 +2872,7 @@
       const { x, y, r } = striker;
       const sSkin = STRIKER_CATALOG.find(s => s.id === user.equipped.striker) || STRIKER_CATALOG[0];
 
+      // ऑरा हमेशा बेसलाइन पर दिखेगा
       if (striker.inHand && isGameRunning && !cueAnimation.active) {
         drawStrikerPowerAura(x, y, r);
       }
@@ -3024,7 +3048,7 @@
         drawProCueStick(screenStrikerX, screenStrikerY, angle, visualPull);
       }
 
-      // Opponent Aiming
+      // Opponent Aiming Live Mirror
       if (opponentAim.active && Number(currentTurn) !== Number(myPlayerRole)) {
         ctx.save();
         ctx.strokeStyle = '#ef4444';
