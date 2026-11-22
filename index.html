@@ -265,19 +265,23 @@
       transform: translateY(4px) scale(0.98);
     }
     .mode-tilted-logo {
-      width: 66px;
-      height: 66px;
-      transform: rotate(-13deg);
-      filter: drop-shadow(0 7px 9px rgba(0, 0, 0, 0.78));
+      width: 78px;
+      height: 78px;
+      transform: rotate(-6deg);
+      filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.85));
       transition: transform 0.2s ease;
       margin-top: 2px;
       display: flex;
       align-items: center;
       justify-content: center;
+      border-radius: 18px;
+      border: 2.5px solid rgba(255, 248, 220, 0.9);
+      background: #2b0c00;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.7), inset 0 1px 2px rgba(255,255,255,0.6);
     }
     .mode-tilted-logo canvas {
-      width: 66px;
-      height: 66px;
+      width: 74px;
+      height: 74px;
       border-radius: 15px;
       display: block;
     }
@@ -1320,35 +1324,7 @@
   <!-- WELCOME -->
   <div id="welcome-screen" onclick="dismissWelcomeScreen()">
     <div class="welcome-logo-box">
-      <svg viewBox="0 0 120 120" width="124" height="124">
-        <defs>
-          <radialGradient id="boardWood" cx="50%" cy="50%" r="55%">
-            <stop offset="0%" stop-color="#fff4db"/>
-            <stop offset="70%" stop-color="#e5b880"/>
-            <stop offset="100%" stop-color="#9a5b25"/>
-          </radialGradient>
-          <radialGradient id="queenDisc" cx="35%" cy="30%" r="65%">
-            <stop offset="0%" stop-color="#ff9a9e"/>
-            <stop offset="45%" stop-color="#ef4444"/>
-            <stop offset="100%" stop-color="#7f1d1d"/>
-          </radialGradient>
-          <radialGradient id="strikerDisc" cx="35%" cy="30%" r="65%">
-            <stop offset="0%" stop-color="#ffffff"/>
-            <stop offset="55%" stop-color="#fde047"/>
-            <stop offset="100%" stop-color="#b45309"/>
-          </radialGradient>
-        </defs>
-        <rect x="6" y="6" width="108" height="108" rx="22" fill="#3b1305" stroke="#ffd700" stroke-width="4"/>
-        <rect x="15" y="15" width="90" height="90" rx="14" fill="url(#boardWood)"/>
-        <circle cx="24" cy="24" r="7" fill="#111"/>
-        <circle cx="96" cy="24" r="7" fill="#111"/>
-        <circle cx="24" cy="96" r="7" fill="#111"/>
-        <circle cx="96" cy="96" r="7" fill="#111"/>
-        <circle cx="60" cy="60" r="22" fill="none" stroke="#b45309" stroke-width="2" stroke-dasharray="4 3"/>
-        <circle cx="53" cy="54" r="13" fill="url(#queenDisc)" stroke="#ffd700" stroke-width="2"/>
-        <circle cx="71" cy="68" r="15" fill="url(#strikerDisc)" stroke="#ffffff" stroke-width="2"/>
-        <polygon points="71,61 73,66 78,66 74,69 75,74 71,71 67,74 68,69 64,66 69,66" fill="#92400e"/>
-      </svg>
+      <img src="logo.png" alt="Carrom Pool Pro 3D" class="welcome-logo-img" onerror="handleLogoFallback(this)">
     </div>
     <div class="title-3d-gold" style="font-size:28px; margin-top:18px;">CARROM POOL PRO 3D</div>
     <div class="text-3d-sub" style="margin-top:6px;">ROYAL ARCADE EDITION</div>
@@ -1356,14 +1332,81 @@
     <div style="font-size:10px; font-weight:800; color:#fde68a; margin-top:14px; letter-spacing:1px;">TAP ANYWHERE TO START</div>
   </div>
 
+<script>
+(function initOriginalAppLogo() {
+  const imgEl = document.querySelector('.welcome-logo-img');
+  if (!imgEl) return;
+
+  function drawFallbackCanvasLogo() {
+    try {
+      const c = document.createElement('canvas');
+      c.width = 260;
+      c.height = 260;
+      const g = c.getContext('2d');
+      const bg = g.createRadialGradient(90, 75, 20, 130, 130, 145);
+      bg.addColorStop(0, '#7f1d1d');
+      bg.addColorStop(0.6, '#3b0505');
+      bg.addColorStop(1, '#180101');
+      g.fillStyle = bg;
+      g.fillRect(0, 0, 260, 260);
+      const wood = g.createRadialGradient(115, 110, 10, 130, 130, 105);
+      wood.addColorStop(0, '#fff3dc');
+      wood.addColorStop(0.65, '#edd0a4');
+      wood.addColorStop(1, '#c4955a');
+      g.beginPath();
+      g.roundRect(24, 24, 212, 212, 26);
+      g.fillStyle = wood;
+      g.fill();
+      g.lineWidth = 7;
+      g.strokeStyle = '#ffd700';
+      g.stroke();
+      const qGrad = g.createRadialGradient(123, 122, 2, 130, 130, 15);
+      qGrad.addColorStop(0, '#ff9a9e');
+      qGrad.addColorStop(0.5, '#ef4444');
+      qGrad.addColorStop(1, '#7f1d1d');
+      g.beginPath();
+      g.arc(130, 130, 14, 0, Math.PI * 2);
+      g.fillStyle = qGrad;
+      g.fill();
+      return c.toDataURL('image/png');
+    } catch (e) {
+      return '';
+    }
+  }
+
+  // Try loading your uploaded logo.png from GitHub / web root first
+  const candidateSrcs = ['logo.png', './logo.png', 'assets/logo.png', 'public/logo.png'];
+  let idx = 0;
+
+  function tryNextLogo() {
+    if (idx >= candidateSrcs.length) {
+      const fb = drawFallbackCanvasLogo();
+      if (fb) imgEl.src = fb;
+      return;
+    }
+    const testImg = new Image();
+    const url = candidateSrcs[idx++];
+    testImg.onload = function() {
+      imgEl.src = url;
+      document.querySelectorAll('.btn-carrom-badge img').forEach(bImg => { bImg.src = url; });
+    };
+    testImg.onerror = tryNextLogo;
+    testImg.src = url;
+  }
+
+  tryNextLogo();
+})();
+</script>
+
+
   <canvas id="cueOverlayCanvas"></canvas>
   <div id="foul-banner">FOUL! ⚠️</div>
 
   <!-- SPIN MODAL -->
   <div id="spin-modal" class="hidden">
     <div class="card-modal" style="max-width:345px; border-color:#ffd700; background: linear-gradient(180deg, #4a0707, #1d0202);">
-      <div class="title-3d-gold" style="font-size:20px;">🎰 3D लकी स्पिन व्हील</div>
-      <div class="text-3d-sub" style="color:#fbbf24;">स्पिन करें और मुफ़्त कॉइंस जीतें!</div>
+      <div class="title-3d-gold" style="font-size:21px;">🎰 DAILY SPIN WHEEL</div>
+      <div class="text-3d-sub" style="color:#fbbf24;">दिन में 1 फ़्री स्पिन, फिर विज्ञापन देखकर स्पिन करें!</div>
 
       <div class="wheel-stage-3d" id="wheel-stage-origin">
         <svg class="wheel-pointer-3d" viewBox="0 0 40 50">
@@ -1395,24 +1438,36 @@
     </div>
   </div>
 
-  <!-- 7-DAY DAILY STREAK MODAL -->
-  <div id="streak-modal" class="overlay-modal-backdrop hidden">
-    <div class="card-modal" style="max-width:350px; border-color:#ffd700;">
-      <div class="title-3d-gold" style="font-size:19px;">📅 7-DAY DAILY REWARD</div>
-      <div class="text-3d-sub" style="color:#fde047;">रोज़ खेलें और 7वें दिन मुफ़्त प्रीमियम स्ट्राइकर पाएं!</div>
-      <div class="streak-grid" id="streak-grid-container"></div>
-      <button id="btn-claim-streak" class="btn-3d btn-gold" onclick="claimDailyStreakReward(this)">🎁 आज का रिवॉर्ड क्लेम करें</button>
-      <button class="btn-3d btn-ad-3d" style="background:#475569; width:100%; margin-top:8px;" onclick="document.getElementById('streak-modal').classList.add('hidden')">बंद करें</button>
-    </div>
-  </div>
 
-  <!-- DAILY QUESTS MODAL -->
-  <div id="quests-modal" class="overlay-modal-backdrop hidden">
-    <div class="card-modal" style="max-width:355px; border-color:#38bdf8;">
-      <div class="title-3d-gold" style="font-size:19px;">🎯 डेली मिशन्स (QUESTS)</div>
-      <div class="text-3d-sub" style="color:#7dd3fc; margin-bottom:12px;">मिशन पूरे करें और एक्स्ट्रा कॉइंस पाएं</div>
-      <div id="quests-list-container" style="text-align:left;"></div>
-      <button class="btn-3d btn-ad-3d" style="background:#475569; width:100%; margin-top:8px;" onclick="document.getElementById('quests-modal').classList.add('hidden')">बंद करें</button>
+
+
+  <!-- SHARE & DOWNLOAD CARD PREVIEW MODAL -->
+  <div id="share-card-modal" class="overlay-modal-backdrop hidden" onclick="if(event.target===this)closeSharePreviewCard()">
+    <div class="card-modal" style="max-width:345px; border-color:#ffd700; background:linear-gradient(180deg, #5c0a0a 0%, #240202 100%);">
+      <div class="title-3d-gold" style="font-size:20px;">🎁 INVITE &amp; EARN +1000 🪙</div>
+      <div class="hindi-game-sub" style="margin-bottom:12px;">दोस्त के डाउनलोड व इंस्टॉल करने पर दोनों को +1000 कॉइंस</div>
+
+      <div style="background:linear-gradient(135deg, rgba(120,20,20,0.85), rgba(40,4,4,0.95)); border:1.5px solid rgba(251,191,36,0.55); border-radius:18px; padding:14px 12px; margin-bottom:12px; text-align:left;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+          <span style="font-size:11px; font-weight:900; color:#ffd700; letter-spacing:0.6px;">CARROM POOL PRO 3D</span>
+          <span style="background:#065f46; color:#a7f3d0; font-size:9.5px; font-weight:900; padding:2px 8px; border-radius:8px; border:1px solid #34d399;">+1000 COINS</span>
+        </div>
+        <div style="font-size:11.5px; font-weight:700; color:#fde68a; line-height:1.45; margin-bottom:10px;">
+          अपना रेफ़रल लिंक शेयर करें। जैसे ही आपका दोस्त लिंक से ऐप डाउनलोड करके इंस्टॉल करेगा, आपको <b>+1000 कॉइंस</b> मिलेंगे।
+        </div>
+        <div style="background:rgba(0,0,0,0.55); border:1px dashed #fbbf24; border-radius:10px; padding:7px 10px; display:flex; align-items:center; justify-content:space-between; gap:8px;">
+          <span id="share-preview-code" style="font-family:'Orbitron', sans-serif; font-size:11px; font-weight:800; color:#ffffff;">CPREF------</span>
+          <button class="btn-3d btn-ad-3d" style="padding:5px 10px; font-size:10px; border-radius:8px;" onclick="copyReferralCodeOnly()">कॉपी</button>
+        </div>
+      </div>
+
+      <button class="btn-3d btn-gold" style="width:100%; padding:13px; font-size:12.5px; background:linear-gradient(180deg, #25D366 0%, #128C7E 100%); color:#ffffff; box-shadow:0 5px 0px #075E54;" onclick="inviteFriendForCoins(this)">
+        <span>📲 WhatsApp पर लिंक शेयर करें</span>
+      </button>
+
+      <button class="btn-3d btn-ad-3d" style="background:#475569; width:100%; margin-top:8px;" onclick="closeSharePreviewCard()">
+        बंद करें
+      </button>
     </div>
   </div>
 
@@ -1484,6 +1539,7 @@
         <div style="text-align:left;">
           <div style="display:flex; align-items:center; gap:5px;">
             <span id="nav-name" class="game-card-heading" style="font-size:12.5px;">Player</span>
+            <span style="font-size:10px; color:#ffd700;" title="नाम बदलें">✏️</span>
             <span class="rank-pill-badge" id="nav-rank-badge">LVL 1</span>
           </div>
           <div class="xp-mini-track"><div class="xp-mini-fill" id="nav-xp-fill"></div></div>
@@ -1532,63 +1588,36 @@
           </button>
         </div>
 
-        <div class="quick-feature-row" style="margin-top:12px; gap:10px;">
-          <button class="feature-chip-btn" style="padding:12px 6px;" onclick="openStreakModal()">
-            <span id="streak-notif-dot" class="notif-dot"></span>
-            <svg width="30" height="30" viewBox="0 0 32 32">
-              <rect x="4" y="6" width="24" height="22" rx="5" fill="#7f1d1d" stroke="#ffd700" stroke-width="1.8"/>
-              <rect x="4" y="6" width="24" height="7" rx="3" fill="#f59e0b"/>
-              <text x="16" y="24" text-anchor="middle" fill="#fff" font-family="Arial Black" font-size="11" font-weight="900">7D</text>
-            </svg>
-            <span class="game-btn-label" style="font-size:10.5px; color:#fde68a;">7-DAY BONUS</span>
+        <div style="width:100%; margin-top:12px; display:flex; flex-direction:column; gap:9px;">
+          <button class="btn-3d btn-gold" style="margin-top:0; padding:12px 14px; justify-content:space-between; border:1.5px solid #fffbeb;" onclick="claimDailyReward(this)">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span class="coin-3d-badge" style="width:26px; height:26px;"></span>
+              <div style="text-align:left;">
+                <div class="game-btn-label" style="font-size:12.5px; color:#2b0c00;">📺 फ्री 500 कॉइंस क्लेम करें</div>
+                <div style="font-size:10px; font-weight:800; color:#5c1d04; text-transform:none;">छोटा वीडियो (Rewarded Ad) देखें और तुरंत +500 🪙 पाएं</div>
+              </div>
+            </div>
+            <span style="background:#7f1d1d; color:#ffd700; font-size:10px; font-weight:900; padding:5px 10px; border-radius:10px; border:1px solid #ffd700;">+500 🪙</span>
           </button>
-          <button class="feature-chip-btn" style="padding:12px 6px;" onclick="openQuestsModal()">
-            <span id="quest-notif-dot" class="notif-dot hidden"></span>
-            <svg width="30" height="30" viewBox="0 0 32 32">
-              <circle cx="16" cy="16" r="12" fill="#dc2626" stroke="#ffd700" stroke-width="1.8"/>
-              <circle cx="16" cy="16" r="8" fill="#ffffff"/>
-              <circle cx="16" cy="16" r="4" fill="#dc2626"/>
-              <path d="M26 6L17 15" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
-            </svg>
-            <span class="game-btn-label" style="font-size:10.5px; color:#fde68a;">डेली मिशन्स</span>
-          </button>
-          <button class="feature-chip-btn" style="padding:12px 6px;" onclick="inviteFriendForCoins(this)">
-            <svg width="30" height="30" viewBox="0 0 32 32">
-              <rect x="5" y="13" width="22" height="14" rx="3" fill="#d97706" stroke="#fffbeb" stroke-width="1.5"/>
-              <rect x="3" y="9" width="26" height="5" rx="2" fill="#fbbf24"/>
-              <rect x="14" y="9" width="4" height="18" fill="#dc2626"/>
-              <path d="M16 9C12 4 7 6 11 9M16 9C20 4 25 6 21 9" stroke="#fde047" stroke-width="2" fill="none"/>
-            </svg>
-            <span class="game-btn-label" style="font-size:10.5px; color:#fde68a;">INVITE +500</span>
+
+          <button class="feature-chip-btn" style="width:100%; flex-direction:row; justify-content:space-between; padding:11px 14px;" onclick="openSharePreviewCard()">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <svg width="30" height="30" viewBox="0 0 32 32">
+                <rect x="5" y="13" width="22" height="14" rx="3" fill="#d97706" stroke="#fffbeb" stroke-width="1.5"/>
+                <rect x="3" y="9" width="26" height="5" rx="2" fill="#fbbf24"/>
+                <rect x="14" y="9" width="4" height="18" fill="#dc2626"/>
+                <path d="M16 9C12 4 7 6 11 9M16 9C20 4 25 6 21 9" stroke="#fde047" stroke-width="2" fill="none"/>
+              </svg>
+              <div style="text-align:left;">
+                <div class="game-btn-label" style="font-size:11.5px; color:#ffd700;">INVITE &amp; EARN +1000 🪙</div>
+                <div style="font-size:9.5px; font-weight:700; color:#fde68a;">कार्ड प्रीव्यू देखें और दोस्त को लिंक शेयर करें</div>
+              </div>
+            </div>
+            <span style="background:linear-gradient(180deg,#25D366,#128C7E); color:#fff; font-size:10px; font-weight:900; padding:5px 10px; border-radius:10px; border:1px solid #fff;">CARD</span>
           </button>
         </div>
 
-        <div class="super-spin-3d-card" style="padding:15px 16px; margin-top:12px;" onclick="openSpinModal()">
-          <div class="free-gift-tag">मुफ़्त कॉइंस</div>
-          <div class="super-wheel-icon-box" style="width:60px; height:60px;">
-            <svg width="48" height="48" viewBox="0 0 48 48">
-              <circle cx="24" cy="24" r="21" fill="#1e1b4b" stroke="#ffd700" stroke-width="3"/>
-              <path d="M24 24L24 4A20 20 0 0 1 41 14Z" fill="#ef4444"/>
-              <path d="M24 24L41 14A20 20 0 0 1 41 34Z" fill="#f59e0b"/>
-              <path d="M24 24L41 34A20 20 0 0 1 24 44Z" fill="#10b981"/>
-              <path d="M24 24L24 44A20 20 0 0 1 7 34Z" fill="#0284c7"/>
-              <path d="M24 24L7 34A20 20 0 0 1 7 14Z" fill="#a855f7"/>
-              <path d="M24 24L7 14A20 20 0 0 1 24 4Z" fill="#ec4899"/>
-              <circle cx="24" cy="24" r="6" fill="#ffd700" stroke="#fff" stroke-width="1.5"/>
-            </svg>
-          </div>
-          <div style="text-align:left; flex:1; margin-left:14px;">
-            <div class="game-card-heading" style="font-size:15px; letter-spacing:0.6px; color:#fff;">
-              DAILY LUCKY SPIN 3D
-            </div>
-            <div style="font-size:11px; font-weight:800; color:#fde047; margin-top:3px; text-shadow:0 1px 3px #000;">
-              पहिया घुमाएं और +500 तक सिक्के जीतें!
-            </div>
-          </div>
-          <div style="width:38px; height:38px; border-radius:50%; background:linear-gradient(180deg,#ffd700,#b45309); display:flex; align-items:center; justify-content:center; font-size:16px; color:#2b0900; font-weight:900; border:1.5px solid #fff; box-shadow:0 3px 8px rgba(0,0,0,0.6);">
-            ▶
-          </div>
-        </div>
+
       </div>
 
       <div class="card-modal" style="text-align:left;">
@@ -1836,15 +1865,20 @@
       </span>
       <span class="game-btn-label" style="font-size:10px;">STRIKERS</span>
     </button>
-    <button class="nav-btn" id="btn-nav-shop" onclick="navTo('shop')">
+    <button class="nav-btn" id="btn-nav-spin" onclick="openSpinModal()">
       <span class="icon">
-        <svg width="24" height="24" viewBox="0 0 28 28">
-          <rect x="4" y="10" width="20" height="13" rx="3" fill="#f59e0b" stroke="#fffbeb" stroke-width="1.4"/>
-          <path d="M4 12c0-4 4-6 10-6s10 2 10 6" fill="#dc2626" stroke="#ffd700" stroke-width="1.5"/>
-          <rect x="12" y="11" width="4" height="5" rx="1" fill="#ffd700"/>
+        <svg width="24" height="24" viewBox="0 0 48 48">
+          <circle cx="24" cy="24" r="20" fill="#1e1b4b" stroke="#ffd700" stroke-width="3.5"/>
+          <path d="M24 24L24 5A19 19 0 0 1 40 14Z" fill="#ef4444"/>
+          <path d="M24 24L40 14A19 19 0 0 1 40 34Z" fill="#f59e0b"/>
+          <path d="M24 24L40 34A19 19 0 0 1 24 43Z" fill="#10b981"/>
+          <path d="M24 24L24 43A19 19 0 0 1 8 34Z" fill="#0284c7"/>
+          <path d="M24 24L8 34A19 19 0 0 1 8 14Z" fill="#a855f7"/>
+          <path d="M24 24L8 14A19 19 0 0 1 24 5Z" fill="#ec4899"/>
+          <circle cx="24" cy="24" r="5.5" fill="#ffd700" stroke="#fff" stroke-width="1.5"/>
         </svg>
       </span>
-      <span class="game-btn-label" style="font-size:10px;">SHOP</span>
+      <span class="game-btn-label" style="font-size:10px;">LUCKY SPIN</span>
     </button>
   </div>
 
@@ -2488,6 +2522,7 @@
         user.quests = { winsToday: 0, queenCoversToday: 0, spinsToday: 0, claimed: {} };
       }
       if (!user.quests.claimed) user.quests.claimed = {};
+      hasFreeSpinToday = (user.lastFreeSpinDate !== today);
     }
 
     function refreshUserProgressionUI() {
@@ -2498,17 +2533,48 @@
       if (fillEl) fillEl.style.width = `${info.progressPct}%`;
 
       const today = getTodayDateStr();
-      const sDot = document.getElementById('streak-notif-dot');
-      if (sDot) sDot.classList.toggle('hidden', user.lastStreakDate === today);
+      hasFreeSpinToday = (user.lastFreeSpinDate !== today);
+      const homeSpinTag = document.getElementById('home-spin-badge');
+      if (homeSpinTag) {
+        homeSpinTag.innerText = hasFreeSpinToday ? '1 FREE SPIN' : '📺 WATCH AD';
+      }
+    }
 
-      ensureDailyQuestsReset();
-      const q = user.quests;
-      const hasClaimableQuest =
-        (q.winsToday >= 2 && !q.claimed.q_wins) ||
-        (q.queenCoversToday >= 1 && !q.claimed.q_queen) ||
-        (q.spinsToday >= 1 && !q.claimed.q_spin);
-      const qDot = document.getElementById('quest-notif-dot');
-      if (qDot) qDot.classList.toggle('hidden', !hasClaimableQuest);
+    function getMyReferralCode() {
+      if (!user.referralCode) {
+        user.referralCode = 'CPREF' + Math.floor(100000 + Math.random() * 900000);
+      }
+      return user.referralCode;
+    }
+
+    function checkVerifiedReferralRewards() {
+      const myCode = getMyReferralCode();
+      try {
+        const refNode = database.ref('referrals/' + myCode + '/verifiedInstalls');
+        refNode.on('child_added', (snap) => {
+          const val = snap.val();
+          if (val && val.rewarded !== true) {
+            snap.ref.update({ rewarded: true });
+            animateCoinsToBox(1000);
+            showBannerMessage('🎉 दोस्त ने गेम इंस्टॉल किया! +1000 🪙', 2400);
+          }
+        });
+      } catch (e) {}
+
+      // Check if current device opened via a referral link (?ref=CPREFxxxxxx)
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const incomingRef = (params.get('ref') || '').trim().toUpperCase();
+        if (incomingRef && incomingRef !== myCode && !localStorage.getItem('carrom_ref_claimed')) {
+          localStorage.setItem('carrom_ref_claimed', '1');
+          const installDeviceId = 'dev_' + (localStorage.getItem('carrom_dev_uid') || (Date.now() + '_' + Math.floor(Math.random() * 99999)));
+          localStorage.setItem('carrom_dev_uid', installDeviceId);
+          database.ref('referrals/' + incomingRef + '/verifiedInstalls/' + installDeviceId).set({
+            installedAt: Date.now(),
+            rewarded: false
+          });
+        }
+      } catch (e) {}
     }
 
     function loadSavedUser() {
@@ -2519,111 +2585,23 @@
       }
       if (!user.inventory.powers) user.inventory.powers = ['pow_1'];
       if (!user.equipped.power) user.equipped.power = 'pow_1';
+      getMyReferralCode();
       ensureDailyQuestsReset();
       syncCoinDisplays();
       refreshUserProgressionUI();
+      checkVerifiedReferralRewards();
       document.getElementById('nav-name').innerText = user.name;
       document.getElementById('nav-avatar').innerHTML = getAvatarHtml(user.emoji, 30);
       const hostNameInput = document.getElementById('host-name-input');
       const joinerNameInput = document.getElementById('joiner-name-input');
       if (hostNameInput) hostNameInput.value = '';
       if (joinerNameInput) joinerNameInput.value = '';
+
     }
     function saveUserState() {
       localStorage.setItem('carrom_pro_state_v17', JSON.stringify(user));
       syncCoinDisplays();
       refreshUserProgressionUI();
-    }
-
-    /* ===== 7-DAY DAILY STREAK ENGINE ===== */
-    const STREAK_REWARDS = [100, 200, 350, 500, 750, 1000, 1500];
-    function openStreakModal() {
-      const today = getTodayDateStr();
-      const canClaimToday = (user.lastStreakDate !== today);
-      const currentDay = Math.min(Math.max(Number(user.streakDay || 1), 1), 7);
-      const grid = document.getElementById('streak-grid-container');
-      grid.innerHTML = '';
-
-      for (let d = 1; d <= 7; d++) {
-        const box = document.createElement('div');
-        const isClaimed = d < currentDay || (d === currentDay && !canClaimToday);
-        const isToday = (d === currentDay && canClaimToday);
-        box.className = `streak-day-box ${isClaimed ? 'claimed' : ''} ${isToday ? 'today' : ''} ${d === 7 ? 'day7' : ''}`;
-        const label = d === 7 ? '🎁 +1500 + STRIKER!' : `+${STREAK_REWARDS[d-1]} 🪙`;
-        box.innerHTML = `<div style="color:#fde047;">DAY ${d}</div><div style="font-size:18px; margin:3px 0;">${isClaimed ? '✅' : (d === 7 ? '👑' : '🪙')}</div><div>${label}</div>`;
-        grid.appendChild(box);
-      }
-
-      const btn = document.getElementById('btn-claim-streak');
-      btn.disabled = !canClaimToday;
-      btn.style.opacity = canClaimToday ? '1' : '0.55';
-      btn.innerText = canClaimToday ? `🎁 DAY ${currentDay} रिवॉर्ड क्लेम करें` : '✅ आज का रिवॉर्ड मिल चुका है';
-      document.getElementById('streak-modal').classList.remove('hidden');
-    }
-
-    function claimDailyStreakReward(btnEl) {
-      const today = getTodayDateStr();
-      if (user.lastStreakDate === today) return;
-      const dayIdx = Math.min(Math.max(Number(user.streakDay || 1), 1), 7);
-      const rewardCoins = STREAK_REWARDS[dayIdx - 1];
-
-      user.lastStreakDate = today;
-      if (dayIdx === 7) {
-        // Unlock a free custom striker on Day 7!
-        const lockedCustom = STRIKER_CATALOG.find(s => !user.inventory.strikers.includes(s.id));
-        if (lockedCustom) {
-          user.inventory.strikers.push(lockedCustom.id);
-          user.equipped.striker = lockedCustom.id;
-        }
-        user.streakDay = 1;
-      } else {
-        user.streakDay = dayIdx + 1;
-      }
-      saveUserState();
-      document.getElementById('streak-modal').classList.add('hidden');
-      animateCoinsToBox(rewardCoins, btnEl);
-      WheelVoiceEngine.speakHindi(`बधाई हो! डे ${dayIdx} बोनस में आपको ${rewardCoins} सिक्के मिले!`);
-    }
-
-    /* ===== DAILY QUESTS ENGINE ===== */
-    function openQuestsModal() {
-      ensureDailyQuestsReset();
-      const q = user.quests;
-      const questsData = [
-        { id: 'q_wins', title: 'आज 2 मैच जीतें', cur: Math.min(q.winsToday, 2), max: 2, reward: 300 },
-        { id: 'q_queen', title: 'रानी (Queen) कवर करें', cur: Math.min(q.queenCoversToday, 1), max: 1, reward: 250 },
-        { id: 'q_spin', title: 'लकी स्पिन व्हील घुमाएं', cur: Math.min(q.spinsToday, 1), max: 1, reward: 150 }
-      ];
-
-      const container = document.getElementById('quests-list-container');
-      container.innerHTML = '';
-      questsData.forEach(item => {
-        const isDone = item.cur >= item.max;
-        const isClaimed = !!q.claimed[item.id];
-        const row = document.createElement('div');
-        row.className = 'arena-row';
-        row.innerHTML = `
-          <div>
-            <div style="font-weight:900; font-size:13px; color:#fff;">${item.title}</div>
-            <div style="font-size:11px; font-weight:800; color:#fde047;">प्रगति: ${item.cur}/${item.max} • इनाम: +${item.reward} 🪙</div>
-          </div>
-          <button class="btn-3d ${isClaimed ? 'btn-ad-3d' : (isDone ? 'btn-gold' : 'btn-cyan')}" style="width:auto; padding:7px 12px; margin-top:0; font-size:11px; opacity:${isClaimed ? '0.6' : '1'};" ${(!isDone || isClaimed) ? 'disabled' : ''} onclick="claimQuestReward('${item.id}', ${item.reward}, this)">
-            ${isClaimed ? '✅ मिला' : (isDone ? '🎁 क्लेम' : `${item.cur}/${item.max}`)}
-          </button>
-        `;
-        container.appendChild(row);
-      });
-      document.getElementById('quests-modal').classList.remove('hidden');
-    }
-
-    function claimQuestReward(qId, reward, btnEl) {
-      ensureDailyQuestsReset();
-      if (user.quests.claimed[qId]) return;
-      user.quests.claimed[qId] = true;
-      user.xp = Number(user.xp || 0) + 35;
-      saveUserState();
-      document.getElementById('quests-modal').classList.add('hidden');
-      animateCoinsToBox(reward, btnEl);
     }
 
     /* ===== PROFILE & AVATAR CUSTOMIZER ===== */
@@ -2658,20 +2636,51 @@
 
     function saveProfileDetails() {
       const newName = document.getElementById('profile-name-input').value.trim();
-      if (newName) user.name = newName;
+      if (!newName) {
+        alert("कृपया अपना खिलाड़ी नाम लिखें!");
+        return;
+      }
+      user.name = newName;
+      user.hasCustomProfileName = true;
       document.getElementById('nav-name').innerText = user.name;
       document.getElementById('nav-avatar').innerHTML = getAvatarHtml(user.emoji, 30);
+      const mmMyNameEl = document.getElementById('mm-my-name');
+      if (mmMyNameEl) mmMyNameEl.innerText = user.name;
       saveUserState();
       document.getElementById('profile-modal').classList.add('hidden');
+      showBannerMessage(`✅ प्रोफ़ाइल नाम सेव: ${user.name}`, 1500);
     }
 
-    /* ===== VIRAL WHATSAPP INVITE ===== */
+    /* ===== VERIFIED REFERRAL WHATSAPP INVITE ===== */
+
+    function openSharePreviewCard() {
+      const code = getMyReferralCode();
+      const codeEl = document.getElementById('share-preview-code');
+      if (codeEl) codeEl.innerText = code;
+      const modal = document.getElementById('share-card-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeSharePreviewCard() {
+      const modal = document.getElementById('share-card-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function copyReferralCodeOnly() {
+      const code = getMyReferralCode();
+      try { navigator.clipboard?.writeText(code); } catch (e) {}
+      showBannerMessage(`रेफ़रल कोड कॉपी हुआ: ${code}`, 1600);
+    }
+
     function inviteFriendForCoins(btnEl) {
-      const msg = `🎯 *Carrom Pool Pro 3D* में मेरे साथ लाइव कैरम खेलो! लाइव वॉइस चैट और शाही स्ट्राइकर्स के साथ। अभी डाउनलोड करो और खेलो!`;
+      const refCode = getMyReferralCode();
+      saveUserState();
+      const downloadUrl = `https://play.google.com/store/apps/details?id=com.jagatpal.carrompool&referrer=${encodeURIComponent('ref=' + refCode)}`;
+      const msg = `🎯 *Carrom Pool Pro 3D* में मेरे साथ लाइव कैरम खेलो!\n👇 इस लिंक से गेम डाउनलोड और इंस्टॉल करें:\n${downloadUrl}\n\n(रेफ़रल कोड: ${refCode})`;
       try {
         window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_system');
       } catch (e) {}
-      animateCoinsToBox(500, btnEl);
+      showBannerMessage('📲 लिंक शेयर करें! इंस्टॉल होते ही +1000 🪙 मिलेंगे', 2200);
     }
     function syncCoinDisplays() {
       document.querySelectorAll('.sync-coins').forEach(el => el.innerText = user.coins);
@@ -2779,7 +2788,7 @@
 
     function buyItemWithCoins(category, itemId, price) {
       if (user.coins < price) {
-        alert("पर्याप्त सिक्के नहीं हैं! विज्ञापन देखें या शॉप से मुफ़्त सिक्के क्लेम करें।");
+        alert("पर्याप्त सिक्के नहीं हैं! होम स्क्रीन पर \"फ्री 500 कॉइंस क्लेम करें\" दबाकर विज्ञापन देखें और तुरंत +500 कॉइंस पाएं।");
         return;
       }
       user.coins -= price;
@@ -2843,7 +2852,8 @@
       const mmModal = document.getElementById('matchmaking-modal');
       document.getElementById('mm-title').innerText = "ROOM: " + code;
       document.getElementById('mm-subtitle').innerText = "कोड कॉपी हो गया! दोस्त के जुड़ने का इंतजार करें...";
-      document.getElementById('mm-my-name').innerText = user.name;
+      const displaySelfName = user.name;
+      document.getElementById('mm-my-name').innerText = displaySelfName;
       document.getElementById('mm-opp-avatar').innerText = "⏳";
       document.getElementById('mm-opp-name').innerText = "Waiting...";
       document.getElementById('mm-bot-btn').classList.add('hidden');
@@ -2854,8 +2864,12 @@
         const data = snap.val();
         if (data && data.status === 'playing' && !isGameRunning && !hasMatchEnded) {
           roomRef.off('value'); // Detach lobby listener immediately so game updates never retrigger launchBoard
-          mmModal.classList.add('hidden');
-          launchBoard(data.p2.name, data.p2.emoji, `ROOM: ${currentRoomId}`);
+          document.getElementById('mm-title').innerText = `CONNECTED: ${data.p2.name}`;
+          document.getElementById('mm-opp-name').innerText = data.p2.name;
+          setTimeout(() => {
+            mmModal.classList.add('hidden');
+            launchBoard(data.p2.name, data.p2.emoji, `ROOM: ${currentRoomId}`);
+          }, 450);
         }
       });
     }
@@ -2900,58 +2914,188 @@
       });
     }
 
+    let myQueueEntryRef = null;
+    let activeQueueBucketRef = null;
+
+    function cleanupMatchmakingQueue() {
+      if (matchmakingTimer) {
+        clearTimeout(matchmakingTimer);
+        matchmakingTimer = null;
+      }
+      if (activeQueueBucketRef) {
+        try { activeQueueBucketRef.off(); } catch (e) {}
+        activeQueueBucketRef = null;
+      }
+      if (myQueueEntryRef) {
+        try {
+          myQueueEntryRef.onDisconnect().cancel();
+          myQueueEntryRef.remove();
+        } catch (e) {}
+        myQueueEntryRef = null;
+      }
+    }
+
     function startMatchmakingFlow(mode, bet = 100) {
-      if (user.coins < bet) return alert("पर्याप्त सिक्के नहीं हैं! शॉप से मुफ़्त सिक्के क्लेम करें।");
+      if (user.coins < bet) return alert("पर्याप्त सिक्के नहीं हैं! होम स्क्रीन पर \"फ्री 500 कॉइंस क्लेम करें\" दबाकर विज्ञापन देखें और +500 कॉइंस पाएं।");
+      cleanupMatchmakingQueue();
       cleanupFirebaseListeners();
+
       currentGameMode = mode || 'classic';
       activeBoardTheme = (bet >= 500) ? 'dubai' : currentGameMode;
       currentBet = bet;
       potCoins = bet * 2;
       isPassAndPlay = false;
+      hasMatchEnded = false;
 
       const mmModal = document.getElementById('matchmaking-modal');
       const oppAvatar = document.getElementById('mm-opp-avatar');
       const oppName = document.getElementById('mm-opp-name');
       const mmTitle = document.getElementById('mm-title');
-      
+      const mmSub = document.getElementById('mm-subtitle');
+
       mmTitle.innerText = "SEARCHING ONLINE...";
+      if (mmSub) mmSub.innerText = `${currentGameMode.toUpperCase()} • Finding live player`;
       document.getElementById('mm-my-name').innerText = user.name;
+      const myMmAvBox = document.getElementById('mm-my-name').previousElementSibling;
+      if (myMmAvBox) myMmAvBox.innerHTML = getAvatarHtml(user.emoji, 32);
       oppAvatar.innerText = "❓";
       oppName.innerText = "Searching...";
       document.getElementById('mm-bot-btn').classList.remove('hidden');
       document.getElementById('mm-whatsapp-btn').classList.add('hidden');
       mmModal.classList.remove('hidden');
 
-      const queueRef = database.ref('match_queue');
-      const myId = 'usr_' + Math.floor(Math.random() * 100000);
+      const queueKey = `${currentGameMode}_${currentBet}`;
+      const bucketRef = database.ref('match_queue/' + queueKey);
+      activeQueueBucketRef = bucketRef;
+      const myId = 'usr_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
       let matched = false;
 
-      queueRef.push({ id: myId, name: user.name, emoji: user.emoji, time: Date.now() });
+      function enterLiveMatch(oppData, roleNum, roomIdVal) {
+        if (matched || hasMatchEnded) return;
+        matched = true;
+        cleanupMatchmakingQueue();
 
-      matchmakingTimer = setTimeout(() => {
-        if (!matched) {
-          queueRef.remove();
-          isRealFirebaseMatch = false;
-          myPlayerRole = 1;
-          const randomNames = ['रोहित_प्रो_99', 'कैरम_क्वीन_पूजा', 'समीर_मास्टर', 'डेविल_स्ट्राइकर'];
-          const randomName = randomNames[Math.floor(Math.random() * randomNames.length)];
-          oppAvatar.innerText = "🤖";
-          oppName.innerText = randomName;
-          mmTitle.innerText = "MATCH FOUND!";
+        currentRoomId = roomIdVal;
+        myPlayerRole = roleNum;
+        isRealFirebaseMatch = true;
+        isRoomHost = (roleNum === 1);
 
-          setTimeout(() => {
-            mmModal.classList.add('hidden');
-            user.coins -= currentBet;
-            saveUserState();
-            const modeLabel = currentGameMode === 'freestyle' ? 'FREESTYLE 120' : (currentGameMode === 'disc' ? 'DISC POOL' : 'CLASSIC ONLINE');
-            launchBoard(randomName, "av_2", modeLabel);
-          }, 600);
+        const roomRef = database.ref('rooms/' + currentRoomId);
+        activeFirebaseRoomRef = roomRef;
+        if (roleNum === 1) {
+          roomRef.set({
+            status: 'playing',
+            mode: currentGameMode,
+            bet: currentBet,
+            p1: { name: user.name, emoji: user.emoji },
+            p2: { name: oppData.name, emoji: oppData.emoji },
+            turn: 1,
+            chat: null
+          });
         }
-      }, 3500);
+
+        const oppDisplay = oppData.name || 'Live Player';
+        oppAvatar.innerHTML = (oppData.emoji && String(oppData.emoji).startsWith('av_')) ? getAvatarHtml(oppData.emoji, 32) : "🌐";
+        oppName.innerText = oppDisplay;
+        mmTitle.innerText = `CONNECTED: ${oppDisplay}`;
+        if (mmSub) mmSub.innerText = `${user.name} VS ${oppDisplay}`;
+
+        setTimeout(() => {
+          mmModal.classList.add('hidden');
+          user.coins -= currentBet;
+          saveUserState();
+          const modeLabel = currentGameMode === 'freestyle' ? 'FREESTYLE 120' : (currentGameMode === 'disc' ? 'DISC POOL' : 'CLASSIC ONLINE');
+          launchBoard(oppData.name || 'Live Player', oppData.emoji || 'av_2', modeLabel);
+        }, 450);
+      }
+
+      // First check if any waiting online player is already in this mode+bet queue
+      bucketRef.orderByChild('status').equalTo('waiting').once('value').then((snap) => {
+        if (matched) return;
+        let foundCandidate = null;
+        snap.forEach((child) => {
+          const val = child.val();
+          if (val && val.id !== myId && val.status === 'waiting' && (Date.now() - (val.time || 0) < 30000)) {
+            foundCandidate = { key: child.key, data: val };
+            return true;
+          }
+        });
+
+        if (foundCandidate) {
+          const pairedRoomId = 'QM_' + foundCandidate.key;
+          bucketRef.child(foundCandidate.key).transaction((curr) => {
+            if (!curr || curr.status !== 'waiting') return;
+            return Object.assign({}, curr, {
+              status: 'matched',
+              roomId: pairedRoomId,
+              matchedWithId: myId,
+              oppName: user.name,
+              oppEmoji: user.emoji
+            });
+          }).then((txRes) => {
+            if (txRes.committed && txRes.snapshot.val()?.roomId === pairedRoomId && !matched) {
+              enterLiveMatch(foundCandidate.data, 2, pairedRoomId);
+            } else if (!matched) {
+              registerMyQueueSpot();
+            }
+          });
+        } else {
+          registerMyQueueSpot();
+        }
+      }).catch(() => {
+        if (!matched) registerMyQueueSpot();
+      });
+
+      function registerMyQueueSpot() {
+        if (matched) return;
+        const entryRef = bucketRef.push({
+          id: myId,
+          name: user.name,
+          emoji: user.emoji,
+          status: 'waiting',
+          time: Date.now()
+        });
+        myQueueEntryRef = entryRef;
+        try { entryRef.onDisconnect().remove(); } catch (e) {}
+
+        entryRef.on('value', (snap) => {
+          const val = snap.val();
+          if (val && val.status === 'matched' && val.roomId && !matched) {
+            enterLiveMatch(
+              { name: val.oppName || 'Live Player', emoji: val.oppEmoji || 'av_2' },
+              1,
+              val.roomId
+            );
+          }
+        });
+
+        // Fallback to AI Bot only when no live player connects within 8 seconds
+        matchmakingTimer = setTimeout(() => {
+          if (!matched) {
+            matched = true;
+            cleanupMatchmakingQueue();
+            isRealFirebaseMatch = false;
+            myPlayerRole = 1;
+            const randomNames = ['रोहित_प्रो_99', 'कैरम_क्वीन_पूजा', 'समीर_मास्टर', 'डेविल_स्ट्राइकर'];
+            const randomName = randomNames[Math.floor(Math.random() * randomNames.length)];
+            oppAvatar.innerText = "🤖";
+            oppName.innerText = randomName;
+            mmTitle.innerText = "MATCH FOUND!";
+
+            setTimeout(() => {
+              mmModal.classList.add('hidden');
+              user.coins -= currentBet;
+              saveUserState();
+              const modeLabel = currentGameMode === 'freestyle' ? 'FREESTYLE 120' : (currentGameMode === 'disc' ? 'DISC POOL' : 'CLASSIC ONLINE');
+              launchBoard(randomName, "av_2", modeLabel);
+            }, 500);
+          }
+        }, 8000);
+      }
     }
 
     function forceOfflinePlay() {
-      if (matchmakingTimer) clearTimeout(matchmakingTimer);
+      cleanupMatchmakingQueue();
       cleanupFirebaseListeners();
       document.getElementById('matchmaking-modal').classList.add('hidden');
       isRealFirebaseMatch = false;
@@ -2962,7 +3106,7 @@
     }
 
     function cancelMatchmaking() {
-      if (matchmakingTimer) clearTimeout(matchmakingTimer);
+      cleanupMatchmakingQueue();
       cleanupFirebaseListeners();
       if (currentRoomId && isRoomHost) database.ref('rooms/' + currentRoomId).remove();
       currentRoomId = null;
@@ -3699,6 +3843,24 @@
 
       let penaltyOccurred = false;
 
+      // Prevent stuck state if a player clears all own pucks while Queen is still uncovered on board
+      if (currentGameMode !== 'freestyle' && queenPuck && !queenPuck.inPocket) {
+        const p1Now = pucks.filter(p => !p.inPocket && p.type === 'white').length;
+        const p2Now = pucks.filter(p => !p.inPocket && p.type === 'black').length;
+        if (p1Now === 0) {
+          const lastWhite = pucks.find(p => p.inPocket && p.type === 'white');
+          if (lastWhite) placePuckNearCenter(lastWhite);
+          showBannerMessage("पहले रानी (Queen) पॉकेट करें!", 1600);
+          penaltyOccurred = true;
+        } else if (p2Now === 0) {
+          const lastBlack = pucks.find(p => p.inPocket && p.type === 'black');
+          if (lastBlack) placePuckNearCenter(lastBlack);
+          showBannerMessage("पहले रानी (Queen) पॉकेट करें!", 1600);
+          penaltyOccurred = true;
+        }
+        updatePuckCounts();
+      }
+
       // Striker Foul Penalty
       if (strikerFouledThisTurn) {
         const pocketedMine = pucks.find(p => p.inPocket && p.type === activePlayerColor);
@@ -3782,23 +3944,25 @@
           return;
         }
       } else {
-        // Classic / Disc Pool Win Check
+        // Classic / Disc Pool Win Check: Immediate match end when all own pucks are pocketed & Queen is covered
         const p1Left = pucks.filter(p => !p.inPocket && p.type === 'white').length;
         const p2Left = pucks.filter(p => !p.inPocket && p.type === 'black').length;
-        const isQueenResolved = !queenPuck || (queenPuck.inPocket && queenCovered);
+        const isQueenResolved = !queenPuck || (queenPuck.inPocket && queenCovered && queenPendingCoverBy === null);
 
         if (p1Left === 0 && isQueenResolved) {
+          forceStopAllPucks();
           if (isRealFirebaseMatch && currentRoomId) {
             database.ref('rooms/' + currentRoomId + '/matchWinner').set(1);
           }
-          celebrateWin(myPlayerRole === 1);
+          celebrateWin(Number(myPlayerRole) === 1);
           return;
         }
         if (p2Left === 0 && isQueenResolved) {
+          forceStopAllPucks();
           if (isRealFirebaseMatch && currentRoomId) {
             database.ref('rooms/' + currentRoomId + '/matchWinner').set(2);
           }
-          celebrateWin(myPlayerRole === 2);
+          celebrateWin(Number(myPlayerRole) === 2);
           return;
         }
       }
@@ -3860,60 +4024,67 @@
     // beveled corner caps, recessed pockets, crisp standard carrom lines, diagonal foul arrows & center star)
     const SCREEN_BG_BORDER_THEMES = {
       classic: {
-        railTop: '#6b1414',
-        railMid: '#450808',
-        railDark: '#240202',
-        bevelLight: '#9e2a2b',
-        cornerCap: '#3b1506',
-        cornerCapHi: '#78350f'
+        railTop: '#d97706',
+        railMid: '#9a3412',
+        railDark: '#451a03',
+        bevelLight: '#fbbf24',
+        cornerCap: '#7f1d1d',
+        cornerCapHi: '#ffd700',
+        trimGold: '#ffd700'
       },
       disc: {
-        railTop: '#0c3b66',
-        railMid: '#07223d',
-        railDark: '#03101f',
-        bevelLight: '#1d5b96',
-        cornerCap: '#081b33',
-        cornerCapHi: '#1e40af'
+        railTop: '#0284c7',
+        railMid: '#0369a1',
+        railDark: '#082f49',
+        bevelLight: '#38bdf8',
+        cornerCap: '#1e3a8a',
+        cornerCapHi: '#7dd3fc',
+        trimGold: '#38bdf8'
       },
       freestyle: {
-        railTop: '#084734',
-        railMid: '#04291e',
-        railDark: '#02140f',
-        bevelLight: '#126e52',
-        cornerCap: '#05261c',
-        cornerCapHi: '#047857'
+        railTop: '#059669',
+        railMid: '#047857',
+        railDark: '#022c22',
+        bevelLight: '#34d399',
+        cornerCap: '#064e3b',
+        cornerCapHi: '#6ee7b7',
+        trimGold: '#fde047'
       },
       dubai: {
-        railTop: '#591c0b',
-        railMid: '#360c04',
-        railDark: '#1c0501',
-        bevelLight: '#8a3214',
-        cornerCap: '#2e1005',
-        cornerCapHi: '#92400e'
+        railTop: '#f59e0b',
+        railMid: '#b45309',
+        railDark: '#451a03',
+        bevelLight: '#fde047',
+        cornerCap: '#78350f',
+        cornerCapHi: '#ffffff',
+        trimGold: '#ffd700'
       },
       friends_online: {
-        railTop: '#461261',
-        railMid: '#260736',
-        railDark: '#12021a',
-        bevelLight: '#6e2494',
-        cornerCap: '#210630',
-        cornerCapHi: '#6b21a8'
+        railTop: '#9333ea',
+        railMid: '#6b21a8',
+        railDark: '#2e1065',
+        bevelLight: '#c084fc',
+        cornerCap: '#4c1d95',
+        cornerCapHi: '#f0abfc',
+        trimGold: '#ffd700'
       },
       pass_play: {
-        railTop: '#611010',
-        railMid: '#380505',
-        railDark: '#1c0101',
-        bevelLight: '#8f2424',
-        cornerCap: '#2e0808',
-        cornerCapHi: '#7f1d1d'
+        railTop: '#dc2626',
+        railMid: '#991b1b',
+        railDark: '#450a0a',
+        bevelLight: '#f87171',
+        cornerCap: '#7f1d1d',
+        cornerCapHi: '#fde047',
+        trimGold: '#ffd700'
       },
       offline_bot: {
-        railTop: '#263447',
-        railMid: '#141d29',
-        railDark: '#080c12',
-        bevelLight: '#3f536e',
-        cornerCap: '#0f172a',
-        cornerCapHi: '#334155'
+        railTop: '#2563eb',
+        railMid: '#1d4ed8',
+        railDark: '#172554',
+        bevelLight: '#60a5fa',
+        cornerCap: '#1e3a8a',
+        cornerCapHi: '#93c5fd',
+        trimGold: '#fbbf24'
       }
     };
 
@@ -4213,15 +4384,22 @@
       c.closePath();
       c.fill();
 
-      // Crisp natural outer edge bevel (no neon light strip)
+      // Crisp 3D outer rim & bright gold trim inlay for unmistakable visibility
       c.beginPath();
-      c.roundRect(1, 1, W - 2, H - 2, radius);
-      c.strokeStyle = 'rgba(255, 255, 255, 0.22)';
-      c.lineWidth = 1.5;
+      c.roundRect(1.5, 1.5, W - 3, H - 3, radius);
+      c.strokeStyle = st.trimGold || '#ffd700';
+      c.lineWidth = 3;
       c.stroke();
 
-      // Reinforced 3D wooden corner bumpers
-      const capSize = railW + 10;
+      // Decorative 3D rail inlay stripe
+      c.beginPath();
+      c.roundRect(railW * 0.45, railW * 0.45, W - railW * 0.9, H - railW * 0.9, Math.max(8, radius - 6));
+      c.strokeStyle = 'rgba(255, 250, 205, 0.55)';
+      c.lineWidth = 1.6;
+      c.stroke();
+
+      // Reinforced 3D metallic-trimmed corner bumpers
+      const capSize = railW + 12;
       c.fillStyle = st.cornerCap;
       c.fillRect(0, 0, capSize, railW);
       c.fillRect(0, 0, railW, capSize);
@@ -4232,9 +4410,16 @@
       c.fillRect(W - capSize, H - railW, capSize, railW);
       c.fillRect(W - railW, H - capSize, railW, capSize);
 
-      // Inner wooden lip framing the playing bed
+      c.strokeStyle = st.cornerCapHi || '#ffd700';
+      c.lineWidth = 1.5;
+      c.strokeRect(2, 2, capSize - 2, railW - 2);
+      c.strokeRect(W - capSize, 2, capSize - 2, railW - 2);
+      c.strokeRect(2, H - railW, capSize - 2, railW - 2);
+      c.strokeRect(W - capSize, H - railW, capSize - 2, railW - 2);
+
+      // Inner 3D wooden lip framing the playing bed
       c.strokeStyle = '#1f0d03';
-      c.lineWidth = 2.5;
+      c.lineWidth = 3;
       c.strokeRect(railW - 1, railW - 1, W - (railW - 1) * 2, H - (railW - 1) * 2);
       c.restore();
     }
@@ -5005,10 +5190,14 @@
 
     function spinLuckyWheel() {
       if (isSpinning) return;
+      const today = getTodayDateStr();
+      hasFreeSpinToday = (user.lastFreeSpinDate !== today);
       if (!hasFreeSpinToday) {
         AdService.showRewarded(() => { executeWheelSpin(); });
       } else {
+        user.lastFreeSpinDate = today;
         hasFreeSpinToday = false;
+        saveUserState();
         executeWheelSpin();
       }
     }
@@ -5162,22 +5351,23 @@
         c.fill();
       });
 
-      const puckR = 11.5;
+      const puckR = 16.5;
+      const bigMiniStrikerR = 21.5;
       if (modeKey === 'classic') {
-        drawMini3DPiece(c, W * 0.42, W * 0.44, puckR, 'white');
-        drawMini3DPiece(c, W * 0.58, W * 0.44, puckR, 'black');
-        drawMini3DPiece(c, W * 0.50, W * 0.54, puckR * 1.04, 'queen');
-        drawMini3DPiece(c, W * 0.62, W * 0.67, miniStrikerR, 'striker');
+        drawMini3DPiece(c, W * 0.39, W * 0.41, puckR, 'white');
+        drawMini3DPiece(c, W * 0.61, W * 0.41, puckR, 'black');
+        drawMini3DPiece(c, W * 0.50, W * 0.52, puckR * 1.08, 'queen');
+        drawMini3DPiece(c, W * 0.63, W * 0.68, bigMiniStrikerR, 'striker');
       } else if (modeKey === 'disc') {
-        drawMini3DPiece(c, W * 0.40, W * 0.44, puckR * 1.05, 'white');
-        drawMini3DPiece(c, W * 0.58, W * 0.43, puckR * 1.05, 'black');
-        drawMini3DPiece(c, W * 0.46, W * 0.57, puckR * 1.05, 'black');
-        drawMini3DPiece(c, W * 0.63, W * 0.66, miniStrikerR, 'striker');
+        drawMini3DPiece(c, W * 0.38, W * 0.40, puckR * 1.06, 'white');
+        drawMini3DPiece(c, W * 0.61, W * 0.40, puckR * 1.06, 'black');
+        drawMini3DPiece(c, W * 0.42, W * 0.60, puckR * 1.06, 'black');
+        drawMini3DPiece(c, W * 0.64, W * 0.67, bigMiniStrikerR, 'striker');
       } else {
-        drawMini3DPiece(c, W * 0.41, W * 0.45, puckR, 'white');
-        drawMini3DPiece(c, W * 0.59, W * 0.45, puckR, 'black');
-        drawMini3DPiece(c, W * 0.50, W * 0.36, puckR * 1.04, 'queen');
-        drawMini3DPiece(c, W * 0.56, W * 0.67, miniStrikerR, 'striker');
+        drawMini3DPiece(c, W * 0.38, W * 0.44, puckR, 'white');
+        drawMini3DPiece(c, W * 0.62, W * 0.44, puckR, 'black');
+        drawMini3DPiece(c, W * 0.50, W * 0.34, puckR * 1.08, 'queen');
+        drawMini3DPiece(c, W * 0.55, W * 0.68, bigMiniStrikerR, 'striker');
       }
 
       c.restore();
